@@ -22,7 +22,7 @@ else{
 //Alt and Name
 $meta = [];
 
-if($inputs['alt'] === null && $inputs['name'] === null && $inputs['caption'] === null ){
+if(!$inputs['deleteEmpty'] && $inputs['alt'] === null && $inputs['name'] === null && $inputs['caption'] === null ){
     if($test)
         echo 'Either alt, caption or name have to be set!'.EOL;
     exit(INPUT_VALIDATION_FAILURE);
@@ -80,5 +80,34 @@ if($inputs['caption'] !== null){
     $meta['caption'] = $inputs['caption'];
 }
 
+if($inputs['deleteEmpty']){
+
+    if($inputs['alt'] === null){
+        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_ALT_AUTH) || $auth->isAuthorized(0) ) ){
+            if($test)
+                echo 'Cannot change image alt tag!'.EOL;
+            exit(AUTHENTICATION_FAILURE);
+        }
+        $meta['alt'] = null;
+    };
+
+    if($inputs['name'] === null){
+        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_NAME_AUTH) || $auth->isAuthorized(0) ) ){
+            if($test)
+                echo 'Cannot change image name!'.EOL;
+            exit(AUTHENTICATION_FAILURE);
+        }
+        $meta['name'] = null;
+    };
+
+    if($inputs['caption'] === null){
+        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->isAuthorized(0) ) ){
+            if($test)
+                echo 'Cannot change image caption!'.EOL;
+            exit(AUTHENTICATION_FAILURE);
+        }
+        $meta['caption'] = null;
+    };
+}
 
 $meta = json_encode($meta);

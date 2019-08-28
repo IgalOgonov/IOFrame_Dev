@@ -77,6 +77,7 @@ namespace IOFrame\Handlers{
          *                                              'folder' => bool, whether the file is a folder
          *                                              'meta' => string, possible meta information about resource
          *                                              'lastChanged' => int, unix timestamp of the local file
+         *                                              'size' => int, local file size in bytes
          *                        ],
          *      ...
          *      ]
@@ -93,7 +94,8 @@ namespace IOFrame\Handlers{
 
             //If we are getting all addresses, enforce restrictions
             if($addresses == []){
-                $params['ignoreLocal'] = true;
+                if(!isset($params['ignoreLocal']))
+                    $params['ignoreLocal'] = true;
                 $params['includeChildFiles'] = false;
                 $params['includeChildFolders'] = false;
                 $params['includeSubFolders'] = false;
@@ -126,6 +128,8 @@ namespace IOFrame\Handlers{
 
             $minifyToFolder = isset($params['minifyToFolder'])? $params['minifyToFolder'] : '';
 
+            $ignoreLocal =  isset($params['ignoreLocal'])? $params['ignoreLocal'] : false;
+
             if(isset($params['forceMinify']) && ($type === 'js' || $type === 'css'))
                 $forceMinify = $params['forceMinify'];
             else
@@ -147,7 +151,6 @@ namespace IOFrame\Handlers{
                 $includeChildFolders = true;
             }
 
-
             //What we return
             $resourcesToReturn = [];
             //What we update the DB with
@@ -155,8 +158,21 @@ namespace IOFrame\Handlers{
             $existing = [];
             //In case we need to minify all resources under one name, this is it.
             $resourcesToMinify = [];
-
             foreach($resources as $address=>$resource){
+                //The address '@' is reserved for meta information, in case of a full search
+                if($address === '@'){
+                    $resourcesToReturn[$address] = [
+                        'address' => $resource['Address'],
+                        'relativeAddress' => '',
+                        'folder' => false,
+                        'meta' =>  $resource['Text_Content'],
+                        'lastChanged' => $resource['Last_Changed'],
+                        'version' => $resource['Version'],
+                        'size' => 0
+                    ];
+                    continue;
+                }
+
                 //Get expected local file locations
                 $resourcePath = explode('/',$address);
                 $resourceName = array_pop($resourcePath);
@@ -188,7 +204,7 @@ namespace IOFrame\Handlers{
                 //Only deal with locally existing resources - but update DB for them if they do
                 if(!is_array($resource)){
                     //Has to be either a directory or a file.
-                    if(!$isDir && !$isFile)
+                    if( (!$isDir && !$isFile) || $ignoreLocal )
                         continue;
                     $resource = [];
                     //If we are dealing with an SCSS the address is different
@@ -200,6 +216,7 @@ namespace IOFrame\Handlers{
                     $resource['Resource_Local'] = true;
                     $resource['Minified_Version'] = false;
                     $resource['Text_Content'] = null;
+                    $resource['Version'] = 1;
                     $existing[$address] = 1;
                     //Add the resource if requested
                     if($updateDBIfExists){
@@ -235,10 +252,11 @@ namespace IOFrame\Handlers{
                         $folderParams['includeChildFolders'] = true;
                     }
                     //Add all the extra resources to return
-                    $resourcesToReturn = array_merge(
-                        $resourcesToReturn,
-                        $this->getFrontendResources($moreResourcesToReturn,$type,$folderParams)
-                    );
+                    if($moreResourcesToReturn != [])
+                        $resourcesToReturn = array_merge(
+                            $resourcesToReturn,
+                            $this->getFrontendResources($moreResourcesToReturn,$type,$folderParams)
+                        );
                 }
 
                 //If the resource isn't local, just return it as is.
@@ -248,7 +266,9 @@ namespace IOFrame\Handlers{
                         'relativeAddress' => '',
                         'folder' => false,
                         'meta' =>  $resource['Text_Content'],
-                        'lastChanged' => $resource['Last_Changed']
+                        'lastChanged' => $resource['Last_Changed'],
+                        'version' => $resource['Version'],
+                        'size' => 0
                     ];
                     if($verbose)
                         echo 'Returning remote resource '.$address.' as is!'.EOL;
@@ -258,12 +278,12 @@ namespace IOFrame\Handlers{
                 $changeTime = 0;
                 //Minify or add to minified list
                 if($forceMinify && !($resource['Minified_Version'] || $isDir)){
+
                     if($minifyName){
                         if($newAddress == '')
                             array_push($resourcesToMinify,$address);
                         else
                             array_push($resourcesToMinify,$newAddress);
-
                     }
                     else{
                         if($newAddress == '')
@@ -299,7 +319,9 @@ namespace IOFrame\Handlers{
                         'relativeAddress' => substr($fullAddress,strlen($rootFolder)),
                         'folder' => $isDir,
                         'meta' =>  $resource['Text_Content'],
-                        'lastChanged' => $changeTime
+                        'lastChanged' => $changeTime,
+                        'version' => $resource['Version'],
+                        'size' => ($isDir)? 0 : @filesize($fullAddress)
                     ];
                 }
             }
@@ -320,7 +342,9 @@ namespace IOFrame\Handlers{
                         'relativeAddress' => substr($fullAddress,strlen($rootFolder)),
                         'folder' => false,
                         'meta' =>  null,
-                        'lastChanged' => $changeTime
+                        'lastChanged' => $changeTime,
+                        'version' => 1,
+                        'size' => @filesize($fullAddress)
                     ];
 
                 }
@@ -438,7 +462,10 @@ namespace IOFrame\Handlers{
                     }
                     else{
                         if(!$test){
-                            copy($rootFolder.$src, $rootFolder.$dest);
+                            if(!is_dir($rootFolder.$src))
+                                copy($rootFolder.$src, $rootFolder.$dest);
+                            else
+                                IOFrame\Util\folder_copy($rootFolder.$src, $rootFolder.$dest);
                         }
                         if($verbose)
                             echo 'Copying '.$rootFolder.$src.' to '.$rootFolder.$dest.EOL;
@@ -463,7 +490,7 @@ namespace IOFrame\Handlers{
          *          0 - All good
          */
         function deleteFrontendResourceFile(string $address, string $type, array $params = []){
-            return $this->deleteJSFiles([$address],$params)[$address];
+            return $this->deleteFrontendResourceFiles([$address],$params)[$address];
         }
 
         /** Deletes local frontend file
@@ -474,6 +501,7 @@ namespace IOFrame\Handlers{
          *          'updateDBIfNotExists' - bool, default false - will only delete DB items that do not exist locally.
          *          'local'       - bool, default false - only does the operation locally, ignoring the db
          * @returns int Code of the form:
+         *         -2 - Local failure
          *         -1 - Could not connect to db
          *          0 - All good
          */
@@ -512,11 +540,13 @@ namespace IOFrame\Handlers{
 
             //Delete the files
             foreach($needToDelete as $address=>$true){
-                if(!$test)
-                    unlink($rootFolder.$address);
                 if($verbose)
                     echo 'Deleting '.$rootFolder.$address.EOL;
+                if(!$test){
+                    is_file($rootFolder.$address)? unlink($rootFolder.$address) : IOFrame\Util\folder_delete($rootFolder.$address);
+                }
             }
+
             return 0;
         }
 
@@ -589,17 +619,21 @@ namespace IOFrame\Handlers{
 
             $minifyToFolder = isset($params['minifyToFolder'])? $params['minifyToFolder'] : '';
 
-            if($type === 'js')
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
-            else
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+            if(isset($params['rootFolder']))
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+            else{
+                if($type === 'js')
+                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
+                else
+                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+            }
 
             //Minifier
             if($type === 'js')
                 $minifier = new Minify\JS();
             else
                 $minifier = new Minify\CSS();
-
+                
             if(!$minifyName){
                 $results = [];
                 foreach($addresses as $address){
@@ -632,6 +666,9 @@ namespace IOFrame\Handlers{
                             'address' => $minifiedAddress,
                             'changeTime' => time()
                         ];
+                        if($verbose){
+                            echo 'Cannot get mutex on resource!'.EOL;
+                        }
                         $mutex->deleteMutex();
                         continue;
                     }
@@ -805,7 +842,7 @@ namespace IOFrame\Handlers{
                 $params['verbose'] : $test ? true : false;
             $includeGalleryInfo = isset($params['includeGalleryInfo'])? $params['includeGalleryInfo'] : false;
             $minifyToFolder = isset($params['minifyToFolder'])? $params['minifyToFolder'] : 'min';
-            //Else get and minify all resources
+            //Else get and minify all resources. This wont matter if names are []
             $params['getMembers'] = true;
             $results = [];
             $collections = $this->getResourceCollections($names,$type,$params);
@@ -911,6 +948,57 @@ namespace IOFrame\Handlers{
          */
         function swapFrontendResourceCollectionOrder(int $num1,int $num2, string $collection, string $type, array $params){
             return $this->swapCollectionOrder($num1, $num2, $collection, $type, $params);
+        }
+
+        /** Creates a new folder at the resource root
+         *
+         * @param string $relativeAddress  Relative address to resource root
+         * @param string $name Folder name
+         * @param string $type JS, CSS, IMG at the moment
+         * @param array $params
+         *          'rootFolder'        - string, Root folder for the local resources (relative to server root!).
+         *                                Defaults to resource settings 'jsPathLocal' and 'cssPathLocal'
+         * @returns int
+         *     -1 - creation error
+         *      0 - success
+         *      1 - folder already exists
+         *      2 - type is not valid
+         */
+        function createFolder(string $relativeAddress, string $name,  string $type,  array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+
+            if(isset($params['rootFolder']))
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+            else{
+                if($type === 'js')
+                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
+                elseif($type === 'css')
+                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+                elseif($type === 'img')
+                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('imagePathLocal');
+                else
+                    return 2;
+            }
+            if($relativeAddress !== '' && $relativeAddress[strlen($relativeAddress)-1] !== '/')
+                $relativeAddress .= '/';
+
+            $addressToCreate = $rootFolder.$relativeAddress.$name;
+            if(is_dir($addressToCreate))
+                return 1;
+
+            if($verbose)
+                echo 'Creating folder '.$addressToCreate.EOL;
+            if(!$test)
+                $folderCreation = @mkdir($addressToCreate,0777,true);
+            else
+                $folderCreation = true;
+
+            if(!$folderCreation)
+                return -1;
+
+            return 0;
         }
 
         /*------------------------------------------------ HERE BE JS ------------------------------------------------*/
@@ -1175,7 +1263,10 @@ namespace IOFrame\Handlers{
             $checkExisting = isset($params['checkExisting'])? $params['checkExisting'] : true;
             $compileToFolder = isset($params['compileToFolder'])? $params['compileToFolder'] : '';
 
-            $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+            if(isset($params['rootFolder']))
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+            else
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
 
             $resultAddress =
                 [

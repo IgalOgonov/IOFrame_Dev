@@ -2,22 +2,30 @@
 
 
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
+$IOFrameJSRoot = 'front/ioframe/js/';
+$IOFrameCSSRoot = 'front/ioframe/css/';
 
 echo 'Getting ALL js files in the root folder (and remote ones):'.EOL;
 var_dump(
-    $FrontEndResourceHandler->getJS([],['test'=>true,'verbose'=>true])
+    $FrontEndResourceHandler->getJS([],['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
 echo 'Getting existing JS files, some in the DB some not:'.EOL;
 var_dump(
-    $FrontEndResourceHandler->getJS(['config.js','fp.js','initPage.js','sec/aes.js'],['test'=>true,'verbose'=>true])
+    $FrontEndResourceHandler->getJS(
+        ['config.js','fp.js','initPage.js','sec/aes.js'],
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;
 
 echo 'Getting existing JS files and folders, none in the db:'.EOL;
 var_dump(
-    $FrontEndResourceHandler->getJS(['config.js','fp.js','initPage.js','modules'],['test'=>true,'verbose'=>true])
+    $FrontEndResourceHandler->getJS(
+        ['config.js','fp.js','initPage.js','modules'],
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;
 
@@ -29,7 +37,7 @@ var_dump(
             ['fp.js','test/fp.js'],
             ['fake.js','stillFake.js'],
         ],
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
     )
 );
 echo EOL;
@@ -42,7 +50,7 @@ var_dump(
             'crypto/md5.js',
             'fake.js',
         ],
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
     )
 );
 echo EOL;
@@ -55,7 +63,7 @@ var_dump(
             'crypto/md5.js',
             'fake.js',
         ],
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
     )
 );
 echo EOL;
@@ -66,7 +74,7 @@ var_dump(
         [
             'IOFrameCoreJS'
         ],
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
     )
 );
 echo EOL;
@@ -75,7 +83,7 @@ echo 'Compiling fake SCSS to folder'.EOL;
 var_dump(
     $FrontEndResourceHandler->compileSCSS(
         'fake.scss',
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameCSSRoot]
     )
 );
 echo EOL;
@@ -84,7 +92,7 @@ echo 'Compiling SCSS'.EOL;
 var_dump(
     $FrontEndResourceHandler->compileSCSS(
         'test.scss',
-        ['test'=>true,'verbose'=>true]
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameCSSRoot]
     )
 );
 echo EOL;
@@ -93,7 +101,7 @@ echo 'Compiling SCSS to folder'.EOL;
 var_dump(
     $FrontEndResourceHandler->compileSCSS(
         'test.scss',
-        ['test'=>true,'verbose'=>true,'compileToFolder'=>'scss']
+        ['test'=>true,'verbose'=>true,'compileToFolder'=>'scss','rootFolder'=>$IOFrameCSSRoot]
     )
 );
 echo EOL;
@@ -102,7 +110,7 @@ echo 'Getting SCSS, CSS, and a folder that contains both'.EOL;
 var_dump(
     $FrontEndResourceHandler->getCSS(
         ['test.scss','test'],
-        ['test'=>true,'verbose'=>true,'compileToFolder'=>'scss']
+        ['test'=>true,'verbose'=>true,'compileToFolder'=>'scss','rootFolder'=>$IOFrameCSSRoot]
     )
 );
 echo EOL;

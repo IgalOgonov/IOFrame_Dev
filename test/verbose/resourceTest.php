@@ -1,5 +1,8 @@
 <?php
 $ResourceHandler = new IOFrame\Handlers\ResourceHandler($settings,$defaultSettingsParams);
+$IOFrameJSRoot = 'front/ioframe/js/';
+$IOFrameCSSRoot = 'front/ioframe/css/';
+
 
 echo 'Setting resources:'.EOL;
 var_dump($ResourceHandler->setResources(
@@ -16,7 +19,7 @@ var_dump($ResourceHandler->setResources(
         ['ezAlert.js']
     ],
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -27,7 +30,7 @@ var_dump($ResourceHandler->setResources(
         ['newStuff.js',false,false,'test 1!@#@']
     ],
     'js',
-    ['test'=>true,'verbose'=>true,'override'=>false])
+    ['test'=>true,'verbose'=>true,'override'=>false,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -37,7 +40,7 @@ var_dump($ResourceHandler->setResources(
         ['fp.js',false,false,'<script>alert("hello!")</script>']
     ],
     'js',
-    ['test'=>true,'verbose'=>true,'override'=>true])
+    ['test'=>true,'verbose'=>true,'override'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -46,7 +49,7 @@ var_dump($ResourceHandler->renameResource(
     'fp.js',
     'fp2.js',
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -55,7 +58,7 @@ var_dump($ResourceHandler->renameResource(
     'nothing.js',
     'nothing2.js',
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -63,7 +66,7 @@ echo 'Deleting existing and unexisting resources:'.EOL;
 var_dump($ResourceHandler->deleteResources(
     ['nothing.js','fp.js','utils.js'],
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -71,7 +74,7 @@ echo  'Incrementing versions of existing and unexisting resources:'.EOL;
 var_dump($ResourceHandler->incrementResourcesVersions(
     ['nothing.js','fp.js','utils.js'],
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -92,6 +95,7 @@ var_dump($ResourceHandler->getResources(
         'excludeRegex'=>'mode',
         'ignoreLocal'=>false,
         'onlyLocal'=>true,
+        'rootFolder'=>$IOFrameJSRoot,
         'test'=>true,
         'verbose'=>true
     ]
@@ -110,6 +114,7 @@ var_dump($ResourceHandler->getResources(
         'excludeRegex'=>'mode',
         'ignoreLocal'=>false,
         'onlyLocal'=>true,
+        'rootFolder'=>$IOFrameJSRoot,
         'test'=>true,
         'verbose'=>true
     ]
@@ -127,7 +132,7 @@ var_dump($ResourceHandler->addResourcesToCollection(
         'utils.js','initPage.js','objects.js','fp.js','ezAlert.js'],
     'IOFrameCoreJS',
     'js',
-    ['test'=>true,'verbose'=>true])
+    ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -137,7 +142,7 @@ var_dump($ResourceHandler->addResourcesToCollection(
         'utils.js','initPage.js','objects.js','fp.js','ezAlert.js'],
     'IOFrameCoreJS',
     'js',
-    ['test'=>true,'verbose'=>true,'pushToOrder'=>true])
+    ['test'=>true,'verbose'=>true,'pushToOrder'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -147,7 +152,7 @@ var_dump($ResourceHandler->addResourcesToCollection(
         'utils.js','initPage.js','objects.js','fp.js','ezAlert.js'],
     'asfg43fgsddgsdg',
     'js',
-    ['test'=>true,'verbose'=>true,'pushToOrder'=>true])
+    ['test'=>true,'verbose'=>true,'pushToOrder'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
@@ -165,38 +170,80 @@ var_dump($ResourceHandler->removeResourcesFromCollection(
     ['test','gfsg4wtsf','utils.js','fp.js'],
     'IOFrameCoreJS',
     'js',
-    ['test'=>true,'verbose'=>true,'removeFromOrder'=>true])
+    ['test'=>true,'verbose'=>true,'removeFromOrder'=>true,'rootFolder'=>$IOFrameJSRoot])
 );
 echo EOL;
 
 echo 'Getting one resource collection:'.EOL;
-var_dump($ResourceHandler->getResourceCollection('IOFrameCoreJS','js',['getMembers'=>true,'test'=>true,'verbose'=>true]));
+var_dump(
+    $ResourceHandler->getResourceCollection(
+        'IOFrameCoreJS',
+        'js',
+        ['getMembers'=>true,'test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
+);
 echo EOL;
 
 echo 'Getting all resource collections:'.EOL;
-var_dump($ResourceHandler->getResourceCollections([],'js',['test'=>true,'verbose'=>true]));
+var_dump(
+    $ResourceHandler->getResourceCollections(
+        [],
+        'js',
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
+);
 echo EOL;
 
 echo 'Getting unexisting resource collections:'.EOL;
-var_dump($ResourceHandler->getResourceCollections(['test','gfsg4wtsf'],'js',['getMembers'=>true,'test'=>true,'verbose'=>true]));
+var_dump(
+    $ResourceHandler->getResourceCollections(
+        ['test','gfsg4wtsf'],
+        'js',
+        ['getMembers'=>true,'test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
+);
 echo EOL;
 
 echo 'Moving index 2 to 5 in an existing collection:'.EOL;
-var_dump($ResourceHandler->moveCollectionOrder( 2, 5, 'IOFrameCoreJS', 'js',['test'=>true,'verbose'=>true,'removeFromOrder'=>true])
+var_dump(
+    $ResourceHandler->moveCollectionOrder(
+        2,
+        5,
+        'IOFrameCoreJS',
+        'js',
+        ['test'=>true,'verbose'=>true,'removeFromOrder'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;
 
 echo 'Swapping indexes 2 and 5 in an existing collection:'.EOL;
-var_dump($ResourceHandler->swapCollectionOrder( 2, 5, 'IOFrameCoreJS', 'js', ['test'=>true,'verbose'=>true,'removeFromOrder'=>true])
+var_dump(
+    $ResourceHandler->swapCollectionOrder(
+        2,
+        5,
+        'IOFrameCoreJS',
+        'js',
+        ['test'=>true,'verbose'=>true,'removeFromOrder'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;
 
 echo 'Adding all members of IOFrameCoreJS to its order:'.EOL;
-var_dump($ResourceHandler->addAllToCollectionOrder('IOFrameCoreJS', 'js', ['test'=>true,'verbose'=>true])
+var_dump(
+    $ResourceHandler->addAllToCollectionOrder(
+        'IOFrameCoreJS',
+        'js',
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;
 
 echo 'Removing IOFrameCoreJS order:'.EOL;
-var_dump($ResourceHandler->removeAllFromCollectionOrder('IOFrameCoreJS', 'js', ['test'=>true,'verbose'=>true])
+var_dump(
+    $ResourceHandler->removeAllFromCollectionOrder(
+        'IOFrameCoreJS',
+        'js',
+        ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
+    )
 );
 echo EOL;

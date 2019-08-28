@@ -102,7 +102,7 @@ if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['address'])){
     exit(INPUT_VALIDATION_FAILURE);
 }
 
-if($inputs['address'][strlen($inputs['address'])-1] !== '/' && $inputs['address'] !== '')
+if($inputs['address'] !== '' && $inputs['address'][strlen($inputs['address'])-1] !== '/')
     $inputs['address'] .= '/';
 
 //Image quality

@@ -324,7 +324,10 @@ namespace IOFrame\Util{
         if( !is_dir( $dir ) )
             mkdir( $dir, 0777, true );
 
-        rename( $oldname, $newname, $context );
+        if($context !== null)
+            rename( $oldname, $newname, $context );
+        else
+            rename( $oldname, $newname );
     }
 
     /**
@@ -348,23 +351,31 @@ namespace IOFrame\Util{
      *
      * @param array $array1
      * @param array $array2
+     * @param array $params of the form:
+     *          [
+     *              'deleteOnNull' - bool, default false - will delete values instead of overwriting them if the new value is null
+     *          ]
      * @return array
      * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
      * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
      */
-    function array_merge_recursive_distinct ( array &$array1, array &$array2 )
+    function array_merge_recursive_distinct ( array &$array1, array &$array2, array $params = [] )
     {
+        $deleteOnNull = isset($params['deleteOnNull'])? $params['deleteOnNull'] : false;
         $merged = $array1;
 
         foreach ( $array2 as $key => &$value )
         {
             if ( is_array ( $value ) && isset ( $merged [$key] ) && is_array ( $merged [$key] ) )
             {
-                $merged [$key] = array_merge_recursive_distinct ( $merged [$key], $value );
+                $merged [$key] = array_merge_recursive_distinct ( $merged [$key], $value, $params );
             }
             else
             {
-                $merged [$key] = $value;
+                if(!$deleteOnNull || $value !== null)
+                    $merged [$key] = $value;
+                elseif(isset($merged [$key]))
+                    unset($merged [$key]);
             }
         }
 

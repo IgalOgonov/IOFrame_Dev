@@ -97,7 +97,12 @@ namespace IOFrame\Handlers{
          *      [
          *       <Address> =>   <Array of DB info> | <int 1 if specific resource doesnt exist or fails the filter checks>,
          *      ...
-         *      ]
+         *      ],
+         *
+         *      on full search, the array will include the item '@' of the form:
+         *      {
+         *          '#':<number of total results>
+         *      }
          */
         function getResources(array $addresses = [], string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -110,8 +115,8 @@ namespace IOFrame\Handlers{
             $changedBefore = isset($params['changedBefore'])? $params['changedBefore'] : null;
             $includeRegex = isset($params['includeRegex'])? $params['includeRegex'] : null;
             $excludeRegex = isset($params['excludeRegex'])? $params['excludeRegex'] : null;
-            $ignoreLocal = isset($params['ignoreLocal'])? $params['ignoreLocal'] : false;
-            $onlyLocal = isset($params['onlyLocal'])? $params['onlyLocal'] : false;
+            $ignoreLocal = isset($params['ignoreLocal'])? $params['ignoreLocal'] : null;
+            $onlyLocal = isset($params['onlyLocal'])? $params['onlyLocal'] : null;
             $orderBy = isset($params['orderBy'])? $params['orderBy'] : null;
             $orderType = isset($params['orderType'])? $params['orderType'] : null;
             $limit = isset($params['limit'])? $params['limit'] : null;
@@ -169,12 +174,12 @@ namespace IOFrame\Handlers{
                 array_push($extraDBConditions,['Address',[$excludeRegex,'STRING'],'NOT RLIKE']);
             }
             //ignoreLocal and onlyLocal are connected
-            if($onlyLocal!== false){
+            if($onlyLocal == true){
                 $cond = ['Resource_Local',1,'='];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
             }
-            elseif($ignoreLocal!== false){
+            elseif($ignoreLocal == true){
                 $cond = ['Resource_Local',0,'='];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
@@ -197,6 +202,12 @@ namespace IOFrame\Handlers{
                     [],
                     $retrieveParams
                 );
+                $count = $this->SQLHandler->selectFromTable(
+                    $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                    $extraDBConditions,
+                    ['COUNT(*)'],
+                    array_merge($retrieveParams,['limit'=>0])
+                );
                 if($res){
                     $resCount = count($res[0]);
                     foreach($res as $resultArray){
@@ -207,6 +218,7 @@ namespace IOFrame\Handlers{
                                 $resultArray['Text_Content'] = IOFrame\Util\safeStr2Str($resultArray['Text_Content']);
                         $results[$resultArray['Address']] = $resultArray;
                     }
+                    $results['@'] = array('#' => $count[0][0]);
                 }
                 return ($res)? $results : [];
             }
@@ -366,10 +378,12 @@ namespace IOFrame\Handlers{
                             $inputJSON = json_decode($inputs[$index][3],true);
                             $existingJSON = json_decode($existing[$addressMap[$index]]['Text_Content'],true);
                             $inputs[$index][3] =
-                                json_encode(IOFrame\Util\array_merge_recursive_distinct($existingJSON,$inputJSON));
+                                json_encode(IOFrame\Util\array_merge_recursive_distinct($existingJSON,$inputJSON,['deleteOnNull'=>true]));
+                            if($inputs[$index][3] == '[]')
+                                $inputs[$index][3] = null;
                         }
                         //Here we convert back to safeString
-                        if($safeStr)
+                        if($safeStr && $inputs[$index][3] !== null)
                             $inputs[$index][3] = IOFrame\Util\str2SafeStr($inputs[$index][3]);
                     }
                     //blob
@@ -688,8 +702,57 @@ namespace IOFrame\Handlers{
             return 0;
         }
 
+        /** Returns all collections a resource belongs to. Is quite expensive, should not be used often.
+         *
+         * @param string $address Name of the resource collection
+         * @param string $type
+         * @param array $params
+         *
+         * @returns Int|Array
+     *           Possible codes:
+         *          -1 Could not connect to db.
+         *       Else returns array of the form:
+         *          [<collection name 1>, <collection name 2>, ...]
+         *
+         */
+        function getCollectionsOfResource(string $address , string $type, array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+
+            $res = $this->SQLHandler->selectFromTable(
+                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS_MEMBERS',
+                [
+                    [
+                        'Address',
+                        [$address,'STRING'],
+                        '='
+                    ],
+                    [
+                        'Resource_Type',
+                        [$type,'STRING'],
+                        '='
+                    ],
+                    'AND'
+                ],
+                ['Collection_Name'],
+                ['DISTINCT'=>true,'test'=>$test,'verbose'=>$verbose]
+            );
+
+            if($res === false)
+                return -1;
+            else{
+                $collections = [];
+                for($i=0; $i<count($res); $i++){
+                    array_push($collections,$res[$i][0]);
+                };
+                return $collections;
+            }
+        }
+
         /** Gets a single resource collection. Gets all its members, and returns it in-order if an order exists.
          * @param string $name Name of the resource collection
+         * @param string $type
          * @param array $params of the form:
          *          'getMembers' - bool, default false - will also get ALL of the members of the resource collections.
          *                         When this is true, all of the getResources() parameters except 'type' are valid.
@@ -714,6 +777,7 @@ namespace IOFrame\Handlers{
 
         /* Gets resource collections. Does not return members by default.
          * @param array $names Defaults to []. If empty, will get all collections but without members.
+         * @param string $type
          * @param array $params of the form:
          *          'getMembers' - bool, default false - will also get ALL of the members of the resource collections.
          *                         When this is true, all of the getResources() parameters except 'type' are valid.
@@ -722,6 +786,10 @@ namespace IOFrame\Handlers{
          *       <Collection Name> => Int|Array described in getResourceCollection(),
          *      ...
          *  ]
+         *      on full search, the array will include the item '@' of the form:
+         *      {
+         *          '#':<number of total results>
+         *      }
          * */
         function getResourceCollections(array $names = [], string $type, array $params){
 
@@ -737,33 +805,91 @@ namespace IOFrame\Handlers{
                 if($verbose)
                     echo 'Only returning all resource collection info!'.EOL;
 
-                $res = $this->getFromCacheOrDB(
+
+                $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
+                $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
+                $changedAfter = isset($params['changedAfter'])? $params['changedAfter'] : null;
+                $changedBefore = isset($params['changedBefore'])? $params['changedBefore'] : null;
+                $includeRegex = isset($params['includeRegex'])? $params['includeRegex'] : null;
+                $excludeRegex = isset($params['excludeRegex'])? $params['excludeRegex'] : null;
+                $orderBy = isset($params['orderBy'])? $params['orderBy'] : null;
+                $orderType = isset($params['orderType'])? $params['orderType'] : null;
+                $limit = isset($params['limit'])? $params['limit'] : null;
+                $offset = isset($params['offset'])? $params['offset'] : null;
+
+                $dbConditions = [['Resource_Type',[$type,'STRING'],'=']];
+
+                $retrieveParams = $params;
+                $retrieveParams['orderBy'] = $orderBy? $orderBy : null;
+                $retrieveParams['orderType'] = $orderType? $orderType : 0;
+                $retrieveParams['limit'] =  $limit? $limit : null;
+                $retrieveParams['offset'] =  $offset? $offset : null;
+
+                if($createdAfter!== null){
+                    $cond = ['Created',$createdAfter,'>'];
+                    array_push($dbConditions,$cond);
+                }
+
+                if($createdBefore!== null){
+                    $cond = ['Created',$createdBefore,'<'];
+                    array_push($dbConditions,$cond);
+                }
+
+                if($changedAfter!== null){
+                    $cond = ['Last_Changed',$changedAfter,'>'];
+                    array_push($dbConditions,$cond);
+                }
+
+                if($changedBefore!== null){
+                    $cond = ['Last_Changed',$changedBefore,'<'];
+                    array_push($dbConditions,$cond);
+                }
+
+                if($includeRegex!== null){
+                    array_push($dbConditions,['Collection_Name',[$includeRegex,'STRING'],'RLIKE']);
+                }
+
+                if($excludeRegex!== null){
+                    array_push($dbConditions,['Collection_Name',[$excludeRegex,'STRING'],'NOT RLIKE']);
+                }
+
+                if($dbConditions!=[]){
+                    array_push($dbConditions,'AND');
+                }
+
+                $res = $this->SQLHandler->selectFromTable(
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                    $dbConditions,
                     [],
-                    'Collection_Name',
-                    'RESOURCE_COLLECTIONS',
-                    $type.'_'.$this->resourceCollectionCacheName,
-                    [],
-                    array_merge(
-                        $params,
-                        ['columnConditions' => [['Resource_Type',$type,'=']] ]
-                    )
+                    $retrieveParams
+                );
+
+                $count = $this->SQLHandler->selectFromTable(
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                    $dbConditions,
+                    ['COUNT(*)'],
+                    array_merge($retrieveParams,['limit'=>0])
                 );
 
                 $results = [];
 
-                if($res === []){
+                if(!$res || $res === []){
                     if($verbose)
                         echo 'Failed to connect to db or no results found!'.EOL;
-                    return $res;
+                    return [];
                 }
-                else
-                    foreach($res as $name=>$array){
+                else{
+                    foreach($res as $array){
+                        $name = $array['Collection_Name'];
+                        unset($array['Collection_Name']);
                         if($safeStr && $array['Meta'] !== null)
                             $array['Meta'] = IOFrame\Util\safeStr2Str($array['Meta']);
                         $results[$name] = [
                             '@' => $array
                         ];
                     };
+                    $results['@'] = array('#' => $count[0][0]);
+                }
 
                 return $results;
             }

@@ -667,7 +667,8 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['GALLERY_GET_ALL_AUTH',\IOFrame\Util\str2SafeStr('Allows getting all galleries (and each individual one)')],
                 ['GALLERY_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery creation')],
                 ['GALLERY_UPDATE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery updating - includes adding/removing media to/from gallery')],
-                ['GALLERY_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery deletion')]
+                ['GALLERY_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery deletion')],
+                ['MEDIA_FOLDER_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allows creating media folders')]
             ];
 
             foreach($assignments as $k=>$v){
@@ -997,6 +998,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($pageArgs,["pwdReset",'']);
             array_push($pageArgs,["mailReset",'']);
             array_push($pageArgs,["regConfirm",'']);
+            array_push($pageArgs,["registrationPage",'']);
             array_push($pageArgs,["homepage",'front/ioframe/pages/welcome']);
 
             array_push($resourceArgs,["imagePathLocal",'front/ioframe/img/']);

@@ -19,7 +19,7 @@ foreach($inputs['items'] as $uploadName => $item){
 $result = $UploadHandler->handleUploadedImage(
     $uploadNames,
     [
-        'test'=>false,
+        'test'=>$test,
         'verbose'=>$test,
         'overwrite'=>$inputs['overwrite'] && !$test,
         'imageQualityPercentage'=>$inputs['imageQualityPercentage'],
@@ -67,7 +67,7 @@ foreach($result as $uploadName => $res){
                 $meta['name'] = $name;
             if($caption)
                 $meta['caption'] = $caption;
-            $meta = [json_encode($meta),'STRING'];
+            $meta = json_encode($meta);
         }
             else
                 $meta = null;
@@ -121,7 +121,6 @@ foreach($updateDB as $DBName => $resultCode){
 
 //Update the gallery if requested
 if($imagesToAddToGallery != []){
-
     $updateDB =  $FrontEndResourceHandler->addImagesToGallery(
         $imagesToAddToGallery,
         $inputs['gallery'],
@@ -129,7 +128,7 @@ if($imagesToAddToGallery != []){
     );
 
     foreach($updateDB as $DBName => $resultCode){
-        if($resultCode === 0 ){
+        if($resultCode === 0 || $test){
             //If this is a test, always delete
             if(!$test)
                 unset($deleteLocalFiles[$dbToUploadMap[$DBName]]);
@@ -141,6 +140,10 @@ if($imagesToAddToGallery != []){
 }
 
 //Delete files that we still need to delete
-foreach($deleteLocalFiles as $uploadName => $addr)
-    unlink($addr);
+foreach($deleteLocalFiles as $uploadName => $addr){
+    if(!$test)
+        unlink($addr);
+    else
+        echo 'Deleting file at '.$addr.EOL;
+}
 

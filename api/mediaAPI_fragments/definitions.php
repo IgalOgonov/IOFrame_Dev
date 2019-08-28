@@ -31,14 +31,18 @@ CONST GALLERY_CREATE_AUTH = 'GALLERY_CREATE_AUTH';
 CONST GALLERY_UPDATE_AUTH = 'GALLERY_UPDATE_AUTH';
 //Allow unlimited gallery deletion
 CONST GALLERY_DELETE_AUTH = 'GALLERY_DELETE_AUTH';
+//Allow image upload
+CONST MEDIA_FOLDER_CREATE_AUTH = 'MEDIA_FOLDER_CREATE_AUTH';
 
 /* Validation */
+//Allowed Regex filter regex
+CONST REGEX_REGEX = '^[\w\.\-\_ ]{1,128}$';
 //Regex to validate gallery name
-CONST GALLERY_REGEX = '^[\w| ]{1,128}$';
+CONST GALLERY_REGEX = '^[\w ]{1,128}$';
 //Regex to validate upload name
-CONST UPLOAD_NAME_REGEX = '^[\w| ]{1,64}$';
+CONST UPLOAD_NAME_REGEX = '^[\w ]{1,64}$';
 //Regex to validate upload name
-CONST UPLOAD_FILENAME_REGEX = '^[\w| ]{1,128}$';
+CONST UPLOAD_FILENAME_REGEX = '^[\w\_\-\. ]{1,128}$';
 //Maximum length for image alt
 CONST IMAGE_ALT_MAX_LENGTH = 128;
 //RMaximum length for image name
@@ -48,7 +52,7 @@ CONST IMAGE_CAPTION_MAX_LENGTH = 1024;
 //RMaximum length for gallery name
 CONST GALLERY_NAME_MAX_LENGTH = 128;
 //Regex to validate upload name
-CONST ALLOWED_EXTENSIONS = ['jpg','jpeg','png','gif','bmp'];
+CONST ALLOWED_EXTENSIONS = ['jpg','jpeg','png','gif','bmp','svg'];
 
 
 

@@ -20,8 +20,8 @@
  *              ]
  *              items can also be left unset - then, all posted files that are images will be saved with random names.
  *              NOTE: images posted but not specified in "items" will NOT be uploaded.
- *        address : string, path to upload the images, RELATIVE TO IMAGE FOLDER ROOT
- *        imageQualityPercentage : int, default 100, self explanatory
+ *        address : string, default '' - path to upload the images, RELATIVE TO IMAGE FOLDER ROOT
+ *        imageQualityPercentage : int, default 100 - self explanatory
  *        gallery : string, default '' - if set, all uploaded images will be added to this gallery.
  *        overwrite : bool, default false - whether allow overwriting of specific images (relevant if filenames are set)
  *        (also posted, but caught by $_FILES) <upload name 1>
@@ -54,10 +54,24 @@
  *      - Gets ALL available images/folders at an address (defaults to root image folder).
  *        address: string, default '' - if not empty, will return images at the folder specified by address, RELATIVE to image root.
  *                                  The default root image folder is <SERVER_ROOT>.'/front/ioframe/img'.
+ *        getAll: bool, default false - if the address is empty, and this is true, will get ALL available media, not the root folder.
+ *        The following are usable only if getAll is true:
+ *          includeLocal: bool, default false - If this is true, will get ALL the local images IN ADDITION to remote ones.
+ *                                              Those images will be displayed IN ADDITION to the remote limit.
+ *          limit: int, default 50, max 500, min 1 - when getAll is true, you may limit the number of items you get
+ *          offset: int, default 0 - used for pagination purposes with limit
+ *          createdAfter      - int, default null - Only return items created after this date.
+ *          createdBefore     - int, default null - Only return items created before this date.
+ *          changedAfter      - int, default null - Only return items last changed after this date.
+ *          changedBefore     - int, default null - Only return items last changed  before this date.
+ *          includeRegex      - string, default null - A  regex string that addresses need to match in order
+ *                              to be included in the result. Allowed characters are only numbers, letters, dot and whitespace.
+ *          excludeRegex      - string, default null - A  regex string that addresses need to match in order
+ *                                to be excluded from the result. Allowed characters are only numbers, letters, dot and whitespace.
  *
  *        Examples: action=getImages
- *                  action=getImages&addresses=docs
  *                  action=getImages&address=docs/installScreenshots
+ *                  action=getImages&getAll=1&limit=20&offset=40&createdAfter=0&createdBefore=999999999999&changedAfter=0&changedBefore=999999999999&includeRegex=test
  *
  *      Returns json Array of the form:
  *      [
@@ -77,6 +91,10 @@
  *          the identifier is "test folder/test.js" (always 'address'.'name').
  *          What keeps different files in similar addresses unique is the file extension.
  *          Also, local resources that do not actually exist will be ignored.
+ *
+ *          * On getAll, will also return an item with the key @, containing meta information about the query.
+ *            As of writing it it only contains the child '#', which holds the number of query results if there
+ *            was no limit.
  *_________________________________________________
  * updateImage
  *      - Updates meta information about the image
@@ -84,6 +102,7 @@
  *        name:  string, default '' - new name for the image
  *        alt:  string, default '' - alt tag for the image
  *        caption : string, default '' - image caption
+ *        deleteEmpty : bool, default false - parameters that are unset will be deleted instead
  *        Examples: action=updateImage&address=docs/installScreenshots/1.png&name=Amazing Image&alt=A great picture
  *                  action=updateImage&address=docs/installScreenshots/1.png&name=Less Amazing Image
  *                  action=updateImage&address=docs/installScreenshots/1.png&alt=Google, Index this
@@ -97,6 +116,7 @@
  *      - Moves an image from one Address to another (can be used to rename it too)
  *        oldAddress:  string, old Address of the image
  *        newAddress:  string, new Address of the image
+ *        copy: bool, default false - whether to copy the image
  *
  *        Examples:
  *          action=moveImage&oldAddress=docs/installScreenshots/1.png&newAddress=docs/installScreenshots/potato.png
@@ -131,10 +151,32 @@
  *              0 - success
  *      *note - DOES NOT TELL YOU if a resource does not exist locally
  *_________________________________________________
+ * getImageGalleries
+ *      - Gets all the galleries an image belongs to
+ *        address:  Address of the image.
+ *
+ *        Examples: action=getImageGalleries&address=docs/installScreenshots
+ *
+ *        Returns integer code OR Array:
+ *             -1 - failed to connect to DB (this causes local files to be deleted)
+ *             [<collection name 1>, <collection name 2>, ...]
+ *      *note - DOES NOT TELL YOU if a resource does not exist - will return an empty array instead
+ *_________________________________________________
  * getGalleries
- *      - Gets all image galleries availible - but only meta information, not members!.
+ *      - Gets all image galleries available - but only meta information, not members!
+ *          limit: int, default 50, max 500, min 1 - when getAll is true, you may limit the number of items you get
+ *          offset: int, default 0 - used for pagination purposes with limit
+ *          createdAfter      - int, default null - Only return items created after this date.
+ *          createdBefore     - int, default null - Only return items created before this date.
+ *          changedAfter      - int, default null - Only return items last changed after this date.
+ *          changedBefore     - int, default null - Only return items last changed  before this date.
+ *          includeRegex      - string, default null - A  regex string that addresses need to match in order
+ *                              to be included in the result. Allowed characters are only numbers, letters, dot and whitespace.
+ *          excludeRegex      - string, default null - A  regex string that addresses need to match in order
+ *                                to be excluded from the result. Allowed characters are only numbers, letters, dot and whitespace.
  *
  *        Examples: action=getGalleries
+ *                  action=getGalleries&limit=1&offset=40&createdAfter=0&createdBefore=999999999999&changedAfter=0&changedBefore=999999999999&includeRegex=test
  *
  *      Returns json Array of the form:
  *      [
@@ -145,7 +187,11 @@
  *                                              [OPTIONAL]'name' => string, default '' - "pretty" name for a gallery
  *                        ],
  *      ...
+ *      '@' => {
+ *              '#' => <Number of matching results if there was no limit>
+ *              }
  *      ]
+ *
  *_________________________________________________
  * getGallery
  *      - Gets image gallery by name.
@@ -156,7 +202,7 @@
  *      Returns
  *      EITHER a json Array of the form:
  *      [
- *      '@' >                       <Gallery info like in getGalleries>
+ *      '@' =>                       <Gallery info like in getGalleries>
  *       <First Child Address> =>   <Image info like in getImages>,
  *       <Second Child Address> =>   [
  *                                     ...
@@ -257,6 +303,21 @@
  *                  1 - Indexes do not exist in order
  *                  2 - Collection does not exist
  *_________________________________________________
+ * createFolder
+ *      - Creates a new folder
+ *        relativeAddress: String, default '' - where the folder is to be created
+ *        name: String, default 'New Folder' - name of the new folder
+ *
+ *        Examples:
+ *          action=createFolder&name=test
+ *          action=createFolder&relativeAddress=test&name=test2
+ *
+ *        Returns integer code:
+ *                  -1 - Could not connect to DB
+ *                  0 - All good
+ *                  1 - Indexes do not exist in order
+ *                  2 - Collection does not exist
+ *_________________________________________________
  *
  * */
 
@@ -300,8 +361,8 @@ switch($action){
         break;
 
     case 'getImages':
-        $arrExpected =["address"];
-
+        $arrExpected =["address","limit","offset","createdAfter","createdBefore","changedAfter","changedBefore",
+            "includeRegex","excludeRegex","includeLocal","getAll"];
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getImages_checks.php';
         require 'mediaAPI_fragments/getImages_execution.php';
@@ -317,7 +378,7 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["address","name","alt"];
+        $arrExpected =["address","name","caption","alt","deleteEmpty"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/updateImage_checks.php';
@@ -369,8 +430,26 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'getImageGalleries':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected =["address"];
+
+        require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/getImageGalleries_checks.php';
+        require 'mediaAPI_fragments/getImageGalleries_execution.php';
+
+        if(is_array($result))
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+        else
+            echo ($result === 0)?
+                '0' : $result;
+        break;
+
     case 'getGalleries':
-        $arrExpected =[];
+        $arrExpected =["limit","offset","createdAfter","createdBefore","changedAfter","changedBefore",
+            "includeRegex","excludeRegex","includeLocal","getAll"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getGalleries_checks.php';
@@ -470,7 +549,6 @@ switch($action){
             '0' : $result;
         break;
 
-
     case 'swapImagesInGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -480,6 +558,20 @@ switch($action){
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/swapImagesInGallery_checks.php';
         require 'mediaAPI_fragments/swapImagesInGallery_execution.php';
+
+        echo ($result === 0)?
+            '0' : $result;
+        break;
+
+    case 'createFolder':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected =["relativeAddress","name",];
+
+        require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/createFolder_checks.php';
+        require 'mediaAPI_fragments/createFolder_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
