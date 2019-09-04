@@ -123,7 +123,7 @@ Go to the folder you cloned IOFrame to, and run
     chmod 777 IOFrame (Or whichever name you cloned it under)
     
 There are probably safer ways to make it work, but this is the fastest, and a threat model where an attacker who compromises your linux VM / Server compromises the whole system is not irrational.  
-If you do know a safer solution for Linux, feel free to contact me.
+Alternatively, you can change ownership of the folder to the PHP user. A simple guide/answer on how to do it can be found [here](https://stackoverflow.com/questions/2900690/how-do-i-give-php-write-access-to-a-directory#2900727)
 
 **Apache**  
 In order for the routing to work, the following must be true:  
