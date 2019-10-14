@@ -151,6 +151,12 @@ echo '<section :class="{open:mediaResourceTest, closed:!mediaResourceTest}">';
 require 'test/verbose/mediaResourceTest.php';
 echo '</section>';
 
+echo '<h1>'.'Contacts test'.'</h1>';
+echo '<button @click = "contactsTest = !contactsTest">Toggle Visibility</button>';
+echo '<section :class="{open:contactsTest, closed:!contactsTest}">';
+require 'test/verbose/contactsTest.php';
+echo '</section>';
+
 echo '<h1>'.'General sandbox'.'</h1>';
 echo '<button @click = "generalSandbox = !generalSandbox">Toggle Visibility</button>';
 echo '<section :class="{open:generalSandbox, closed:!generalSandbox}">';
@@ -219,6 +225,7 @@ echo '<script>
         resourceTest: false,
         frontEndResourceTest: false,
         mediaResourceTest: false,
+        contactsTest: false,
         generalSandbox: false,
         SQLSandbox: false,
         cryptoSandbox: false,

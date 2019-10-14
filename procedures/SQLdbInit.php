@@ -202,6 +202,81 @@ namespace IOFrame{
                 $res = false;
             }
 
+            // INITIALIZE CONTACT CARD Table
+            /* This table is meant to save contact cards. While those cards might be tied to users, they dont have to be.
+             * There will most likely be no default API for it, as each system usually handles contacts differently.
+             * Identifier - can be anything from user email, to username, to a random hash generated on creation.
+             * First_Name - Self explanatory.
+             * Last_Name - Self explanatory.
+             * Email -  Self explanatory.
+             * Phone -  Self explanatory - should contain country code, too.
+             * Fax -  Self explanatory - should contain country code, too.
+             * Contact_Info - Extra unindexed contact info.
+             * Country -  Self explanatory.
+             * State -  Self explanatory.
+             * City - Self explanatory.
+             * Street -  Self explanatory.
+             * Zip_Code -  Self explanatory.
+             * Address - Extra unindexed address info.
+             * Company_Name -  Self explanatory.
+             * Company_ID -  Self explanatory.
+             * Extra_Info - Any extra info - wont be indexed.
+             * Created_on - Date the card was created on, Timestamp
+             * Last_Updated - Date when was last updated on, Timestamp
+             */
+            $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."CONTACTS (
+                                                              Contact_Type varchar(64),
+                                                              Identifier varchar(256),
+                                                              First_Name varchar (64),
+                                                              Last_Name varchar (64),
+                                                              Email varchar (256),
+                                                              Phone varchar (32),
+                                                              Fax varchar (32),
+                                                              Contact_Info TEXT,
+                                                              Country varchar (64),
+                                                              State varchar (64),
+                                                              City varchar (64),
+                                                              Street varchar (64),
+                                                              Zip_Code varchar (14),
+                                                              Address TEXT,
+                                                              Company_Name varchar (256),
+                                                              Company_ID varchar (64),
+                                                              Extra_Info TEXT,
+                                                              Created_On varchar(14) NOT NULL,
+                                                              Last_Updated varchar(14) NOT NULL,
+    														  PRIMARY KEY(Contact_Type,Identifier)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
+            //Indexes
+            $makeIndex1 = $conn->prepare("CREATE INDEX IF NOT EXISTS Contact_Name ON ".$prefix.
+                "CONTACTS (First_Name,Last_Name);");
+            $makeIndex2 = $conn->prepare("CREATE INDEX IF NOT EXISTS Email ON ".$prefix.
+                "CONTACTS (Email);");
+            $makeIndex3 = $conn->prepare("CREATE INDEX IF NOT EXISTS Country ON ".$prefix.
+                "CONTACTS (Country);");
+            $makeIndex4 = $conn->prepare("CREATE INDEX IF NOT EXISTS City ON ".$prefix.
+                "CONTACTS (City);");
+            $makeIndex5 = $conn->prepare("CREATE INDEX IF NOT EXISTS Company ON ".$prefix.
+                "CONTACTS (Company_Name,Company_ID);");
+            $makeIndex6 = $conn->prepare("CREATE INDEX IF NOT EXISTS Created_On ON ".$prefix.
+                "CONTACTS (Created_On);");
+            $makeIndex7 = $conn->prepare("CREATE INDEX IF NOT EXISTS Last_Updated ON ".$prefix.
+                "CONTACTS (Last_Updated);");
+            try{
+                $makeTB->execute();
+                $makeIndex1->execute();
+                $makeIndex2->execute();
+                $makeIndex3->execute();
+                $makeIndex4->execute();
+                $makeIndex5->execute();
+                $makeIndex6->execute();
+                $makeIndex7->execute();
+                echo "CONTACTS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "CONTACTS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
 
             // INITIALIZE USERS AUTH TABLE
             /*THIS IS AN AUTH TABLE- it is responsible for authorization.

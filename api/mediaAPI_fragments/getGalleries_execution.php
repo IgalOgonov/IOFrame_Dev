@@ -9,9 +9,9 @@ $requestParams = ['test'=>$test];
 //Handle pagination, filters, etc..
 $requestParams['limit'] = min($inputs['limit'],500);
 if($inputs['offset'] !== null)
-    $requestParams['offset'] = $inputs['limit'];
+    $requestParams['offset'] = $inputs['offset'];
 if($inputs['createdAfter'] !== null)
-    $requestParams['cratedAfter'] = $inputs['cratedAfter'];
+    $requestParams['createdAfter'] = $inputs['createdAfter'];
 if($inputs['createdBefore'] !== null)
     $requestParams['createdBefore'] = $inputs['createdBefore'];
 if($inputs['changedAfter'] !== null)

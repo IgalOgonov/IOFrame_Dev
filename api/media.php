@@ -341,6 +341,9 @@ if($test)
 //Handle inputs
 $inputs = [];
 
+//Standard pagination inputs
+$standardPaginationInputs = ['limit','offset','createdAfter','createdBefore','changedAfter','changedBefore','includeRegex','excludeRegex'];
+
 switch($action){
 
     case 'uploadImages':
@@ -361,8 +364,8 @@ switch($action){
         break;
 
     case 'getImages':
-        $arrExpected =["address","limit","offset","createdAfter","createdBefore","changedAfter","changedBefore",
-            "includeRegex","excludeRegex","includeLocal","getAll"];
+        $arrExpected =["address","includeLocal","getAll"];
+        $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getImages_checks.php';
         require 'mediaAPI_fragments/getImages_execution.php';
@@ -448,8 +451,8 @@ switch($action){
         break;
 
     case 'getGalleries':
-        $arrExpected =["limit","offset","createdAfter","createdBefore","changedAfter","changedBefore",
-            "includeRegex","excludeRegex","includeLocal","getAll"];
+        $arrExpected =["limit","includeLocal","getAll"];
+        $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getGalleries_checks.php';

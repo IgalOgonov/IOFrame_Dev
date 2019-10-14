@@ -65,7 +65,8 @@ namespace IOFrame\Handlers{
          *                                and returns the url of the newly minified resource.
          *          'minifyToFolder'    - string, default '' - If set, will place all minified js files into a subfolder
          *                                named after this setting.
-         *                                If minifyName isn't set, offset is relative to each file (or folder).
+         *                                If minifyName isn't set, offset is relative to each file (or folder) UNLESS
+         *                                the value starts with '/'.
          *                                Else, offset is relative to the JS root set in settings.
          *          'scss'              - bool, default true - whether to compile scss to css on the fly.
          *
@@ -650,13 +651,22 @@ namespace IOFrame\Handlers{
                     $minifiedAddress = $resourcePath.'/'.$resourceMinifiedName;
                     //Minify into a folder if asked
                     if($minifyToFolder!=''){
-                        if(!is_dir($resourcePath.'/'.$minifyToFolder)){
-                            if(!$test)
-                                mkdir($resourcePath.'/'.$minifyToFolder);
-                            if($verbose)
-                                echo 'Creating folder '.$resourcePath.'/'.$minifyToFolder.'/'.EOL;
+
+                        if($minifyToFolder[0] === '/'){
+                            $minifyToFolder = substr($minifyToFolder,1);
+                            $minifiedFolderPath = $rootFolder.$minifyToFolder;
+                            $minifiedAddress = $minifiedFolderPath.'/'.$resourceMinifiedName;
                         }
-                        $minifiedAddress = $resourcePath.'/'.$resourceMinifiedName;
+                        else{
+                            $minifiedFolderPath = $resourcePath.'/'.$minifyToFolder;
+                        }
+
+                        if(!is_dir($minifiedFolderPath)){
+                            if(!$test)
+                                mkdir($minifiedFolderPath);
+                            if($verbose)
+                                echo 'Creating folder '.$minifiedFolderPath.'/'.EOL;
+                        }
                     }
 
                     //If a mutex already exists, or we cannot make one, return
@@ -1246,6 +1256,7 @@ namespace IOFrame\Handlers{
          *                            file, if one exists.
          *          'compileToFolder' - string, default '' - If set, will place all compiled css files into a subfolder
          *                             named after this param.
+         *                             If it starts with '/', will be relative to root folder.
          *
          * @return array
          * of the form
@@ -1287,13 +1298,21 @@ namespace IOFrame\Handlers{
             if(!$compileToFolder)
                 $exportFolder = $importFolder;
             else{
-                if(!is_dir($importFolder.$compileToFolder)){
-                    if(!$test)
-                        mkdir($importFolder.$compileToFolder);
-                    if($verbose)
-                        echo 'Creating directory '.$importFolder.$compileToFolder.EOL;
+
+                if($compileToFolder[0] === '/'){
+                    $compileToFolder = substr($compileToFolder,1);
+                    $exportFolder = $rootFolder.$compileToFolder;
                 }
-                $exportFolder = $importFolder.$compileToFolder;
+                else{
+                    $exportFolder = $importFolder.$compileToFolder;
+                }
+
+                if(!is_dir($exportFolder)){
+                    if(!$test)
+                        mkdir($exportFolder);
+                    if($verbose)
+                        echo 'Creating directory '.$exportFolder.EOL;
+                }
             }
             if($exportFolder[-1] === '/' )
                 $exportFolder = substr($exportFolder,0,-1);
@@ -1305,7 +1324,7 @@ namespace IOFrame\Handlers{
             $newName = implode('.',$newName);
 
             // Extract the relative path
-            $newPath = $resourcePath;
+            $newPath = explode('/',substr($exportFolder,strlen($rootFolder)));
             array_pop($newPath);
             $newPath = implode('/',$newPath);
             if(count($resourcePath)>1)

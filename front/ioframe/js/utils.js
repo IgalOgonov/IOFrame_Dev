@@ -361,3 +361,66 @@ function getLuminance(R,G,B, percieved = true, percentage = true){
     const luminance = Math.sqrt(coefficientR*Math.pow(R,2) + coefficientG*Math.pow(G,2) + coefficientB*Math.pow(B,2));
     return (luminance / divider);
 }
+
+/** Returns a the size of something, in B/KB/MB/GB/TB, given the size in bites
+ * */
+function getReadableSize(bytes){
+    let magnitude = 0;
+    while(bytes > 1000 && magnitude < 5){
+        bytes = bytes/1000;
+        magnitude++;
+    }
+    let suffix;
+    switch (magnitude){
+        case 1:
+            suffix = 'KB';
+            break;
+        case 2:
+            suffix = 'MB';
+            break;
+        case 3:
+            suffix = 'GB';
+            break;
+        case 4:
+            suffix = 'TB';
+            break;
+        default:
+            suffix = 'B';
+    }
+    return Math.round(bytes)+suffix;
+}
+
+/* Gets current time - in regard to server offset */
+function getCurrentDate(){
+    const offset = document.serverTimeDelta*1000;
+    const currentTime = Date.now()+offset;
+    return new Date(+currentTime);
+}
+
+/* Given the (shitty) standard DD-MM-YYYY, returns the unix timestamp */
+function dateToTimestamp(date){
+    date= date.split("-");
+    var newDate =date[0]+","+date[1]+","+date[2];
+    return new Date(newDate).getTime();
+}
+
+/* Given the unix timestamp, returns the (shitty) standard DD-MM-YYYY */
+function timestampToDate(timestamp){
+    //Default date handling in JS is horrible
+    let date = new Date(+timestamp);
+
+    let realDate = date.getFullYear() + '-';
+
+    let month =  date.getMonth()+1;
+    if(month<10)
+        month = '0'+month;
+    realDate += month+'-';
+
+    date = date.getDate();
+    if(date<10)
+        date = '0'+date;
+    realDate += date;
+
+    return realDate;
+}
+

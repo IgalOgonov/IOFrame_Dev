@@ -12,7 +12,7 @@ if($inputs['getAll']){
     if($inputs['offset'] !== null)
         $requestParams['offset'] = $inputs['limit'];
     if($inputs['createdAfter'] !== null)
-        $requestParams['cratedAfter'] = $inputs['cratedAfter'];
+        $requestParams['createdAfter'] = $inputs['createdAfter'];
     if($inputs['createdBefore'] !== null)
         $requestParams['createdBefore'] = $inputs['createdBefore'];
     if($inputs['changedAfter'] !== null)

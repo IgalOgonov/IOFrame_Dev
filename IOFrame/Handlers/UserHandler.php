@@ -859,7 +859,7 @@ namespace IOFrame\Handlers{
                     if(!$sesOnly)
                         $this->SQLHandler->exeQueryBindParam($query,$params);
                 }
-                if ($verbose)
+                if ($verbose && isset($query))
                     echo 'Executing query '.$query.EOL;
 
                 //Will log out user with a specific session ID remotely - but also the current user!
@@ -1075,7 +1075,7 @@ namespace IOFrame\Handlers{
             //Fetch existing details if they exist
             if(isset( $_SESSION['details']) && !$override)
                 $data = json_decode( $_SESSION['details'],true);
-            //Get arguements from core user info
+            //Get arguments from core user info
             $args = [
                 "ID",
                 "Username",
@@ -1084,9 +1084,16 @@ namespace IOFrame\Handlers{
                 "Auth_Rank",
                 "Banned_Until"
             ];
+
+            //Get extra argument names if they exist in userSettings
+            $extraArgs = $this->userSettings->getSetting('extraUserColumns');
+            if(IOFrame\Util\is_json($extraArgs))
+                $args = array_merge($args,json_decode($extraArgs,true));
+
             foreach($args as $val){
-                $data[$val]=$checkRes[0][$val];
+                $data[$val]= isset($checkRes[0][$val]) ? $checkRes[0][$val] : null;
             }
+
             if(!$test){
                 $_SESSION['details']=json_encode($data);
                 $_SESSION['logged_in']=true;

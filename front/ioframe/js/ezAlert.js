@@ -60,6 +60,7 @@ class ezAlert{
             alert.href = '';
             alert.style.display = 'block';
             alert.style.textDecoration = 'none';
+            alert.style.cursor = 'pointer';
             alert.addEventListener('click',e =>{e.target.parentNode.removeChild(e.target)});
         }
         if(dismissible == 'button'){
@@ -71,6 +72,7 @@ class ezAlert{
                 : alertClose.className = closeClass;
             alertClose.style.textDecoration = 'none';
             alertClose.style.position = 'relative';
+            alertClose.style.bottom = '10px';
             alertClose.style.float = 'right';
             alertClose.style.padding = '0px 10px 0px 0px';
             alertClose.style.fontWeight = '800';

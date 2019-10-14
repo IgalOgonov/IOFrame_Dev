@@ -100,16 +100,16 @@ function cleanseFolder($url,$strRemove,$strRep, array $params = []){
 
 /*
 cleanseFolder(
-    substr(__DIR__,0,-10).'/api',
-    'exit(\'-3\')',
-    'exit(WRONG_CSRF_TOKEN)',
+    substr(__DIR__,0,-10).'/front/axizer',
+    'modules/systems',
+    'modules/back/systems',
     [
-        'test'=>true,
+        'test'=>false,
         'verbose'=>true,
         'subFolders'=>true,
         'forbidden'=>[],
         'required'=>[],
     ]
-)*/
-
+)
+*/
 ?>

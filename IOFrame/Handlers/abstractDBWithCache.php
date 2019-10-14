@@ -66,11 +66,11 @@ namespace IOFrame{
         /** Gets the requested objects/maps/groups from the db/cache.
          *  @param array params ['type'] is the type of targets.
          * @param array $targets Array of keys. If empty, will ignore the cache and get everything from the DB.
-         * @param string $keyCol Key column name
+         * @param string|array $keyCol Key column name
          * @param string $tableName Name of the table WITHOUT THE PREFIX
          * @param string $cacheName Name of cache prefix
          * @param string[] $columns Array of column names.
-         * @param array $params
+         * @param array $params getFromTableByKey() params AND:
          *                  'type' - string ,default '' - Extra information about object type - used for verbose output.
          *                  'compareCol' - bool, default true - If true, will compare cache columns to requested columns,
          *                                 and only use the cached result of they match. Is ignored if columns are []
@@ -85,6 +85,10 @@ namespace IOFrame{
          *                                      where possible conditions are '>','<','=', '!=', 'RLIKE' and 'NOT RLIKE'.
          *                                      The conditions work the same as their MySQL counterparts.
          *                                      More complex conditions are not supported as of now
+         *                  'useCache'  - Whether to use cache at all
+         *                  'getFromCache' - Whether to try to get items from cache
+         *                  'updateCache' - Whether to try to update cache with DB results
+         *                  'extraKeyColumns' - a getFromTableByKey parameter, but if present, will discard normal identifier results.
          * @return array Results of the form [$identifier => <result array>],
          *              where the result array is of the form [<Col name> => <Value>]
          *               If the item was not in the DB, will return the following codes instead of <result array>:
@@ -93,7 +97,7 @@ namespace IOFrame{
          * */
         protected function getFromCacheOrDB(
             array $targets,
-            string $keyCol,
+            $keyCol,
             string $tableName,
             string $cacheName,
             array $columns = [],
@@ -103,7 +107,6 @@ namespace IOFrame{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
-
 
             $type = isset($params['type'])? $params['type'] : '';
 
@@ -119,6 +122,11 @@ namespace IOFrame{
                 $useCache = (isset($this->defaultSettingsParams['useCache']) &&  $this->defaultSettingsParams['useCache'])?
                     true : false;
 
+            if(isset($params['getFromCache']))
+                $getFromCache = $params['getFromCache'];
+            else
+                $getFromCache = $useCache;
+
             if(isset($params['updateCache']))
                 $updateCache = $params['updateCache'];
             else
@@ -128,6 +136,21 @@ namespace IOFrame{
                 $cacheTTL = $params['cacheTTL'];
             else
                 $cacheTTL = $this->cacheTTL;
+
+            if(isset($params['keyDelimiter'])){
+                $keyDelimiter = $params['keyDelimiter'];
+            }
+            else{
+                if(gettype($keyCol) === 'array' && count($keyCol) > 1)
+                    $keyDelimiter = '/';
+                else
+                    $keyDelimiter = '';
+            }
+
+            if(isset($params['extraKeyColumns']))
+                $extraKeyColumns = $params['extraKeyColumns'];
+            else
+                $extraKeyColumns = [];
 
             $cacheResults = [];
             $results = [];
@@ -139,6 +162,8 @@ namespace IOFrame{
             $cacheTargets = [];
 
             foreach($targets as $index=>$identifier) {
+                if(gettype($identifier) === 'array')
+                    $identifier = implode($keyDelimiter,$identifier);
                 array_push($cacheTargets, $cacheName . $identifier);
                 $indexMap[$index] = $identifier;
                 $identifierMap[$identifier] = $index;
@@ -146,19 +171,19 @@ namespace IOFrame{
             }
 
             //If we are using cache, try to get the objects from cache
-            if( $useCache && $cacheTargets!==[] ){
-                if($verbose)
-                    echo 'Querying cache for '.$type.' targets '.implode(',',$targets).
+            if( $useCache && $getFromCache && $cacheTargets!==[] ){
+                if($verbose){
+                    echo 'Querying cache for '.$type.' targets '.json_encode($cacheTargets).
                         ($columnConditions?' with conditions '.json_encode($columnConditions):'').EOL;
+                }
 
                 $cachedTempResults = $this->RedisHandler->call('mGet', [$cacheTargets]);
 
+                if($verbose)
+                    echo 'Got '.($cachedTempResults? implode(' | ',$cachedTempResults) : 'nothing').' from cache! '.EOL;
 
                 if(!$cachedTempResults)
                     $cachedTempResults = $temp;
-
-                if($verbose)
-                    echo 'Got '.implode(' | ',$cachedTempResults).' from cache! '.EOL;
 
                 foreach($cachedTempResults as $index=>$cachedResult){
                     if ($cachedResult && Util\is_json($cachedResult)) {
@@ -256,7 +281,8 @@ namespace IOFrame{
             if($dbResults !== false)
                 foreach($dbResults as $identifier=>$dbResult){
                     $results[$identifier] = $dbResult;
-                    if($targets != [])
+                    //Unset targets to get - that is, if not using extra columns as keys
+                    if($targets != [] && count($extraKeyColumns)===0)
                         unset($targets[$identifierMap[$identifier]]);
                     //Dont forget to update the cache with the DB objects, if we're using cache
                     if(
@@ -275,9 +301,14 @@ namespace IOFrame{
                 $missingErrorCode = -1;
             }
 
-            foreach($targets as $target){
-                $results[$target] = $missingErrorCode;
-            }
+            //Add missing error codes - if we aren't using extra key columns.
+            if(count($extraKeyColumns)===0 && $missingErrorCode !== -1)
+                foreach($targets as $target){
+                    if(gettype($target) === 'array')
+                        $target = implode($keyDelimiter,$target);
+                    if(!is_array($results[$target]))
+                        $results[$target] = $missingErrorCode;
+                }
 
             return $results;
         }

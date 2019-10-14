@@ -80,7 +80,7 @@ namespace IOFrame{
 
         /** Retrieves from a table, by key names.
          * @param array $keys Array of keys. If empty, will return the whole table.
-         * @param string $keyCol Key column name
+         * @param string|array $keyCol Key column name
          * @param string $tableName Name of the table WITHOUT THE PREFIX
          * @param string[] $columns Array of column names.
          * @param array $params
@@ -88,13 +88,30 @@ namespace IOFrame{
          *              'offset'=> SQL parameter OFFSET. Only changes anything if limit is set.
          *              'orderBy'=> Same as SQLHandler
          *              'orderType'=> Same as SQLHandler
-         *              'extraConditions'   => Extra conditions one may pass
+         *              'extraConditions'   => Extra conditions one may pass,
+         *              'extraKeyColumns'   => Array of additional columns that are considered key columns.
+         *              'keyColumnPrefixes' => Array of prefixes to prepend to the key columns when building the query.
+         *              'keyDelimiter' => Sometimes, the key columns are multiple, and you wish to get results by them.
+         *                                Then, you pass the delimiter (in the example - '/').
+         *                                Then, one of two things happen:
+         *                                1)You pass an array as $keyCol. Once the results are fetched, the columns
+         *                                  in $keyCol are glued by the delimiter to form the identifier that is returned.
+         *                                  For example, if you fetched the columns ['Vehicle_Type','Model'], and fetched
+         *                                  the models "volvo" and "ford", you'll get "car/volvo" and "car/ford" as the
+         *                                  keys of the result array.
+         *                                2)You pass strings as keys, but also have extraKeyColumns. For example, you
+         *                                  pass 'Vehicle_Type' as the column, but you want to fetch all the different
+         *                                  vehicles of the type 'car', not just 1 car.
+         *                                  In that case you'll get "car/volvo","car/ford","car/toyota" as result keys
+         *                                  (assuming those are all the cars).
+         *                                Only works if the delimiter is illegal as a normal character.
+         *
          * @returns mixed
          * a result in the form [<keyName> => <Associated array for row>]
          *  or
          * false if nothing exists, or on different error
          * */
-        protected function getFromTableByKey(array $keys, string $keyCol, string $tableName, array $columns = [], array $params = []){
+        protected function getFromTableByKey(array $keys, $keyCol, string $tableName, array $columns = [], array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
@@ -110,6 +127,26 @@ namespace IOFrame{
             else
                 $offset = null;
 
+            if(isset($params['extraKeyColumns']))
+                $extraKeyColumns = $params['extraKeyColumns'];
+            else
+                $extraKeyColumns = [];
+
+            if(isset($params['keyColumnPrefixes']))
+                $keyColumnPrefixes = $params['keyColumnPrefixes'];
+            else
+                $keyColumnPrefixes = [];
+
+            if(isset($params['keyDelimiter'])){
+                $keyDelimiter = $params['keyDelimiter'];
+            }
+            else{
+                if(gettype($keyCol) === 'array' && count(array_merge($keyCol,$extraKeyColumns)) > 1)
+                    $keyDelimiter = '/';
+                else
+                    $keyDelimiter = '';
+            }
+
             if(isset($params['orderBy'])){
                 $orderBy = $params['orderBy'];
                 if(isset($params['orderType']))
@@ -122,27 +159,57 @@ namespace IOFrame{
                 $orderType = 0;
             }
 
-            if(!in_array($keyCol,$columns) && $columns!=[])
-                array_push($columns,$keyCol);
+            //If $keyCol is a string, make it into a length 1 array
+            if(gettype($keyCol) === 'string')
+                $keyCol = [$keyCol];
+
+            //Separate key columns and columnts to retrieve by
+            $retrieveByCol = $keyCol;
+
+            //Add each key column
+            foreach($retrieveByCol as $index=>$colName){
+                //Append prefixes
+                if(isset($keyColumnPrefixes[$index]))
+                    $retrieveByCol[$index] = $keyColumnPrefixes[$index].$colName;
+                //We always have to get the key column
+                if(!in_array($colName,$columns) && $columns!=[]){
+                    array_push($columns,$retrieveByCol[$index]);
+                }
+            }
+
             $conds = [];
             $tableName = $this->SQLHandler->getSQLPrefix().$tableName;
             $tempRes = [];
 
             //If keys are not empty, we need to get specific rows
             if($keys != []){
+
+                //Parse the key if we have a delimiter
                 foreach($keys as $i=>$key){
-                    if(gettype($key) == 'string')
-                        $key = [$key,'STRING'];
-                    array_push($conds,$key);
-                    $tempRes[$keys[$i]] = 1;
+                    if(gettype($key) === 'array')
+                        $key = implode($keyDelimiter,$key);
+                    else
+                        $keys[$i] = [$keys[$i]];
+                    $tempRes[$key] = 1;
+                }
+
+                //Add all of the keys to the conditions
+                foreach($keys as $i => $keyArray){
+                    foreach($keys[$i] as $j => $key){
+                        if(gettype($key) == 'string')
+                            $keys[$i][$j] = [$key,'STRING'];
+                    }
+                    $keys[$i] = [$keys[$i],'CSV'];
+                    array_push($conds,$keys[$i]);
                 }
             }
 
             //If keys were not empty, conditions need to be specific
             if($conds != []){
                 array_push($conds,'CSV');
+                array_push($retrieveByCol,'CSV');
                 $conds = [
-                    $keyCol,
+                    $retrieveByCol,
                     $conds,
                     'IN'
                 ];
@@ -165,7 +232,6 @@ namespace IOFrame{
                 $columns,
                 ['test'=>$test,'verbose'=>$verbose,'limit'=>$limit,'offset'=>$offset,'orderBy'=>$orderBy,'orderType'=>$orderType]
             );
-
             if(is_array($res)){
                 $resLength = count($res);
                 for($i = 0; $i<$resLength; $i+=1){
@@ -173,8 +239,35 @@ namespace IOFrame{
                     for($j = 0; $j<$resLength2; $j++){
                         unset($res[$i][$j]);//This is ok because no valid column name will consist solely of digits
                     }
-                    $tempRes[$res[$i][$keyCol]] = $res[$i];
+
+                    //Calculate the identifier
+                    $identifier = [];
+                    foreach($keyCol as $colID){
+                        array_push($identifier,$res[$i][$colID]);
+                    }
+                    $identifier = implode($keyDelimiter,$identifier);
+
+                    //Here we have no extra columns, or multiple ones
+                    if(count($extraKeyColumns) > 0){
+                        foreach($extraKeyColumns as $extraKeyColumn){
+                            $identifier .= $keyDelimiter.$res[$i][$extraKeyColumn];
+                        }
+                    }
+                    $tempRes[$identifier] = $res[$i];
                 }
+
+                //If we have extra key columns, remove original keys from the result
+                if(count($extraKeyColumns) > 0){
+                    foreach($keys as $i=>$keyArray){
+                        $dbFormattedKeys = $keyArray[0];
+                        $keys = [];
+                        foreach($dbFormattedKeys as $pair)
+                            array_push($keys,$pair[0]);
+                        $keyToUnset = implode($keyDelimiter,$keys);
+                        unset($tempRes[$keyToUnset]);
+                    }
+                }
+
                 return $tempRes;
             }
             else{

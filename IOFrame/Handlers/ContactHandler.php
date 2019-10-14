@@ -1,0 +1,634 @@
+<?php
+namespace IOFrame\Handlers{
+    use IOFrame;
+    define('ContactHandler',true);
+    if(!defined('abstractDBWithCache'))
+        require 'abstractDBWithCache.php';
+
+    /** Handles contacts. Should be extended for more system-specific logic.
+     * @author Igal Ogonov <igal1333@hotmail.com>
+     * @license LGPL
+     * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
+     */
+
+    class ContactHandler extends IOFrame\abstractDBWithCache
+    {
+
+        /** @var string Contact type
+         * */
+        protected $contactType;
+
+        /** @var string Table name - defaults to 'CONTACTS'
+         * */
+        protected $tableName;
+
+        /** @var string Cache prefix - defaults to lowercase $contactType
+         * */
+        protected $cachePrefix;
+
+        /** @var string Cache name - defaults to $cachePrefix.$tableName.'_'
+         * */
+        protected $cacheName;
+
+        function __construct(IOFrame\Handlers\SettingsHandler $localSettings, string $type, $params = []){
+            parent::__construct($localSettings,$params);
+            $this->contactType = $type;
+            $this->tableName = isset($params['tableName'])? $params['tableName'] : 'CONTACTS';
+            $this->cachePrefix = isset($params['cachePrefix'])? $params['cachePrefix'] : '';
+            $this->cacheName = isset($params['cacheName'])? $params['cacheName'] : strtolower($this->tableName).'_'.$this->cachePrefix;
+        }
+
+        /** Gets one contact.
+         *
+         * @param string $identifier Identifier
+         * @param array $params
+         *
+         * @returns Array of the DB object, or the codes:
+         *             -1 - DB connection failed
+         *              1 - Contact does not exist
+         */
+        function getContact(string $identifier,  array $params = []){
+            return $this->getContacts([$identifier], $params)[$this->contactType.'/'.$identifier];
+        }
+
+        /** Gets either multiple contacts, or all existing contacts.
+         *
+         * @param array $identifiers Array of contact names. If it is [], will return all contacts up to the max query limit.
+         *
+         * @param array $params:
+         *          'firstNameLike' => String, default null - returns results where first name  matches a regex.
+         *          'fullNameLike' => String, default null - returns results where first name together with last name matche a regex.
+         *          'emailLike' => String, email, default null - returns results where email matches a regex.
+         *          'countryLike' => String, Unix timestamp, default null - returns results where country matches a regex.
+         *          'cityLike' => String, Unix timestamp, default null - returns results where city matches a regex.
+         *          'companyNameLike' => String, Unix timestamp, default null - returns results where company name matches a regex.
+         *          'companyNameIDLike' => String, Unix timestamp, default null - returns results where company name together with company ID matche a regex.
+         *          'createdBefore' => String, Unix timestamp, default null - only returns results created before this date.
+         *          'createdAfter' => String, Unix timestamp, default null - only returns results created after this date.
+         *          'changedBefore' => String, Unix timestamp, default null - only returns results changed before this date.
+         *          'changedAfter' => String, Unix timestamp, default null - only returns results changed after this date.
+         *          'includeRegex' => String, default null - only includes results containing this regex.
+         *          'excludeRegex' => String, default null - only includes results excluding this regex.
+         *          'limit', 'offset' => Integers, typical SQL parameters
+         *
+         * @returns Array of the form:
+         *          [
+         *              <identifier*> => Array|Code
+         *          ] where:
+         *              The array is the DB columns array
+         *              OR
+         *              The code is one of the following:
+         *             -1 - DB connection failed
+         *              1 - Contact does not exist
+         *
+         */
+        function getContacts(array $identifiers = [], array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            $firstNameLike = isset($params['firstNameLike'])? $params['firstNameLike'] : null;
+            $fullNameLike = isset($params['fullNameLike'])? $params['fullNameLike'] : null;
+            $emailLike = isset($params['emailLike'])? $params['emailLike'] : null;
+            $countryLike = isset($params['countryLike'])? $params['countryLike'] : null;
+            $cityLike = isset($params['cityLike'])? $params['cityLike'] : null;
+            $companyNameLike = isset($params['companyNameLike'])? $params['companyNameLike'] : null;
+            $companyNameIDLike = isset($params['companyNameIDLike'])? $params['companyNameIDLike'] : null;
+            $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
+            $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
+            $changedAfter = isset($params['changedAfter'])? $params['changedAfter'] : null;
+            $changedBefore = isset($params['changedBefore'])? $params['changedBefore'] : null;
+            $includeRegex = isset($params['includeRegex'])? $params['includeRegex'] : null;
+            $excludeRegex = isset($params['excludeRegex'])? $params['excludeRegex'] : null;
+            $limit = isset($params['limit'])? $params['limit'] : null;
+            $offset = isset($params['offset'])? $params['offset'] : null;
+
+            $prefix = $this->SQLHandler->getSQLPrefix();
+            $retrieveParams = $params;
+            $extraDBConditions = [];
+            $extraCacheConditions = [];
+            $keyDelimiter = '/';
+            $colPrefix = $this->SQLHandler->getSQLPrefix().$this->tableName.'.';
+            $columns = ['Contact_Type','Identifier'];
+
+            //If we are using any of this functionality, we cannot use the cache
+            if($offset || $limit || $fullNameLike || $companyNameIDLike){
+                $retrieveParams['useCache'] = false;
+                $retrieveParams['limit'] =  $limit? $limit : null;
+                $retrieveParams['offset'] =  $offset? $offset : null;
+            }
+
+            //Create all the conditions for the db/cache
+
+            if($firstNameLike!== null){
+                array_push($extraCacheConditions,['First_Name',$firstNameLike,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'First_Name',[$firstNameLike,'STRING'],'RLIKE']);
+            }
+
+            if($fullNameLike!== null){
+                array_push(
+                    $extraDBConditions,
+                    ['CONCAT('.$colPrefix.'First_Name," ",'.$colPrefix.'Last_Name)',[$fullNameLike,'STRING'],'RLIKE']
+                );
+            }
+
+            if($emailLike!== null){
+                array_push($extraCacheConditions,['Email',$emailLike,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'Email',[$emailLike,'STRING'],'RLIKE']);
+            }
+
+            if($countryLike!== null){
+                array_push($extraCacheConditions,['Country',$countryLike,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'Country',[$countryLike,'STRING'],'RLIKE']);
+            }
+
+            if($cityLike!== null){
+                array_push($extraCacheConditions,['City',$cityLike,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'City',[$cityLike,'STRING'],'RLIKE']);
+            }
+
+            if($companyNameLike!== null){
+                array_push($extraCacheConditions,['Company_Name',$companyNameLike,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'Company_Name',[$companyNameLike,'STRING'],'RLIKE']);
+            }
+
+            if($companyNameIDLike!== null){
+                array_push(
+                    $extraDBConditions,
+                    ['CONCAT('.$colPrefix.'Company_Name," ",'.$colPrefix.'Company_ID)',[$companyNameIDLike,'STRING'],'RLIKE']
+                );
+            }
+
+            if($createdAfter!== null){
+                $cond = [$colPrefix.'Created',$createdAfter,'>'];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
+            if($createdBefore!== null){
+                $cond = [$colPrefix.'Created',$createdBefore,'<'];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
+            if($changedAfter!== null){
+                $cond = [$colPrefix.'Last_Updated',$changedAfter,'>'];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
+            if($changedBefore!== null){
+                $cond = [$colPrefix.'Last_Updated',$changedBefore,'<'];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
+            if($includeRegex!== null){
+                array_push($extraCacheConditions,['Identifier',$includeRegex,'RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'Identifier',[$includeRegex,'STRING'],'RLIKE']);
+            }
+
+            if($excludeRegex!== null){
+                array_push($extraCacheConditions,['Identifier',$excludeRegex,'NOT RLIKE']);
+                array_push($extraDBConditions,[$colPrefix.'Identifier',[$excludeRegex,'STRING'],'NOT RLIKE']);
+            }
+
+            if($extraCacheConditions!=[]){
+                array_push($extraCacheConditions,'AND');
+                $retrieveParams['columnConditions'] = $extraCacheConditions;
+            }
+            if($extraDBConditions!=[]){
+                array_push($extraDBConditions,'AND');
+                $retrieveParams['extraConditions'] = $extraDBConditions;
+            }
+
+            if($identifiers == []){
+                $results = [];
+
+                $tableQuery = $this->SQLHandler->getSQLPrefix().$this->tableName;
+
+                $res = $this->SQLHandler->selectFromTable(
+                    $tableQuery,
+                    $extraDBConditions,
+                    [],
+                    $retrieveParams
+                );
+                $count = $this->SQLHandler->selectFromTable(
+                    $tableQuery,
+                    $extraDBConditions,
+                    ['COUNT(*)'],
+                    array_merge($retrieveParams,['limit'=>0])
+                );
+                if(is_array($res)){
+                    $resCount = count($res);
+                    foreach($res as $resultArray){
+                        for($i = 0; $i<$resCount/2; $i++)
+                            unset($resultArray[$i]);
+                        $results[$resultArray['Contact_Type'].$keyDelimiter.$resultArray['Identifier']] = $resultArray;
+                    }
+                    $results['@'] = array('#' => $count[0][0]);
+                }
+                return (is_array($res))? $results : [];
+            }
+            else{
+                $retrieveParams['keyDelimiter'] = $keyDelimiter;
+                foreach($identifiers as $index => $identifier){
+                    $identifiers[$index] = [$this->contactType,$identifier];
+                }
+                $results = $this->getFromCacheOrDB(
+                    $identifiers,
+                    $columns,
+                    $this->tableName,
+                    $this->cacheName,
+                    [],
+                    $retrieveParams
+                );
+
+                return $results;
+            }
+        }
+
+        /** Creates or updates a single contact
+         *
+         * @param string $identifier Name of the contact,
+         * @param Array $inputs Assoc array of inputs, of the form:
+         *                      'firstName' => string, default null, max length 64
+         *                      'lastName' => string, default null, max length 64
+         *                      'email' => string, default null, max length 256
+         *                      'phone' => string, default null, max length 32
+         *                      'fax' => string, default null, max length 32
+         *                      'contactInfo' => string, default null - Should be a JSON encoded object
+         *                      'country' => string, default null, max length 64
+         *                      'state' => string, default null, max length 64
+         *                      'city' => string, default null, max length 64
+         *                      'street' => string, default null, max length 64
+         *                      'zipCode' => string, default null, max length 14
+         *                      'address' => string, default null - Should be a JSON encoded object
+         *                      'companyName' => string, default null, max length 256
+         *                      'companyID' => string, default null, max length 64
+         *                      'extraInfo' => string, default null - Should be a JSON encoded object
+         * @param array $params same as setContacts
+         *
+         * @returns  Int explained in setContacts
+         */
+        function setContact(string $identifier, array $inputs, array $params = []){
+            return $this->setContacts([[$identifier,$inputs]],$params)[$this->contactType.'/'.$identifier];
+        }
+
+        /** Creates or updates multiple contacts.
+         *
+         * @param array $inputs Array of input arrays of the inputs from setContact: [$identifier, $inputs]
+         * @param array $params:
+         *      'update' => bool, default false - Whether we are only allowed to update existing contacts
+         *      'override' => bool, default false -  Whether we are allowed to overwrite existing contacts
+         *      'existing' => Assoc array: ['<contact name>' => <existing info as would be returned by getContact>]
+         *
+         * @returns Array of the form:
+         *          <identifier> => <code>
+         *          Where each identifier is the contact identifier, and possible codes are:
+         *         -1 - failed to connect to db
+         *          0 - success
+         *          1 - contact does not exist (and update is true)
+         *          2 - contact exists (and override is false)
+         *          3 - trying to update the contact with no new info.
+         *          4 - trying to create a new contact with missing inputs
+         *
+         */
+        function setContacts(array $inputs, array $params = []){
+
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            $update = isset($params['update'])? $params['update'] : false;
+            //If we are updating, then by default we allow overwriting
+            if(!$update)
+                $override = isset($params['override'])? $params['override'] : false;
+            else
+                $override = true;
+
+            $keyDelimiter = '/';
+            $identifiers = [];
+            $identifiersToGet = [];
+            $identifierIndexMap = [];
+            $results = [];
+            $contactsToSet = [];
+            $cacheContactsToUnset = [];
+            $currentTime = (string)time();
+
+            //Create the usual structures, index/identifier maps, initiate results, etc
+            foreach($inputs as $index => $inputArray){
+                $identifier = $inputArray[0];
+                //Add the identifier to the array
+                array_push($identifiers, $identifier);
+                $results[$identifier] = -1;
+                $identifierIndexMap[$identifier] = $index;
+            }
+
+            //Get existing contacts
+            if(isset($params['existing']))
+                $existing = $params['existing'];
+            else
+                $existing = $this->getContacts($identifiers, array_merge($params,['updateCache'=>false]));
+
+            //Parse all existing contacts.
+            foreach($inputs as $index => $inputArray){
+                $identifier = $inputArray[0];
+                $dbIdentifier = implode($keyDelimiter,[$this->contactType,$inputArray[0]]);
+                $contactInputs = isset($inputArray[1])? $inputArray[1] : [];
+                //Initiate each input
+                $contactInputs['firstName'] = isset($contactInputs['firstName'])? $contactInputs['firstName'] : null;
+                $contactInputs['lastName'] = isset($contactInputs['lastName'])? $contactInputs['lastName'] : null;
+                $contactInputs['email'] = isset($contactInputs['email'])? $contactInputs['email'] : null;
+                $contactInputs['phone'] = isset($contactInputs['phone'])? $contactInputs['phone'] : null;
+                $contactInputs['fax'] = isset($contactInputs['fax'])? $contactInputs['fax'] : null;
+                $contactInputs['contactInfo'] = isset($contactInputs['contactInfo'])? $contactInputs['contactInfo'] : null;
+                $contactInputs['country'] = isset($contactInputs['country'])? $contactInputs['country'] : null;
+                $contactInputs['state'] = isset($contactInputs['state'])? $contactInputs['state'] : null;
+                $contactInputs['city'] = isset($contactInputs['city'])? $contactInputs['city'] : null;
+                $contactInputs['street'] = isset($contactInputs['street'])? $contactInputs['street'] : null;
+                $contactInputs['zipCode'] = isset($contactInputs['zipCode'])? $contactInputs['zipCode'] : null;
+                $contactInputs['address'] = isset($contactInputs['address'])? $contactInputs['address'] : null;
+                $contactInputs['companyName'] = isset($contactInputs['companyName'])? $contactInputs['companyName'] : null;
+                $contactInputs['companyID'] = isset($contactInputs['companyID'])? $contactInputs['companyID'] : null;
+                $contactInputs['extraInfo'] = isset($contactInputs['extraInfo'])? $contactInputs['extraInfo'] : null;
+
+                //If a single contact failed to be gotten from the db, it's safe to bet DB connection failed in general.
+                if($existing[$dbIdentifier] === -1)
+                    return $results;
+
+                //If we are creating a new contact with update true, or updating one with override false, return that result
+                if($existing[$dbIdentifier] === 1 && $update){
+                    $results[$identifier] = 1;
+                    unset($identifiers[array_search($identifier,$identifiers)]);
+                }
+                elseif(gettype($existing[$dbIdentifier]) === 'array' && !$override){
+                    $results[$identifier] = 2;
+                    unset($identifiers[array_search($identifier,$identifiers)]);
+                }
+                else{
+                    $contactToSet = [];
+                    $contactToSet['identifier'] = $identifier;
+                    $contactToSet['updated'] = $currentTime;
+                    //If we are updating, get all missing inputs from the existing result
+                    if(gettype($existing[$dbIdentifier]) === 'array'){
+                        $contactToSet['created'] = $existing[$dbIdentifier]['Created_On'];
+
+                        //Get existing or set new
+                        $arr = [['firstName','First_Name'],['lastName','Last_Name'],['email','Email'],['phone','Phone'],
+                            ['fax','Fax'],['country','Country'],['state','State'],['city','City'],['street','Street'],
+                            ['zipCode','Zip_Code'],['companyName','Company_Name'],['companyID','Company_ID']];
+                        foreach($arr as $attrPair){
+                            $inputName = $attrPair[0];
+                            $dbName = $attrPair[1];
+                            if($contactInputs[$inputName]!==null)
+                                $contactToSet[$inputName] = $contactInputs[$inputName];
+                            else
+                                $contactToSet[$inputName] = $existing[$dbIdentifier][$dbName];
+                        }
+                        //contactInfo, address and extraInfo get special treatment
+                        $arr = [['contactInfo','Contact_Info'],['address','Address'],['extraInfo','Extra_Info']];
+                        foreach($arr as $attrPair){
+                            $inputName = $attrPair[0];
+                            $dbName = $attrPair[1];
+                            if($contactInputs[$attrPair[0]]!==null){
+                                if($contactInputs[$inputName] === '')
+                                    $contactToSet[$inputName] = null;
+                                else{
+                                    $inputJSON = json_decode($inputs[$index][1][$inputName],true);
+                                    $existingJSON = json_decode($existing[$dbIdentifier][$dbName],true);
+                                    if($inputJSON === null)
+                                        $inputJSON = [];
+                                    if($existingJSON === null)
+                                        $existingJSON = [];
+                                    $contactToSet[$inputName] =
+                                        json_encode(IOFrame\Util\array_merge_recursive_distinct($existingJSON,$inputJSON,['deleteOnNull'=>true]));
+                                    if($contactToSet[$inputName] == '[]')
+                                        $contactToSet[$inputName] = null;
+                                }
+                            }
+                            else
+                                $contactToSet[$inputName] = ($existing[$dbIdentifier][$dbName] == '')? null : $existing[$dbIdentifier][$dbName];
+                        }
+
+                        //This happens if no new info is given.
+                        if($contactToSet === []){
+                            $results[$identifier] = 3;
+                            unset($identifiers[array_search($identifier,$identifiers)]);
+                        }
+
+                    }
+                    //If are creating a new contact,
+                    else{
+                        $contactToSet['created'] = $currentTime;
+                        $arr = ['firstName','lastName','email','phone','fax','country','state','city','street','zipCode',
+                                'companyName','companyID','contactInfo','address','extraInfo'];
+                        $anyNewAttributes = false;
+                        foreach($arr as $attr){
+                            if($contactInputs[$attr] === '' || $contactInputs[$attr] === null)
+                                $contactToSet[$attr] = null;
+                            else{
+                                $anyNewAttributes = true;
+                                $contactToSet[$attr] = $contactInputs[$attr];
+                            }
+                        }
+                        //This happens if some info was missing
+                        if(!$anyNewAttributes){
+                            $contactToSet = [];
+                            $results[$identifier] = 4;
+                            unset($identifiers[array_search($identifier,$identifiers)]);
+                        }
+                    }
+
+                    if($contactToSet !== []){
+                        array_push($contactsToSet,$contactToSet);
+                        array_push($cacheContactsToUnset,$identifier);
+                    }
+                }
+            }
+
+
+            $columns = ['Contact_Type','Identifier','First_Name','Last_Name','Email','Phone','Fax',
+                'Country','State','City','Street','Zip_Code','Company_Name','Company_ID','Contact_Info','Address','Extra_Info','Created_On','Last_Updated'];
+            $insertArray = [];
+            foreach($contactsToSet as $contactToSet){
+                array_push($insertArray,[
+                    [$this->contactType,'STRING'],
+                    [$contactToSet['identifier'],'STRING'],
+                    [$contactToSet['firstName'],'STRING'],
+                    [$contactToSet['lastName'],'STRING'],
+                    [$contactToSet['email'],'STRING'],
+                    [$contactToSet['phone'],'STRING'],
+                    [$contactToSet['fax'],'STRING'],
+                    [$contactToSet['country'],'STRING'],
+                    [$contactToSet['state'],'STRING'],
+                    [$contactToSet['city'],'STRING'],
+                    [$contactToSet['street'],'STRING'],
+                    [$contactToSet['zipCode'],'STRING'],
+                    [$contactToSet['companyName'],'STRING'],
+                    [$contactToSet['companyID'],'STRING'],
+                    [$contactToSet['contactInfo'],'STRING'],
+                    [$contactToSet['address'],'STRING'],
+                    [$contactToSet['extraInfo'],'STRING'],
+                    [$contactToSet['created'],'STRING'],
+                    [$contactToSet['updated'],'STRING'],
+                ]);
+            }
+
+            //In case we cannot set anything new, return,
+            if($insertArray === [])
+                return $results;
+
+            //Set the contacts
+            $res = $this->SQLHandler->insertIntoTable(
+                $this->SQLHandler->getSQLPrefix().$this->tableName,
+                $columns,
+                $insertArray,
+                array_merge($params,['onDuplicateKey'=>true])
+            );
+
+            //If successful, set results and erase the cache
+            if($res){
+                foreach($identifiers as $index => $identifier){
+                    if($results[$identifiers[$index]] === -1)
+                        $results[$identifiers[$index]] = 0;
+                    $identifiers[$index] = $this->cacheName.$identifiers[$index];
+                }
+                if(count($identifiers)>0){
+                    if($verbose)
+                        echo 'Deleting identifiers '.json_encode($identifiers).' from cache!'.EOL;
+                    if(!$test)
+                        $this->RedisHandler->call('del',[$identifiers]);
+                }
+            }
+
+            return $results;
+        }
+
+        /** Deletes a single contact
+         *
+         * @param mixed $identifier Name of the contact, or in case of 'styles' - array of the form [<system name>, <style name>]
+         * @param array $params same as deleteContacts
+         *
+         * @returns  Array of the form:
+         */
+        function deleteContact($identifier, array $params = []){
+            return $this->deleteContacts([$identifier],$params);
+        }
+
+        /** Deletes multiple contacts.
+         *
+         * @param array $identifiers
+         * @param array $params
+         *
+         * @returns Array of the form:
+         *
+         */
+        function deleteContacts(array $identifiers, array $params = []){
+
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+
+            $dbNames = [];
+
+            foreach($identifiers as $identifier){
+                array_push($dbNames,[ [$this->contactType,'STRING'],[$identifier,'STRING'], 'CSV']);
+            }
+
+            $columns = ['Contact_Type','Identifier','CSV'];
+
+            $res = $this->SQLHandler->deleteFromTable(
+                $this->SQLHandler->getSQLPrefix().$this->tableName,
+                [
+                    $columns,
+                    $dbNames,
+                    'IN'
+                ],
+                $params
+            );
+
+            if($res){
+                //delete the collection cache
+                foreach($identifiers as $identifier){
+
+                    $identifier = implode('/',[$this->contactType,$identifier]);
+
+                    if($verbose)
+                        echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
+
+                    if(!$test)
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$identifier ] );
+                }
+
+                //Ok we're done
+                return 0;
+            }
+            else
+                return -1;
+        }
+
+        /** Renames one single contact
+         *
+         * @param mixed $identifier Name of the contact, or in case of 'styles' - array of the form [<system name>, <style name>]
+         * @param mixed $newIdentifier Name of the contact, or in case of 'styles' - array of the form [<system name>, <style name>]
+         * @param array $params
+         *
+         * @returns  Array of the form:
+         *          -1 - db connection failure
+         *           0 - success
+         *           1 - new identifier already exists
+         *           2 - tried to rename a colour
+         */
+        function renameContact(string $identifier, string $newIdentifier , array $params = []){
+
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            $existing = $this->getContact($newIdentifier, $params);
+            if($existing === -1)
+                return -1;
+            elseif(is_array($existing)){
+                return 1;
+            }
+            else{
+                $newName = $newIdentifier;
+                $conditions = [
+                    [
+                        'Contact_Type',
+                        [$this->contactType,'STRING'],
+                        '='
+                    ],
+                    [
+                        'Identifier',
+                        [$identifier,'STRING'],
+                        '='
+                    ],
+                    'AND'
+                ];
+
+                $res = $this->SQLHandler->updateTable(
+                    $this->SQLHandler->getSQLPrefix().$this->tableName,
+                    ['Identifier = "'.$newName.'"'],
+                    $conditions,
+                    $params
+                );
+
+                if($res){
+                    $identifier = implode('/',[$this->contactType,$identifier]);
+
+                    if($verbose)
+                        echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
+
+                    if(!$test)
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$identifier ] );
+                }
+
+                return ($res)? 0 : -1;
+            }
+        }
+
+
+    }
+
+
+
+}

@@ -274,9 +274,10 @@ namespace IOFrame\Handlers{
 
             //If we have a limit
             if($limit != null){
-                $query .= ' LIMIT '.$limit;
+                $query .= ' LIMIT ';
                 if($offset)
-                    $query .=', '.$offset;
+                    $query .=$offset.',';
+                $query .= $limit;
             }
 
             if($useBrackets)

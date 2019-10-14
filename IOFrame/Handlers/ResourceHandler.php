@@ -108,7 +108,6 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
-            $updateCache = isset($params['updateCache'])? $params['updateCache'] : true;
             $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
             $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
             $changedAfter = isset($params['changedAfter'])? $params['changedAfter'] : null;
