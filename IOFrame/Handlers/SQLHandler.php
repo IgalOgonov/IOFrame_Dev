@@ -169,6 +169,7 @@ namespace IOFrame\Handlers{
          * @params array $columns The columns you want, in a 1D array of the form ['col1','col2',..].
          *                       Have to be actual columns in the DB table, though! Can be *, by setting [].
          * @params array $params Includes multiple possible parameters:
+         *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'orderBy' An array of column names to order by
          *                      'orderType' 1 descending, 0 ascending
          *                      'useBrackets' will surround the query with brackets
@@ -190,6 +191,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['escapeBackslashes'])?
+                $escapeBackslashes = $params['escapeBackslashes'] : $escapeBackslashes = true;
             isset($params['useBrackets'])?
                 $useBrackets = $params['useBrackets'] : $useBrackets = false;
             isset($params['orderBy'])?
@@ -283,6 +286,10 @@ namespace IOFrame\Handlers{
             if($useBrackets)
                 $query .= ')';
 
+            //Escape backslashes
+            if($escapeBackslashes)
+                $query = str_replace('\\','\\\\',$query);
+
             //If we are just returning the query, this is where we stop
             if($justTheQuery)
                 return $query;
@@ -311,6 +318,7 @@ namespace IOFrame\Handlers{
          *                   Example [['ID',1,'>'],['ID',100,'<'],['Name','%Tom%','LIKE']]
          *                   Valid comparison operators: '=', '<=>', '!=', '<=', '>=', '<', '>', 'LIKE', 'NOT LIKE'
          * @params array $params Includes multiple possible parameters:
+         *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'orderBy' An array of column names to order by
          *                      'orderType' 1 descending, 0 ascending
          *                      'limit' If not null/0, will limit number of deleted rows.
@@ -330,6 +338,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['escapeBackslashes'])?
+                $escapeBackslashes = $params['escapeBackslashes'] : $escapeBackslashes = true;
             isset($params['orderBy'])?
                 $orderBy = $params['orderBy'] : $orderBy = null;
             isset($params['orderType'])?
@@ -379,6 +389,10 @@ namespace IOFrame\Handlers{
                 $query .= ' LIMIT '.$limit;
             }
 
+            //Escape backslashes
+            if($escapeBackslashes)
+                $query = str_replace('\\','\\\\',$query);
+
             //If we are just returning the query, this is where we stop
             if($justTheQuery)
                 return $query;
@@ -416,9 +430,10 @@ namespace IOFrame\Handlers{
          *                      Values number MUST be the length of $columns array!
          *                      May also be a string - in which case it it will be simple inserted.
          * @params array $params Includes multiple possible parameters:
+         *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'onDuplicateKey' if true, will add ON DUPLICATE KEY UPDATE.
          *                      'onDuplicateKeyExp' if 'onDuplicateKey' is true, this can be set to be a custom expression for updating
-         *                      'returnRows' If true, will return the number of affected rows on success.
+         *                      'returnRows' If true, will return the ID if the FIRST inserted row (their count depends on $values)
          *                      'justTheQuery' If true, will only return the query and not execute it.
          * @params bool $test indicates test mode
          * @returns int
@@ -426,7 +441,7 @@ namespace IOFrame\Handlers{
          *      -1 on illegal input
          *      true success
          *      false on failure
-         *      array [<last_insert_id>,<ROW_COUNT()>] - on success, if $params['returnRows'] is set not to false.
+         *      <LAST_INSERT_ID()> - on success, if $params['returnRows'] is set not to false.
          */
         function insertIntoTable(string $tableName, array $columns, $values, array $params = []){
 
@@ -434,6 +449,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['escapeBackslashes'])?
+                $escapeBackslashes = $params['escapeBackslashes'] : $escapeBackslashes = true;
             isset($params['onDuplicateKey'])?
                 $onDuplicateKey = $params['onDuplicateKey'] : $onDuplicateKey = false;
             isset($params['onDuplicateKeyExp'])?
@@ -474,6 +491,10 @@ namespace IOFrame\Handlers{
                 }
             }
 
+            //Escape backslashes
+            if($escapeBackslashes)
+                $query = str_replace('\\','\\\\',$query);
+
             //If we are just returning the query, this is where we stop
             if($justTheQuery)
                 return $query;
@@ -483,7 +504,7 @@ namespace IOFrame\Handlers{
                 echo 'Query to send: '.$query.EOL;
             //Execute the query
             if($test){
-                return true;
+                return !$returnRows? true : 1;
             }
             else{
                 try{
@@ -491,7 +512,7 @@ namespace IOFrame\Handlers{
                         return $this->exeQueryBindParam($query,[]);
                     else{
                         $this->exeQueryBindParam($query,[]);
-                        return explode(',',$this->exeQueryBindParam('SELECT CONCAT(LAST_INSERT_ID(),",",ROW_COUNT())',[],['fetchAll'=>true])[0][0]);
+                        return (int)$this->exeQueryBindParam('SELECT LAST_INSERT_ID()',[],['fetchAll'=>true])[0][0];
                     }
                 }
                 catch(\Exception $e){
@@ -513,6 +534,7 @@ namespace IOFrame\Handlers{
          *                   Example [['ID',1,'>'],['ID',100,'<'],['Name','%Tom%','LIKE']]
          *                   Valid comparison operators: '=', '<=>', '!=', '<=', '>=', '<', '>', 'LIKE', 'NOT LIKE'
          * @params array $params Includes multiple possible parameters:
+         *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'orderBy' An array of column names to order by
          *                      'orderType' 1 descending, 0 ascending
          *                      'limit' If not null/0, will limit number of deleted rows.
@@ -532,6 +554,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['escapeBackslashes'])?
+                $escapeBackslashes = $params['escapeBackslashes'] : $escapeBackslashes = true;
             isset($params['orderBy'])?
                 $orderBy = $params['orderBy'] : $orderBy = null;
             isset($params['orderType'])?
@@ -592,6 +616,10 @@ namespace IOFrame\Handlers{
                 $query .= ' LIMIT '.$limit;
             }
 
+            //Escape backslashes
+            if($escapeBackslashes)
+                $query = str_replace('\\','\\\\',$query);
+
             //If we are just returning the query, this is where we stop
             if($justTheQuery)
                 return $query;
@@ -625,10 +653,15 @@ namespace IOFrame\Handlers{
          * @params string $tableName valid table name
          * @params array $columns An array of column names
          * @params array $params of the form:
-         *                                      [
          *                                      'timeLimit' => int, default 1, will allow 1 backup per $timeLimit seconds
          *                                                      (e.g if 60 - one backup per minute)
-         *                                      ]
+         *                                      'cond'      => array, default [] -  2D array of conditions, parsed by PHPQueryBuilder.
+         *                                                     Like the $cond param of the other functions here.
+         *                                      'meta'      => string, default null - optional meta information about the backup.
+         *                                      'orderBy' Same as the selectFromTable() param
+         *                                      'orderType' Same as the selectFromTable() param
+         *                                      'limit' Same as the selectFromTable() param
+         *                                      'offset' Same as the selectFromTable() param
          * @returns int
          *      0 on success
          *      1 on illegal input
@@ -647,9 +680,22 @@ namespace IOFrame\Handlers{
                 $params['verbose'] : $test ? true : false;
             isset($params['timeLimit'])?
                 $timeLimit = $params['timeLimit'] : $timeLimit = 1;
+            isset($params['cond'])?
+                $cond = $params['cond'] : $cond = [];
+            isset($params['meta'])?
+                $meta = $params['meta'] : $meta = null;
+            isset($params['orderBy'])?
+                $orderBy = $params['orderBy'] : $orderBy = null;
+            isset($params['orderType'])?
+                $orderType = $params['orderType'] : $orderType = 0;
+            isset($params['limit'])?
+                $limit = $params['limit'] : $limit = null;
+            isset($params['offset'])?
+                $offset = $params['offset'] : $offset = null;
 
             //metaTime is used for meta information regarding the backup
             $metaTime = time();
+            $prefix = $this->getSQLPrefix();
 
             //Input validation and sanitation
             //----tableName
@@ -694,7 +740,7 @@ namespace IOFrame\Handlers{
             if($this->settings->getSetting('secure_file_priv') != null)
                 $backUpFolder = $this->settings->getSetting('secure_file_priv');
             else{
-                $query = "SELECT * FROM "."CORE_VALUES WHERE tableKey = :tableKey;";
+                $query = "SELECT * FROM ".$prefix."CORE_VALUES WHERE tableKey = :tableKey;";
                 $sfp = $this->conn->prepare($query);
                 $sfp->bindValue(':tableKey','secure_file_priv');
                 try{
@@ -708,41 +754,94 @@ namespace IOFrame\Handlers{
                 $backUpFolder = $sfp->fetchAll()[0]['tableValue'];
             }
 
-            //Update meta information
-            $metaQuery = "INSERT INTO "."DB_BACKUP_META(Backup_Date, Table_Name, Full_Name) VALUES(:Backup_Date, :Table_Name, :Full_Name) ";
-            $updateMeta = $this->conn->prepare($metaQuery);
-            $updateMeta->bindValue(':Backup_Date',$metaTime);
-            $updateMeta->bindValue(':Table_Name',$tableName);
-            $updateMeta->bindValue(':Full_Name',$backUpFolder.$tableName."_backup_".$time.".txt");
-            //^to be executed after the main query^
+            $backUpFolder = str_replace('\\','/',$backUpFolder);
 
-            //Finish it
-            $query = "SELECT ".$colString." INTO OUTFILE '".$backUpFolder.$tableName."_backup_".$time.".txt'
+            $outputFile = $backUpFolder.$prefix.$tableName."_backup_".$time.".txt";
+
+            //In case the file already exists but we didn't limit time, but we can try to wait until the nearest second.
+            if(is_file($outputFile)){
+                while($metaTime === time())
+                    usleep(1000);
+                $outputFile = $backUpFolder.$prefix.$tableName."_backup_".$time.".txt";
+                if(is_file($outputFile))
+                    return 4;
+            }
+
+            //Make the query
+            $query = "SELECT ".$colString." INTO OUTFILE '".$outputFile."'
                           FIELDS TERMINATED BY '".DB_FIELD_SEPARATOR."'
                           LINES TERMINATED BY '\n'
-                           FROM ".$tableName;
+                           FROM ".$prefix.$tableName;
+
+            //If we have conditions
+            if($cond != []){
+                $query .= ' WHERE ';
+                try{
+                    $query .=  $this->queryBuilder->expConstructor($cond);
+                }catch (\Exception $e){
+                    //TODO log exception
+                    if($verbose){
+                        echo $e->getMessage().' || trace: '.EOL;
+                        var_dump($e->getTrace());
+                    }
+                    return -1;
+                }
+            }
+
+            //orderType
+            if($orderType == 0)
+                $orderType = 'ASC';
+            else
+                $orderType = 'DESC';
+
+            //If we have an order
+            if($orderBy != null){
+                $query .= ' ORDER BY ';
+                if(is_array($orderBy)){
+                    $query .= implode(',',$orderBy);
+                }
+                else
+                    $query .= $orderBy;
+                $query .=' '.$orderType;
+            }
+
+            //If we have a limit
+            if($limit != null){
+                $query .= ' LIMIT ';
+                if($offset)
+                    $query .=$offset.',';
+                $query .= $limit;
+            }
+
             $backUp = $this->conn->prepare($query);
             try{
                 if(!$test){
                     $backUp->execute();
-                    try{
-                        $updateMeta->execute();
-                    }catch(\Exception $e){
-                        if($verbose)
-                            echo 'Failed to update meta information about backup of '.$tableName.' at time '.$time.', error:'.$e.EOL;
-
-                        /* TODO ADD MODULAR LOGGING CONDITION
-                         */
-                        return 6;
-                    }
                 }
                 if($verbose)
-                    echo "Query for ".$tableName.": ".$query.EOL;
+                    echo "Query for ".$prefix.$tableName.": ".$query.EOL;
+
+                //Update meta information
+                $updateMeta = $this->insertIntoTable(
+                    $prefix."DB_BACKUP_META",
+                    ['Backup_Date','Table_Name','Full_Name','Meta'],
+                    [
+                        [
+                            [(string)$metaTime,'STRING'],
+                            [$prefix.$tableName,'STRING'],
+                            [$backUpFolder.$prefix.$tableName."_backup_".$time.".txt",'STRING'],
+                            [$meta,'STRING']
+                        ]
+                    ],
+                    $params
+                    );
+                if($updateMeta === false)
+                    return 6;
             }
             catch(\Exception $e){
                 if($verbose)
-                    echo "Query failed for ".$tableName.", error: ".$e.EOL;
-                $this->logger->critical("Backup query failed for ".$tableName.", error: ".$e);
+                    echo "Query failed for ".$prefix.$tableName.", error: ".$e.EOL;
+                $this->logger->critical("Backup query failed for ".$prefix.$tableName.", error: ".$e);
                 if(preg_match('/Column not found/',$e)){
                     return 2;
                 }
@@ -761,7 +860,7 @@ namespace IOFrame\Handlers{
          * @params string[] $tableNames Valid table name array
          * @params string[] $columns Name of the columns you wish to back up of the format 'tableName':['some','columns'] - [] means *.
          * @params integer[] $timeLimits Same as in backupTable
-         * @params array $params
+         * @params array $params Same as backupTables - BEWARE that 'meta' and 'where' would be the same for ALL the tables.
          *
          * @returns mixed
          *      json encoding of all the errors
@@ -781,7 +880,7 @@ namespace IOFrame\Handlers{
                     $columns[$val] = [];
                 if(!isset($timeLimits[$val]))
                     $timeLimits[$val] = 1;
-                $tempRes = $this->backupTable($val,$columns[$val],['timeLimit'=>$timeLimits[$val],'test'=>$test,'verbose'=>$verbose]);
+                $tempRes = $this->backupTable($val,$columns[$val],$params);
                 $tempRes == 0? true : $errors += array($val => $tempRes);
             }
             if(count($errors) == 0)
@@ -821,6 +920,7 @@ namespace IOFrame\Handlers{
             isset($params['fullPath'])?
                 $fullPath = $params['fullPath'] : $fullPath = true;
 
+            $prefix = $this->getSQLPrefix();
             //tableName
             if(preg_match('/\W/',$tableName)|| strlen($tableName)>64){
                 if($verbose)
@@ -848,8 +948,7 @@ namespace IOFrame\Handlers{
             elseif($this->settings->getSetting('secure_file_priv') != null)
                 $backUpFolder = $this->settings->getSetting('secure_file_priv');
             else{
-                $query = "SELECT * FROM ".$this->sqlSettings->getSetting('sql_table_prefix').
-                    "CORE_VALUES WHERE tableKey = :tableKey;";
+                $query = "SELECT * FROM ".$this->getSQLPrefix()."CORE_VALUES WHERE tableKey = :tableKey;";
                 $sfp = $this->conn->prepare($query);
                 $sfp->bindValue(':tableKey','secure_file_priv');
                 try{
@@ -857,14 +956,14 @@ namespace IOFrame\Handlers{
                     $backUpFolder = $sfp->fetchAll()[0]['tableValue'];
                 }
                 catch (\Exception $e){
-                    $this->logger->critical('Failed to get secure_file_priv of '.$tableName.', error:'.$e);
+                    $this->logger->critical('Failed to get secure_file_priv of '.$prefix.$tableName.', error:'.$e);
                     return 7;
                 }
             }
             //Finish the query
             $charset = 'utf8';                      //Only charset supported for now
-            $query = "LOAD DATA INFILE '".$backUpFolder.$fileName."'
-                          INTO TABLE ".$tableName."
+            $query = "LOAD DATA INFILE '".$backUpFolder.$prefix.$fileName."'
+                          INTO TABLE ".$prefix.$tableName."
                           CHARACTER SET ".$charset."
                           FIELDS TERMINATED BY '".DB_FIELD_SEPARATOR."'
                           LINES TERMINATED BY '\n';";
@@ -873,11 +972,11 @@ namespace IOFrame\Handlers{
                 if(!$test)
                     $backUpCoreValue->execute();
                 if($verbose)
-                    echo "Query for ".$tableName.": ".$query.EOL;
+                    echo "Query for ".$prefix.$tableName.": ".$query.EOL;
             }
             catch(\Exception $e){
                 if($verbose)
-                    echo 'Failed to restore '.$tableName.', error:'.$e.EOL;
+                    echo 'Failed to restore '.$prefix.$tableName.', error:'.$e.EOL;
                 /* TODO ADD MODULAR LOGGING CONDITION
                  */
                 if(preg_match('/Base table or view not found: 1146/',$e)){
@@ -920,13 +1019,18 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $prefix = $this->getSQLPrefix();
 
             try{
-                $availableBackups = $this->selectFromTable('db_backup_meta', ['Table_Name',$tableName,'='], ['Full_Name'],
-                    ['orderBy'=>["ID"],'orderType'=>1,'test'=>$test,'verbose'=>$verbose]);
+                $availableBackups = $this->selectFromTable(
+                    $this->getSQLPrefix().'db_backup_meta',
+                    ['Table_Name',$prefix.$tableName,'='],
+                    ['Full_Name'],
+                    ['orderBy'=>["ID"],'orderType'=>1,'test'=>$test,'verbose'=>$verbose]
+                );
             }
             catch (\Exception $e){
-                $this->logger->critical('Failed to query db_backup_meta of '.$tableName.', error:'.$e);
+                $this->logger->critical('Failed to query db_backup_meta of '.$prefix.$tableName.', error:'.$e);
                 return -1;
             }
             $res = 7;

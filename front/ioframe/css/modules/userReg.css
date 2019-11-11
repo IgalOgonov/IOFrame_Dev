@@ -1,0 +1,11 @@
+#userReg input.warning{
+    background: rgb(200,200,0);
+}
+#userReg input.error,
+#userReg input.danger{
+    background: rgb(255,0,0);
+}
+
+#userReg input.success{
+    background: rgb(10,255,10);
+}

@@ -7,7 +7,8 @@ namespace IOFrame\Handlers{
     if(!defined('FileHandler'))
         require 'FileHandler.php';
 
-    /*  This class handles orders - originally defined in PluginHandler.
+    /*  This class handles orders - originally defined in PluginHandler. The meaning of order here is not as in shopping
+     *  order, but "order of things".
      *
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL

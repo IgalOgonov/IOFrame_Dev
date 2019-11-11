@@ -157,6 +157,12 @@ echo '<section :class="{open:contactsTest, closed:!contactsTest}">';
 require 'test/verbose/contactsTest.php';
 echo '</section>';
 
+echo '<h1>'.'Orders test'.'</h1>';
+echo '<button @click = "ordersTest = !ordersTest">Toggle Visibility</button>';
+echo '<section :class="{open:ordersTest, closed:!ordersTest}">';
+require 'test/verbose/ordersTest.php';
+echo '</section>';
+
 echo '<h1>'.'General sandbox'.'</h1>';
 echo '<button @click = "generalSandbox = !generalSandbox">Toggle Visibility</button>';
 echo '<section :class="{open:generalSandbox, closed:!generalSandbox}">';
@@ -226,6 +232,7 @@ echo '<script>
         frontEndResourceTest: false,
         mediaResourceTest: false,
         contactsTest: false,
+        ordersTest: false,
         generalSandbox: false,
         SQLSandbox: false,
         cryptoSandbox: false,

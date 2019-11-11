@@ -18,12 +18,39 @@ function isElement(obj) {
     }
 }
 
-//Creates an bootstrap alert with the content of str, type of type, above errorLog.
-//types are success, info, warning, and danger.
-function alertLog(str, type = 'info', targetElement = document.body, allowSpec = true, extraClasses = '', closeClass = ''){
+/* Emits a visual alert
+ * @param {string} str Alert to emit
+ * @param {string} type Alert type (alert class will include 'alert-'+type)
+ * @param {string} targetElement Element on top of which the alert will appear
+ * @param {Object} params parameters of the form:
+ *                  allowSpec: bool, default true - whether to allow html characters
+ *                  extraClasses: string, default '' - extra classes to add.
+ *                  dismissible: string, default 'button' - how to dismiss the alert. Set to 'click' to do so on click,
+ *                                                          or to false to make the alert permenant.
+ *                  closeClass: string, default '' - class of the close button (if using one)
+ *
+*
+* */
+function alertLog(str, type = 'info', targetElement = document.body, params = {}){
+
+    if(params.allowSpec === undefined)
+        params.allowSpec = true;
+
+    if(params.extraClasses === undefined)
+        params.extraClasses = 'alert-'+type;
+    else
+        params.extraClasses += ' alert-'+type;
+
+    if(params.dismissible === undefined)
+        params.dismissible = 'button';
+
+    if(params.closeClass === undefined)
+        params.closeClass = '';
+
     if(document.alertHandler === undefined)
         document.alertHandler = new ezAlert('alert');
-    document.alertHandler.initAlert(targetElement,str,'button',allowSpec,extraClasses + ' alert-'+type ,closeClass);
+
+    document.alertHandler.initAlert(targetElement,str,params);
 }
 
 //Checks if a string is Json

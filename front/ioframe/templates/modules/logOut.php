@@ -1,4 +1,3 @@
 
-<span id="userLogOut">
-        <button @click.prevent="logOut">Log Out</button>
+<span id="userLogOut" is="user-logout" :test="test" :verbose="verbose">
 </span>

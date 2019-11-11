@@ -37,10 +37,10 @@ else if(isset($inputs['id']) and isset($inputs['code']) ){
 
     if(!isset($inputs['async'])  && $pageSettings->getSetting('mailReset')){
         if(!$test)
-            header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$pageSettings->getSetting('mailReset').'?res='.$result);
+            header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('mailReset').'?res='.$result);
 
         else
-            echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$pageSettings->getSetting('mailReset').'?res='.$result.EOL;
+            echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('mailReset').'?res='.$result.EOL;
     }
 
 }

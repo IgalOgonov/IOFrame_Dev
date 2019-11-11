@@ -12,6 +12,7 @@ namespace IOFrame\Util{
         $res='';
         $rootCount=0;
         $count=0;
+        $currAdr = preg_replace('/(\/)+/', '/', $currAdr);
         for($i=0; $i<strlen($pathToRoot); $i++){
             if($pathToRoot[$i]=='/') $rootCount++;
         }
@@ -284,7 +285,7 @@ namespace IOFrame\Util{
         closedir($dir);
     }
 
-    //Recursive folder copying in PHP - simple function
+    //Recursive folder deletion in PHP - simple function
     function folder_delete($dirPath) {
         if (! is_dir($dirPath)) {
             throw new \InvalidArgumentException("$dirPath must be a directory");
@@ -359,7 +360,7 @@ namespace IOFrame\Util{
      * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
      * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
      */
-    function array_merge_recursive_distinct ( array &$array1, array &$array2, array $params = [] )
+    function array_merge_recursive_distinct ( array $array1, array $array2, array $params = [] )
     {
         $deleteOnNull = isset($params['deleteOnNull'])? $params['deleteOnNull'] : false;
         $merged = $array1;

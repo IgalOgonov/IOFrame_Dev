@@ -11,18 +11,29 @@ class ezAlert{
         this.className = className;
     }
 
-    /* The target can be an element ID, or the element itself.
-    *  It will first check whether the target is a string, then whether an id like that exists.
-    *  If the target is not a string, it will check whether it is an object.
-    * Content can be any content for the alert. Only if allowSpec is true can the content contain HTML (and most other characters)
-    * If dismissible is not false, alert will be dismissible.
-    *  If the value is 'button', will create a button to dismiss (default).
-    *  If the value is 'click', will be dismissible on click.
-    * If allowSpec is false, content will only be allowed to contain word characters,',','.','?','!', and '.
-    * extraClasses will add more classes to this specific alert.
-    * closeClass will specify the name of the button that closes the class (default 'close')
+    /* The target
+    * @param {string|object} target Can be an element ID, or the element itself.
+    *                        It will first check whether the target is a string, then whether an id like that exists.
+    *                        If the target is not a string, it will check whether it is an object.
+    * @param {string} Content Any content for the alert.
+    *                         Only if allowSpec is true can the content contain HTML (and most other characters)
+    * @param {Object} params parameters of the form:
+    *                  allowSpec: bool, default true - whether to allow html characters
+    *                  extraClasses: string, default '' - will add more classes to this specific alert..
+    *                  dismissible: string, default 'button' - how to dismiss the alert.
+    *                                                If the value is 'button', will create a button to dismiss (default).
+    *                                                If the value is 'click', will be dismissible on click.
+    *                  closeClass: string, default '' - will specify the name of the button that closes the class (default 'close')
     * */
-    initAlert(target, content, dismissible = 'button', allowSpec = true, extraClasses = '', closeClass = ''){
+    initAlert(target, content, params){
+        if(params.allowSpec === undefined)
+            params.allowSpec = true;
+        if(params.extraClasses === undefined)
+            params.extraClasses = '';
+        if(params.dismissible === undefined)
+            params.dismissible = 'button';
+        if(params.closeClass === undefined)
+            params.closeClass = '';
         //If we didn't get an element, maybe we got a string that represents an object ID
         if(!this.isElement(target)){
             if(typeof(target) == 'string'){
@@ -30,14 +41,14 @@ class ezAlert{
             }
         }
         //Validate extraClasses
-        if(typeof(extraClasses) != 'string' )
-            extraClasses = '';
+        if(typeof(params.extraClasses) != 'string' )
+            params.extraClasses = '';
         //Handle dismissible
-        if(dismissible !== 'button' && dismissible !== 'click'){
-            if(dismissible) dismissible = 'button';
+        if(params.dismissible && (params.dismissible !== 'button' && params.dismissible !== 'click')){
+            params.dismissible = 'button';
         }
         //If we do not allow any special characters
-        if(!allowSpec){
+        if(!params.allowSpec){
             let regex = /\w| |\.|\,|\!|\?|\"'/g;
             let found = content.match(regex);
             if(found.length < content.length){
@@ -52,24 +63,23 @@ class ezAlert{
         }
         //Create the alert
         let alert;
-        (dismissible == 'click')?
+        (params.dismissible == 'click')?
          alert = document.createElement("a"): alert = document.createElement("div");
-        alert.className=this.className+" "+extraClasses;
+        alert.className=this.className+" "+params.extraClasses;
         alert.innerHTML = content;
-        if(dismissible == 'click'){
-            alert.href = '';
+        if(params.dismissible == 'click'){
             alert.style.display = 'block';
             alert.style.textDecoration = 'none';
             alert.style.cursor = 'pointer';
             alert.addEventListener('click',e =>{e.target.parentNode.removeChild(e.target)});
         }
-        if(dismissible == 'button'){
+        if(params.dismissible == 'button'){
             let alertClose = document.createElement("p");
             alertClose.innerHTML = 'X';
             alertClose.href = '';
-            (closeClass == '')?
+            (params.closeClass == '')?
                 alertClose.className = 'close'
-                : alertClose.className = closeClass;
+                : alertClose.className = params.closeClass;
             alertClose.style.textDecoration = 'none';
             alertClose.style.position = 'relative';
             alertClose.style.bottom = '10px';

@@ -11,9 +11,9 @@ $IOFrameCSSRoot = 'front/ioframe/css/';
 if(!isset($FrontEndResourceHandler))
     $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 $coreJS = $FrontEndResourceHandler->getJSCollection( 'IOFrameCoreJS',['rootFolder'=>$IOFrameJSRoot]);
-echo '<script src="'.$dirToRoot.'front/ioframe/js/'.$coreJS['relativeAddress'].'"></script>';
+echo '<script src=\''.$dirToRoot.'front/ioframe/js/'.$coreJS['relativeAddress'].'\'></script>';
 $ezAlertCSS = $FrontEndResourceHandler->getCSS(['ezAlert.css'],['rootFolder'=>$IOFrameCSSRoot])['ezAlert.css'];
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/'.$ezAlertCSS['relativeAddress'].'"">';
+echo '<link rel="stylesheet" href=\''.$dirToRoot.'front/ioframe/css/'.$ezAlertCSS['relativeAddress'].'\'>';
 
 /*Include plugins JS files, if those exist*/
 $jsIncludes = $orderedPlugins;
@@ -23,11 +23,11 @@ if(is_dir($settings->getSetting('absPathToRoot').'front/ioframe/js/plugins')){
         $jsIncludes[$key] .= '.js';
         $jsInclude = $settings->getSetting('absPathToRoot').'front/ioframe/js/plugins/'.$jsIncludes[$key];
         if(file_exists($jsInclude))
-            echo '<script src="'.$dirToRoot.'front/ioframe/js/plugins/'.$jsIncludes[$key].'"></script>';
+            echo '<script src=\''.$dirToRoot.'front/ioframe/js/plugins/'.$jsIncludes[$key].'\'></script>';
     }
     foreach($dirArray as $key => $fileName){
         if(preg_match('/^[a-zA-Z0-9_-]+\.js$/',$fileName) && !in_array($fileName,$jsIncludes)){
-            echo '<script src="'.$dirToRoot.'front/ioframe/js/plugins/'.$fileName.'"></script>';
+            echo '<script src=\''.$dirToRoot.'front/ioframe/js/plugins/'.$fileName.'\'></script>';
         }
     }
 }
@@ -35,13 +35,13 @@ if(is_dir($settings->getSetting('absPathToRoot').'front/ioframe/js/plugins')){
 
 <script>
     //This is the path to the root of the IOFrame site
-    document.pathToRoot = "<?php echo $dirToRoot;?>";
+    document.pathToRoot = '<?php echo $dirToRoot;?>';
     //Current page full name
-    document.currentPage = encodeURI("<?php echo $currentPage;?>");
+    document.currentPage = encodeURI('<?php echo $currentPage;?>');
     //Current page URI
-    document.currentPageURI = encodeURI("<?php echo $currentPageURI;?>");
+    document.currentPageURI = encodeURI('<?php echo $currentPageURI;?>');
     //Current root URI
-    document.rootURI = encodeURI("<?php echo $rootURI;?>");
+    document.rootURI = encodeURI('<?php echo $rootURI;?>');
     //Path to the current page from root
     document.loggedIn = <?php echo $auth->isLoggedIn()? "true" : "false";  ?>;
     //Difference between local time and server time - in seconds!

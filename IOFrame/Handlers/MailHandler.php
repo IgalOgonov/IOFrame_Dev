@@ -153,15 +153,14 @@ namespace IOFrame\Handlers{
             $test = (isset($params['test']))? $params['test'] : false;
             $verbose = (isset($params['verbose']))? $params['verbose'] : $test;
 
-            var_dump($token,$mails);
-
             IOFrame\Util\is_json($mails)?
                 $cond = 'MailAPIGlobal'
                 :
                 $cond = $mails;
             $dbres = $this->SQLHandler->selectFromTable($this->SQLHandler->getSQLPrefix().'MAIL_AUTH',['Name',$cond,'='],[],[]);
 
-            var_dump($dbres);
+            if($verbose)
+                echo 'db response: '.json_encode($dbres).EOL;
 
             if(!is_array($dbres)|| count($dbres) == 0)
                 return 1;

@@ -14,12 +14,17 @@ echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/global.css">'
 
 echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/popUpTooltip.css">';
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min">';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min.css">';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/modules/userLog.css">';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/modules/userReg.css">';
 
 if($auth->isAuthorized(0))
     echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';
 else
     echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.min.js"></script>';
+echo '<script src="'.$dirToRoot.'front/ioframe/js/components/userLogin.js"></script>';
+echo '<script src="'.$dirToRoot.'front/ioframe/js/components/userLogout.js"></script>';
+echo '<script src="'.$dirToRoot.'front/ioframe/js/components/userRegistration.js"></script>';
 
 echo '<title>Admin Panel</title>';
 

@@ -178,7 +178,7 @@ namespace IOFrame{
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."USERS_EXTRA (
                                                               ID int PRIMARY KEY,
-                                                              Created_On varchar(14) NOT NULL,
+                                                              Created_On varchar(14) NOT NULL DEFAULT 0,
                                                               Banned_Until varchar(14),
                                                               Suspicious_Until varchar(14),
                                                                 FOREIGN KEY (ID)
@@ -358,7 +358,7 @@ namespace IOFrame{
                                                                 ON DELETE CASCADE,
                                                                 FOREIGN KEY (Auth_Action)
                                                                 REFERENCES ".$prefix."ACTIONS_AUTH(Auth_Action)
-                                                                ON DELETE CASCADE,
+                                                                ON DELETE CASCADE ON UPDATE CASCADE,
                                                                 PRIMARY KEY (ID, Auth_Action)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
@@ -380,10 +380,10 @@ namespace IOFrame{
                                                                 Auth_Action varchar(256),
                                                                 FOREIGN KEY (Auth_Group)
                                                                 REFERENCES ".$prefix."GROUPS_AUTH(Auth_Group)
-                                                                ON DELETE CASCADE,
+                                                                ON DELETE CASCADE ON UPDATE CASCADE,
                                                                 FOREIGN KEY (Auth_Action)
                                                                 REFERENCES ".$prefix."ACTIONS_AUTH(Auth_Action)
-                                                                ON DELETE CASCADE,
+                                                                ON DELETE CASCADE ON UPDATE CASCADE,
                                                                 PRIMARY KEY (Auth_Group, Auth_Action)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
@@ -408,7 +408,7 @@ namespace IOFrame{
                                                                 ON DELETE CASCADE,
                                                                 FOREIGN KEY (Auth_Group)
                                                                 REFERENCES ".$prefix."GROUPS_AUTH(Auth_Group)
-                                                                ON DELETE CASCADE,
+                                                                ON DELETE CASCADE ON UPDATE CASCADE,
                                                                 PRIMARY KEY (ID, Auth_Group)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
@@ -652,7 +652,8 @@ namespace IOFrame{
                                                               ID int PRIMARY KEY NOT NULL AUTO_INCREMENT,
                                                               Backup_Date varchar(14) NOT NULL,
                                                               Table_Name varchar(64) NOT NULL,
-                                                              Full_Name varchar(256) NOT NULL
+                                                              Full_Name varchar(256) NOT NULL,
+                                                              Meta TEXT DEFAULT NULL
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
                 $makeTB->execute();
@@ -1043,10 +1044,10 @@ namespace IOFrame{
                                                               Address varchar(512) NOT NULL,
                                                               FOREIGN KEY (Resource_Type, Collection_Name)
                                                               REFERENCES ".$prefix."RESOURCE_COLLECTIONS(Resource_Type, Collection_Name)
-                                                              ON DELETE CASCADE,
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
                                                               FOREIGN KEY (Resource_Type, Address)
                                                               REFERENCES ".$prefix."RESOURCES(Resource_Type, Address)
-                                                              ON DELETE CASCADE,
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
                                                               PRIMARY KEY (Resource_Type, Collection_Name, Address)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
@@ -1056,6 +1057,137 @@ namespace IOFrame{
             }
             catch(\Exception $e){
                 echo "Resource collection members table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+
+
+            // INITIALIZE DEFAULT_ORDERS Table
+            /* This table is meant to be the default table for purchase orders in IOFrame.
+             * Like written in the handler, by themselves orders do not have a meaning, and have to be expanded by the
+             * system that uses them.
+             * The reason that be default information is not relational, is because orders must persist even when the items
+             * that were ordered are no longer in the system. That is, among other things, in case things like products are
+             * archived, and would otherwise trigger the relational events like Delete, or the foreign key constraints.
+             *
+             * ID           - int, Auto incrementing ID.
+             * Order_Info   - text, NON-SEARCHABLE information about the current state of the order itself. This can include
+             *                stuff like discount, payment method, shipping details, etc.
+             *                However, if - for example - a specific system needs to be able to sort payments by country, then the
+             *                information needs to be duplicated into an additional (indexed) "Country" column, not just placed here.
+             *                Likewise, if there exist relational data like Buyer <=> Order <=> Seller, than such data needs
+             *                to be placed into its own tables, and handled by the class extending "PurchaseOrderHandler".
+             * Order_History- text, NON-SEARCHABLE information about the current state of the order history.
+             *                This is meant to give the admin (and sometimes the customer) the ability to see the history
+             *                of changes made in the order.
+             *                Each order MUST save every change made to it, so every state of the order at any moment in
+             *                time may be restored (important to remember when extending!).
+             *                The format is a JSON encoded array of objects, aka (example):
+             *               [
+             *                  {time:1572192007,delivery:{oldValue:"collectFromStore",newValue:"deliverToAddress"}},
+             *                  {time:1572197764,city:{oldValue:"London",newValue:"Manchester"}},
+             *                  {time:1572197764,street:{oldValue:"Graham",newValue:"Warwick"}},
+             *                  {time:1572197764,houseNum:{oldValue:45,newValue:13}},
+             *                ]
+             * Created   -   Varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   Varchar(14), UNIX timestamp of when the order was last updated.
+             * Session_Lock -   Varchar(256), Same as the tokens table. Orders must function correctly, even at the cost of performance.
+             * Locked_At    -  Varchar(14), UNIX timestamp. Same as tokens table.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."DEFAULT_ORDERS (
+                                                              ID int PRIMARY KEY AUTO_INCREMENT,
+                                                              Order_Info TEXT DEFAULT NULL,
+                                                              Order_History TEXT DEFAULT NULL,
+                                                              Order_Type varchar(64) DEFAULT NULL,
+                                                              Order_Status varchar(64) DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              Session_Lock varchar(256) DEFAULT NULL,
+                                                              Locked_At varchar(14) DEFAULT NULL
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Created);";
+            $indexTB1 = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Last_Updated);";
+            $indexTB2 = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Order_Type);";
+            $indexTB3 = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Order_Status);";
+            $indexTB4 = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "Default Orders table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "Default Orders table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            try{
+                $indexTB1->execute();
+                $indexTB2->execute();
+                echo "Default Orders table indexes created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "Default Orders table indexes couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+
+
+            // INITIALIZE DEFAULT_USERS_ORDERS Table
+            /* This table is the complement table for DEFAULT_ORDERS - it's a many-to-many table binding users to orders.
+             * It is important to note that even if an order is unbound from a user (for example its creator), the fact that
+             * it was initially bound to that user would still be saved in the order Info and/or History.
+             *
+             * User_ID      - int, User ID
+             * Order_ID     - int, User ID
+             * Relation_Type- varchar(256), type of relationship between the user and order. By default, it is empty, but
+             *                different systems may have many different relationship types for this table (for example,
+             *                a user may be either a buyer or a seller for an order)
+             * Meta         - text, NOT SEARCHABLE meta information about the relationship. Generally a JSON encoded string
+             *                with system specific logic.
+             * Created   - Varchar(14), UNIX timestamp of when the relationship was created.
+             * Last_Updated - Varchar(14), UNIX timestamp of when the relationship was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."DEFAULT_USERS_ORDERS (
+                                                              User_ID int,
+                                                              Order_ID int,
+                                                              Relation_Type varchar(256) DEFAULT NULL,
+                                                              Meta TEXT DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,,
+                                                              UNIQUE (Order_ID,User_ID)
+                                                              FOREIGN KEY (User_ID)
+                                                              REFERENCES ".$prefix."USERS(ID)
+                                                              ON DELETE CASCADE,
+                                                              FOREIGN KEY (Order_ID)
+                                                              REFERENCES ".$prefix."DEFAULT_ORDERS(ID)
+                                                              ON DELETE CASCADE
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_USERS_ORDERS ADD INDEX (Created);";
+            $indexTB1 = $conn->prepare($query);
+            $query = "ALTER TABLE ".$prefix."DEFAULT_USERS_ORDERS ADD INDEX (Last_Updated);";
+            $indexTB2 = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "Default Users<=>Orders table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "Default Users<=>Orders table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            try{
+                $indexTB1->execute();
+                $indexTB2->execute();
+                echo "Default Users<=>Orders table indexes created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "Default Users<=>Orders table indexes couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
 

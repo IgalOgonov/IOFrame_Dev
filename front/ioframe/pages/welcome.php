@@ -14,7 +14,7 @@ if(!defined('coreInit'))
 
     echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
     echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/popUpTooltip.css">';
-    echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min">';
+    echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min.css">';
 
     if($auth->isAuthorized(0))
         echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';

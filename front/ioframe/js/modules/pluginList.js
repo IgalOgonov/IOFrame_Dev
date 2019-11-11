@@ -1,52 +1,4 @@
 
-//-----------Handle dragging plugins
-function plugin_order_drag_start(ev){
-    // Add the target element's id to the data transfer object
-    ev.dataTransfer.setData("text/plain", ev.target.id);
-    //console.log('Starting to drag element ',ev.target.id);
-}
-function plugin_order_drag_enter(ev){
-    ev.preventDefault();
-    let draggedID = ev.dataTransfer.getData("text/plain");
-    let targetID = ev.target.id;
-    if(draggedID == targetID)
-        return;
-    ev.target.parentElement.parentElement.className = 'active-order';
-    //console.log('Element ',draggedID,' entered element ',targetID);
-}
-function plugin_order_drag_leave(ev){
-    let draggedID = ev.dataTransfer.getData("text/plain");
-    let targetID = ev.target.id;
-    if(draggedID == targetID)
-        return;
-    ev.target.parentElement.parentElement.className = '';
-    //console.log('Element ',draggedID,' exited element ',targetID);
-}
-function plugin_order_drop(ev){
-    ev.preventDefault();
-    let draggedID = ev.dataTransfer.getData("text/plain");
-    draggedIndexID = draggedID.substring(0,draggedID.length-4)+'index';
-    let indexDragged = document.getElementById(draggedIndexID).innerHTML;
-    let targetID = ev.target.id;
-    targetIndexID = targetID.substring(0,targetID.length-4)+'index';
-    let indexTarget = document.getElementById(targetIndexID).innerHTML;
-    if(draggedID == targetID)
-        return;
-    ev.target.parentElement.parentElement.className = '';
-    switch(pluginOrderList.movementType){
-        case 'move':
-            pluginOrderList.move(indexDragged,indexTarget);
-            break;
-        case 'swap':
-            pluginOrderList.swap(indexDragged,indexTarget);
-            break;
-        default :
-            console.log('Wrong order movement mode!');
-    }
-}
-function plugin_order_drag_over(ev){
-    ev.preventDefault();
-}
 
 //-----------This component is responsible for each plugin
 Vue.component('plugin-order', {
@@ -56,11 +8,11 @@ Vue.component('plugin-order', {
           <td class = "order-names">{{fileName}}: {{name}}</td>\
           <td  class="order-icons"><img :src="iconURL"  draggable-element="true" class="order-drag" \
                 draggable="true"\
-                ondragstart="plugin_order_drag_start(event)"\
-                ondragenter="plugin_order_drag_enter(event)"\
-                ondragleave="plugin_order_drag_leave(event)"\
-                ondragover="plugin_order_drag_over(event)"\
-                ondrop="plugin_order_drop(event)"\
+                ondragstart="pluginOrderList.dragStart(event)"\
+                ondragenter="pluginOrderList.dragEnter(event)"\
+                ondragleave="pluginOrderList.dragLeave(event)"\
+                ondragover="pluginOrderList.dragOver(event)"\
+                ondrop="pluginOrderList.dragDrop(event)"\
                 :id="dynamicIdIcon"\></td>\
         </tr>\
         ',
@@ -100,6 +52,57 @@ var pluginOrderList = new Vue({
         pluginOrder: []
     },
     methods: {
+
+        //STARTS HERE --- All of the functions bellow handle drag and drop
+        dragStart: function(ev){
+            // Add the target element's id to the data transfer object
+            ev.dataTransfer.setData("text/plain", ev.target.id);
+            //console.log('Starting to drag element ',ev.target.id);
+        },
+        dragEnter: function(ev){
+            ev.preventDefault();
+            let draggedID = ev.dataTransfer.getData("text/plain");
+            let targetID = ev.target.id;
+            if(draggedID == targetID)
+                return;
+            ev.target.parentElement.parentElement.className = 'active-order';
+            //console.log('Element ',draggedID,' entered element ',targetID);
+        },
+        dragLeave: function(ev){
+            let draggedID = ev.dataTransfer.getData("text/plain");
+            let targetID = ev.target.id;
+            if(draggedID == targetID)
+                return;
+            ev.target.parentElement.parentElement.className = '';
+            //console.log('Element ',draggedID,' exited element ',targetID);
+        },
+        dragOver: function(ev){
+            ev.preventDefault();
+        },
+        dragDrop: function(ev){
+            ev.preventDefault();
+            let draggedID = ev.dataTransfer.getData("text/plain");
+            draggedIndexID = draggedID.substring(0,draggedID.length-4)+'index';
+            let indexDragged = document.getElementById(draggedIndexID).innerHTML;
+            let targetID = ev.target.id;
+            targetIndexID = targetID.substring(0,targetID.length-4)+'index';
+            let indexTarget = document.getElementById(targetIndexID).innerHTML;
+            if(draggedID == targetID)
+                return;
+            ev.target.parentElement.parentElement.className = '';
+            switch(pluginOrderList.movementType){
+                case 'move':
+                    pluginOrderList.move(indexDragged,indexTarget);
+                    break;
+                case 'swap':
+                    pluginOrderList.swap(indexDragged,indexTarget);
+                    break;
+                default :
+                    console.log('Wrong order movement mode!');
+            }
+        },
+        //END HERE -- All of the functions above handle drag and drop
+
         setMovement: function(type){
             this.movementType = type;
         },

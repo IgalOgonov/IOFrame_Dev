@@ -43,10 +43,10 @@ else if($inputs['id'] !== null and $inputs['code'] !== null ){
 
     if(!isset($inputs['async'])  && $pageSettings->getSetting('pwdReset')){
         if(!$test)
-            header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$pageSettings->getSetting('pwdReset').'?res='.$result);
+            header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('pwdReset').'?res='.$result);
 
         else
-            echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$pageSettings->getSetting('pwdReset').'?res='.$result.EOL;
+            echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('pwdReset').'?res='.$result.EOL;
     }
 }
 

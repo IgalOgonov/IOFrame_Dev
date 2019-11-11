@@ -55,21 +55,32 @@ namespace IOFrame\Handlers{
          *
          * @param array $identifiers Array of contact names. If it is [], will return all contacts up to the max query limit.
          *
-         * @param array $params:
+         * @param array $params getFromCacheOrDB() params, as well as:
          *          'firstNameLike' => String, default null - returns results where first name  matches a regex.
-         *          'fullNameLike' => String, default null - returns results where first name together with last name matche a regex.
          *          'emailLike' => String, email, default null - returns results where email matches a regex.
          *          'countryLike' => String, Unix timestamp, default null - returns results where country matches a regex.
          *          'cityLike' => String, Unix timestamp, default null - returns results where city matches a regex.
          *          'companyNameLike' => String, Unix timestamp, default null - returns results where company name matches a regex.
-         *          'companyNameIDLike' => String, Unix timestamp, default null - returns results where company name together with company ID matche a regex.
          *          'createdBefore' => String, Unix timestamp, default null - only returns results created before this date.
          *          'createdAfter' => String, Unix timestamp, default null - only returns results created after this date.
          *          'changedBefore' => String, Unix timestamp, default null - only returns results changed before this date.
          *          'changedAfter' => String, Unix timestamp, default null - only returns results changed after this date.
          *          'includeRegex' => String, default null - only includes results containing this regex.
          *          'excludeRegex' => String, default null - only includes results excluding this regex.
-         *          'limit', 'offset' => Integers, typical SQL parameters
+         *          'extraDBFilters'    - array, default [] - Do you want even more complex filters than the ones provided?
+         *                                This array will be merged with $extraDBConditions before the query, and passed
+         *                                to getFromCacheOrDB() as the 'extraConditions' param.
+         *                                Each condition needs to be a valid PHPQueryBuilder array.
+         *          'extraCacheFilters' - array, default [] - Same as extraDBFilters but merged with $extraCacheConditions
+         *                                and passed to getFromCacheOrDB() as 'columnConditions'.
+         *          ------ Using the parameters bellow disables caching ------
+         *          'fullNameLike' => String, default null - returns results where first name together with last name matche a regex.
+         *          'companyNameIDLike' => String, Unix timestamp, default null - returns results where company name together with company ID matche a regex.
+         *          'orderBy'            - string, defaults to null. Possible values include 'Created' 'Last_Changed',
+         *                                'Local' and 'Address'(default)
+         *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
+         *          'limit' => typical SQL parameter
+         *          'offset' => typical SQL parameter
          *
          * @returns Array of the form:
          *          [
@@ -86,6 +97,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $extraDBFilters = isset($params['extraDBFilters'])? $params['extraDBFilters'] : [];
+            $extraCacheFilters = isset($params['extraCacheFilters'])? $params['extraCacheFilters'] : [];
             $firstNameLike = isset($params['firstNameLike'])? $params['firstNameLike'] : null;
             $fullNameLike = isset($params['fullNameLike'])? $params['fullNameLike'] : null;
             $emailLike = isset($params['emailLike'])? $params['emailLike'] : null;
@@ -99,6 +112,8 @@ namespace IOFrame\Handlers{
             $changedBefore = isset($params['changedBefore'])? $params['changedBefore'] : null;
             $includeRegex = isset($params['includeRegex'])? $params['includeRegex'] : null;
             $excludeRegex = isset($params['excludeRegex'])? $params['excludeRegex'] : null;
+            $orderBy = isset($params['orderBy'])? $params['orderBy'] : null;
+            $orderType = isset($params['orderType'])? $params['orderType'] : null;
             $limit = isset($params['limit'])? $params['limit'] : null;
             $offset = isset($params['offset'])? $params['offset'] : null;
 
@@ -111,8 +126,10 @@ namespace IOFrame\Handlers{
             $columns = ['Contact_Type','Identifier'];
 
             //If we are using any of this functionality, we cannot use the cache
-            if($offset || $limit || $fullNameLike || $companyNameIDLike){
+            if($offset || $limit ||  $orderBy || $orderType || $fullNameLike || $companyNameIDLike){
                 $retrieveParams['useCache'] = false;
+                $retrieveParams['orderBy'] = $orderBy? $orderBy : null;
+                $retrieveParams['orderType'] = $orderType? $orderType : 0;
                 $retrieveParams['limit'] =  $limit? $limit : null;
                 $retrieveParams['offset'] =  $offset? $offset : null;
             }
@@ -192,6 +209,9 @@ namespace IOFrame\Handlers{
                 array_push($extraDBConditions,[$colPrefix.'Identifier',[$excludeRegex,'STRING'],'NOT RLIKE']);
             }
 
+            $extraDBConditions = array_merge($extraDBConditions,$extraDBFilters);
+            $extraCacheConditions = array_merge($extraCacheConditions,$extraCacheFilters);
+
             if($extraCacheConditions!=[]){
                 array_push($extraCacheConditions,'AND');
                 $retrieveParams['columnConditions'] = $extraCacheConditions;
@@ -204,7 +224,7 @@ namespace IOFrame\Handlers{
             if($identifiers == []){
                 $results = [];
 
-                $tableQuery = $this->SQLHandler->getSQLPrefix().$this->tableName;
+                $tableQuery = $prefix.$this->tableName;
 
                 $res = $this->SQLHandler->selectFromTable(
                     $tableQuery,
@@ -219,7 +239,7 @@ namespace IOFrame\Handlers{
                     array_merge($retrieveParams,['limit'=>0])
                 );
                 if(is_array($res)){
-                    $resCount = count($res);
+                    $resCount = count($res[0]);
                     foreach($res as $resultArray){
                         for($i = 0; $i<$resCount/2; $i++)
                             unset($resultArray[$i]);
@@ -271,7 +291,7 @@ namespace IOFrame\Handlers{
          * @returns  Int explained in setContacts
          */
         function setContact(string $identifier, array $inputs, array $params = []){
-            return $this->setContacts([[$identifier,$inputs]],$params)[$this->contactType.'/'.$identifier];
+            return $this->setContacts([[$identifier,$inputs]],$params)[$identifier];
         }
 
         /** Creates or updates multiple contacts.
@@ -307,7 +327,6 @@ namespace IOFrame\Handlers{
 
             $keyDelimiter = '/';
             $identifiers = [];
-            $identifiersToGet = [];
             $identifierIndexMap = [];
             $results = [];
             $contactsToSet = [];

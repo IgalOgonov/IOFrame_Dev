@@ -26,9 +26,11 @@ foreach($routes as $index => $routeArray){
     //Map routes
     $router->map( $routeArray['Method'], $routeArray['Route'], $routeArray['Match_Name'], $routeArray['Map_Name']);
 };
-
+//Get URI, and possible fix it
+$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+$uri = preg_replace('/\/\/+/','/',$uri);
 //Match and set parameters/target if we got a match
-$match = $router->match();
+$match = $router->match($uri);
 
 if( is_array($match)) {
     $routeTarget = $match['target'];
@@ -105,7 +107,6 @@ if(isset($matches[$routeTarget]) && is_array($matches[$routeTarget])){
 }
 
 //If we are here, we have to get our page without the match rules
-$uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 $pageSettings = new IOFrame\Handlers\SettingsHandler(SETTINGS_DIR_FROM_ROOT.'/pageSettings/',$defaultSettingsParams);
 
 //If the homepage was requested, and is defined in the settings, try to require the homepage

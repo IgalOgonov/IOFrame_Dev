@@ -1,8 +1,27 @@
 DirectoryIndex index.php home.php
 
+<Files .git*> 
+   Require all denied
+</Files>
+
+<Files *.md$> 
+   Require all denied
+</Files>
+
+<Files COPYRIGHT> 
+   Require all denied
+</Files>
+
+<Files LICENSE> 
+   Require all denied
+</Files>
+
 RewriteEngine on
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule . index.php [L]
+#The following rule protects .git and .idea
+RedirectMatch 403 .git
+RedirectMatch 403 .idea
 
 #How long to cache stuff for
 <IfModule mod_expires.c>

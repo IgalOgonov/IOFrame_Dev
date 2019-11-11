@@ -105,7 +105,20 @@ namespace IOFrame{
          *                                  In that case you'll get "car/volvo","car/ford","car/toyota" as result keys
          *                                  (assuming those are all the cars).
          *                                Only works if the delimiter is illegal as a normal character.
-         *
+         *              'groupByFirstNKeys' => Int, default 0 -
+         *                                     Sometimes, while the key columns are multiple, their only meaningful identifiers
+         *                                     are the first N keys. For example, in an Orders <=> Users many to many
+         *                                     table, a order 4 may be related to users 1~20, but when you query
+         *                                     for that order you don't really want to get 20 different entries - you just
+         *                                     want one entry, identified by the order number (4) which contains all relevant users.
+         *                                     If this setting is not larger than 0, and $keyCol are more than 1, will group the results
+         *                                     by the first N identifiers (where N < count($keyCol)), and push them into an
+         *                                     array.
+         *                                     So the above example with groupByFirstNKeys == 1 would return:
+         *                                     [
+         *                                      4 => [<DB array of order/user 4/1>,<DB array of order/user 4/2>, ...]
+         *                                     ]
+         *                                     rather than 20 different results identified by 4/1, 4/2 ...
          * @returns mixed
          * a result in the form [<keyName> => <Associated array for row>]
          *  or
@@ -115,6 +128,7 @@ namespace IOFrame{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+
             $extraConditions = isset($params['extraConditions'])? $params['extraConditions'] : [];
 
             if(isset($params['limit']))
@@ -146,6 +160,13 @@ namespace IOFrame{
                 else
                     $keyDelimiter = '';
             }
+
+            if(isset($params['groupByFirstNKeys']) && (is_array($keyCol) || count($extraKeyColumns) > 0)){
+                $totalCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
+                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalCount-1));
+            }
+            else
+                $groupByFirstNKeys = 0;
 
             if(isset($params['orderBy'])){
                 $orderBy = $params['orderBy'];
@@ -225,7 +246,6 @@ namespace IOFrame{
                 else
                     $conds = $extraConditions;
             }
-
             $res = $this->SQLHandler->selectFromTable(
                 $tableName,
                 $conds,
@@ -253,11 +273,32 @@ namespace IOFrame{
                             $identifier .= $keyDelimiter.$res[$i][$extraKeyColumn];
                         }
                     }
-                    $tempRes[$identifier] = $res[$i];
+
+                    //Under regular circumstances, set the result identifier
+                    if($groupByFirstNKeys == 0)
+                        $tempRes[$identifier] = $res[$i];
+                    //If we group by first N keys, do something different
+                    else{
+                        //Calculate the identifier
+                        $identifier = explode($keyDelimiter,$identifier);
+                        $tempIdentifier = '';
+                        for($j = 0; $j < $groupByFirstNKeys; $j++){
+                            if($j == 0)
+                                $tempIdentifier = array_pop($identifier);
+                            else
+                                $tempIdentifier = array_pop($identifier).$keyDelimiter.$tempIdentifier;
+                        }
+                        $identifier = implode($keyDelimiter,$identifier);
+                        //If the identifier was unset, set it
+                        if(!is_array($tempRes[$identifier]))
+                            $tempRes[$identifier] = [];
+                        //Push a DB object into the result array
+                        $tempRes[$identifier][$tempIdentifier] = $res[$i];
+                    }
                 }
 
-                //If we have extra key columns, remove original keys from the result
-                if(count($extraKeyColumns) > 0){
+                //If we have extra key columns or grouped by keys, remove original keys from the result
+                if(count($extraKeyColumns) > 0 || $groupByFirstNKeys){
                     foreach($keys as $i=>$keyArray){
                         $dbFormattedKeys = $keyArray[0];
                         $keys = [];

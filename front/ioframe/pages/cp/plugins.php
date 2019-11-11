@@ -16,7 +16,7 @@ echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/global.css">'
 echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/plugins.css">';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/popUpTooltip.css">';
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min">';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min.css">';
 /* ----- Included for all future example apps after the angular ones - for now, the admin only will run it in production mode*/
 if($auth->isAuthorized(0))
     echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';

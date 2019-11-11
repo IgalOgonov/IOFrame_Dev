@@ -20,8 +20,13 @@ if(isset($inputs['id']) and isset($inputs['code']) ){
 
     $result = $UserHandler->confirmRegistration($inputs['id'], $inputs['code'],['test'=>$test]);
 
-    if($pageSettings->getSetting('regConfirm') and !isset($inputs['async']))
-        header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$pageSettings->getSetting('regConfirm').'?res='.$res);
+    if($pageSettings->getSetting('regConfirm') && !isset($inputs['async'])){
+
+        if(!$test)
+            header('Location: http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('regConfirm').'?res='.$result);
+        else
+            echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('regConfirm').'?res='.$result.EOL;
+    }
 }
 else{
     if($test)

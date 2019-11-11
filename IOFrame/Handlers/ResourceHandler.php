@@ -74,7 +74,7 @@ namespace IOFrame\Handlers{
          * Can also get by specific addresses
          *
          * @param array $addresses defaults to [], if not empty will only get specific resources by addresses
-         * @param array $params of the form:
+         * @param array  $params getFromCacheOrDB() params, as well as:
          *          'createdAfter'      - int, default null - Only return items created after this date.
          *          'createdBefore'     - int, default null - Only return items created before this date.
          *          'changedAfter'      - int, default null - Only return items last changed after this date.
@@ -85,13 +85,19 @@ namespace IOFrame\Handlers{
          *                                to be excluded from the result.
          *          'ignoreLocal'       - bool, default false - will not return local files.
          *          'onlyLocal'         - bool, default false - will only return local files.
+         *          'safeStr'           - bool, default true. Whether to convert Meta to a safe string
+         *          'extraDBFilters'    - array, default [] - Do you want even more complex filters than the ones provided?
+         *                                This array will be merged with $extraDBConditions before the query, and passed
+         *                                to getFromCacheOrDB() as the 'extraConditions' param.
+         *                                Each condition needs to be a valid PHPQueryBuilder array.
+         *          'extraCacheFilters' - array, default [] - Same as extraDBFilters but merged with $extraCacheConditions
+         *                                and passed to getFromCacheOrDB() as 'columnConditions'.
          *          ------ Using the parameters bellow disables caching ------
          *          'orderBy'            - string, defaults to null. Possible values include 'Created' 'Last_Changed',
          *                                'Local' and 'Address'(default)
          *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
          *          'limit'             - string, SQL LIMIT, defaults to system default
          *          'offset'            - string, SQL OFFSET
-         *          'safeStr'           - bool, default true. Whether to convert Meta to a safe string
          *
          * @returns array Array of the form:
          *      [
@@ -108,6 +114,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $extraDBFilters = isset($params['extraDBFilters'])? $params['extraDBFilters'] : [];
+            $extraCacheFilters = isset($params['extraCacheFilters'])? $params['extraCacheFilters'] : [];
             $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
             $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
             $changedAfter = isset($params['changedAfter'])? $params['changedAfter'] : null;
@@ -184,6 +192,9 @@ namespace IOFrame\Handlers{
                 array_push($extraDBConditions,$cond);
             }
 
+            $extraDBConditions = array_merge($extraDBConditions,$extraDBFilters);
+            $extraCacheConditions = array_merge($extraCacheConditions,$extraCacheFilters);
+
             if($extraCacheConditions!=[]){
                 array_push($extraCacheConditions,'AND');
                 $retrieveParams['columnConditions'] = $extraCacheConditions;
@@ -252,9 +263,10 @@ namespace IOFrame\Handlers{
          * @param string $text Default '' - text content to set
          * @param string $blob Default '' - binary content to set
          * @param array $params of the form:
-         *          'override' - bool, default false - will overwrite existing resources.
-         *          'update' - bool, default false - will not create unexisting resources.
+         *          'override' - bool, default true - will overwrite existing resources.
+         *          'existing' - Array, potential existing addresses if we already got them earlier.
          *          'safeStr' - bool, default true. Whether to convert Meta to a safe string
+         *          'mergeMeta' - bool, default true. Whether to treat Meta as a JSON object, and $text as a JSON array, and try to merge them.
          * @returns int Code of the form:
          *         -1 - Could not connect to db
          *          0 - All good
@@ -269,11 +281,7 @@ namespace IOFrame\Handlers{
          * For each of the parameters bellow except for address, set NULL to ignore.
          * @param array $inputs Array of input arrays in the same order as the inputs in setResource, EXCLUDING 'type'
          * @param string $type All resources must be of the same type
-         * @param array $params of the form:
-         *          'override' - bool, default true - will overwrite existing resources.
-         *          'existing' - Array, potential existing addresses if we already got them earlier.
-         *          'safeStr' - bool, default true. Whether to convert Meta to a safe string
-         *          'mergeMeta' - bool, default true. Whether to treat Meta as a JSON object, and $text as a JSON array, and try to merge them.
+         * @param array $params from setResource
          * @returns int[] Array of the form
          *          <Address> => <code>
          *          where the codes come from setResource()

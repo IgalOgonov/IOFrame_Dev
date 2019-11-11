@@ -34,7 +34,7 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
 
     /*Changes connection type to https if it isn't already*/
     function convertToHTTPS(){
-        if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off"){
+        if(empty($_SERVER['HTTPS']) || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "off") ){
             $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             header('HTTP/1.1 301 Moved Permanently');
             header('Location: ' . $redirect);

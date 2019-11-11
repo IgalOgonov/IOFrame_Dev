@@ -89,6 +89,9 @@ namespace IOFrame{
          *                  'getFromCache' - Whether to try to get items from cache
          *                  'updateCache' - Whether to try to update cache with DB results
          *                  'extraKeyColumns' - a getFromTableByKey parameter, but if present, will discard normal identifier results.
+         *                  'groupByFirstNKeys' => getFromTableByKey() parameter - if present, will only use up to the
+         *                                         N first keys to identify the item. Read the getFromTableByKey() docs to
+         *                                         understand this.
          * @return array Results of the form [$identifier => <result array>],
          *              where the result array is of the form [<Col name> => <Value>]
          *               If the item was not in the DB, will return the following codes instead of <result array>:
@@ -152,6 +155,13 @@ namespace IOFrame{
             else
                 $extraKeyColumns = [];
 
+            if(isset($params['groupByFirstNKeys']) && (is_array($keyCol) || count($extraKeyColumns) > 0)){
+                $totalCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
+                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalCount-1));
+            }
+            else
+                $groupByFirstNKeys = 0;
+
             $cacheResults = [];
             $results = [];
             $dbResults = [];
@@ -162,8 +172,14 @@ namespace IOFrame{
             $cacheTargets = [];
 
             foreach($targets as $index=>$identifier) {
-                if(gettype($identifier) === 'array')
+                if(gettype($identifier) === 'array'){
+                    //Optionally fix the identifier
+                    if($groupByFirstNKeys !== 0){
+                        for($i = 0; $i < $groupByFirstNKeys; $i++)
+                            array_pop($identifier);
+                    }
                     $identifier = implode($keyDelimiter,$identifier);
+                }
                 array_push($cacheTargets, $cacheName . $identifier);
                 $indexMap[$index] = $identifier;
                 $identifierMap[$identifier] = $index;
@@ -186,86 +202,114 @@ namespace IOFrame{
                     $cachedTempResults = $temp;
 
                 foreach($cachedTempResults as $index=>$cachedResult){
+                    //Only if the cache result is valid
                     if ($cachedResult && Util\is_json($cachedResult)) {
                         $cachedResult = json_decode($cachedResult, true);
-                        //Check that all required columns exist in the cached object
-                        if ($columns != [] && $compareCol) {
-                            $colCompare = [];
-                            foreach ($columns as $colName) {
-                                $colCompare[$colName] = 1;
-                            }
-                            //If columns do not match, this item is invalid
-                            if (count(array_diff_key($colCompare, $cachedResult)) != 0)
-                                continue;
-                        }
+                        //The cache result can either be a DB Object, or an array of DB Objects - but column names can't be "0"
+                        $cachedResultIsDBObject = isset($cachedResult[0])? false : true;
 
-                        //Check for the column conditions in the object
-                        if($columnConditions != []){
+                        if($cachedResultIsDBObject)
+                            $cachedResultArray = [$cachedResult];
+                        else
+                            $cachedResultArray = $cachedResult;
 
-                            $numberOfConditions = count($columnConditions);
-
-                            //Mode of operation
-                            $mode = 'AND';
-                            if($columnConditions[$numberOfConditions-1] == 'OR')
-                                $mode = 'OR';
-
-                            //Unset mode of operation indicator
-                            if($columnConditions[$numberOfConditions-1] == 'OR' ||
-                                $columnConditions[$numberOfConditions-1] == 'AND'){
-                                unset($columnConditions[$numberOfConditions-1]);
-                                $numberOfConditions--;
-                            }
-
-                            $resultPasses = 0;
-
-                            foreach ($columnConditions as $condition) {
-                                if(isset($cachedResult[$condition[0]]))
-                                    switch($condition[2]){
-                                        case '>':
-                                            if($cachedResult[$condition[0]]>$condition[1])
-                                                $resultPasses++;
-                                            break;
-                                        case '<':
-                                            if($cachedResult[$condition[0]]<$condition[1])
-                                                $resultPasses++;
-                                            break;
-                                        case '=':
-                                            if($cachedResult[$condition[0]]==$condition[1])
-                                                $resultPasses++;
-                                            break;
-                                        case '!=':
-                                            if($cachedResult[$condition[0]]!=$condition[1])
-                                                $resultPasses++;
-                                            break;
-                                        case 'RLIKE':
-                                            if(preg_match('/'.$condition[1].'/',$cachedResult[$condition[0]]))
-                                                $resultPasses++;
-                                            break;
-                                        case 'NOT RLIKE':
-                                            if(!preg_match('/'.$condition[1].'/',$cachedResult[$condition[0]]))
-                                                $resultPasses++;
-                                            break;
+                        //Signifies the cache result array had an error
+                        $cacheResultArrayHadError = false;
+                        //Do the following for each result in the array
+                        foreach($cachedResultArray as $index2 => $cachedResult2){
+                            //Check that all required columns exist in the cached object
+                            if ($columns != [] && $compareCol) {
+                                $colCompare = [];
+                                foreach ($columns as $colName) {
+                                    $colCompare[$colName] = 1;
+                                }
+                                //If columns do not match, this item is invalid
+                                if (count(array_diff_key($colCompare, $cachedResult2)) != 0)
+                                    continue;
+                                //Else cut all extra columns
+                                else
+                                    foreach($cachedResult2 as $colName=>$value){
+                                        if(!in_array($colName,$columns))
+                                            unset($cachedResultArray[$index2][$colName]);
                                     }
                             }
 
-                            //If conditions are not met, this item exists but does not meet the conditions, and as such
-                            //should not be returned but also not fetched from the DB
-                            if(
-                                ($mode === 'AND' && $resultPasses<$numberOfConditions) ||
-                                ($mode === 'OR' && $resultPasses=0)
-                            ){
-                                if($verbose)
-                                    echo 'Item '.$indexMap[$index].' failed to pass '.($numberOfConditions-$resultPasses).
-                                        ' column checks, removing from results'.EOL;
-                                unset($targets[$index]);
-                                continue;
-                            }
+                            //Check for the column conditions in the object
+                            if($columnConditions != []){
 
+                                $numberOfConditions = count($columnConditions);
+
+                                //Mode of operation
+                                $mode = 'AND';
+                                if($columnConditions[$numberOfConditions-1] == 'OR')
+                                    $mode = 'OR';
+
+                                //Unset mode of operation indicator
+                                if($columnConditions[$numberOfConditions-1] == 'OR' ||
+                                    $columnConditions[$numberOfConditions-1] == 'AND'){
+                                    unset($columnConditions[$numberOfConditions-1]);
+                                    $numberOfConditions--;
+                                }
+
+                                $resultPasses = 0;
+
+                                foreach ($columnConditions as $condition) {
+                                    if(isset($cachedResult2[$condition[0]]))
+                                        switch($condition[2]){
+                                            case '>':
+                                                if($cachedResult2[$condition[0]]>$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case '<':
+                                                if($cachedResult2[$condition[0]]<$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case '=':
+                                                if($cachedResult2[$condition[0]]==$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case '!=':
+                                                if($cachedResult2[$condition[0]]!=$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case 'RLIKE':
+                                                if(preg_match('/'.$condition[1].'/',$cachedResult2[$condition[0]]))
+                                                    $resultPasses++;
+                                                break;
+                                            case 'NOT RLIKE':
+                                                if(!preg_match('/'.$condition[1].'/',$cachedResult2[$condition[0]]))
+                                                    $resultPasses++;
+                                                break;
+                                        }
+                                }
+
+                                //If conditions are not met, this item exists but does not meet the conditions, and as such
+                                //should not be returned but also not fetched from the DB
+                                if(
+                                    ($mode === 'AND' && $resultPasses<$numberOfConditions) ||
+                                    ($mode === 'OR' && $resultPasses=0)
+                                ){
+                                    if($verbose)
+                                        echo 'Item '.$index2.' failed to pass '.($numberOfConditions-$resultPasses).
+                                            ' column checks, removing from results array'.EOL;
+                                    $cacheResultArrayHadError = true;
+                                    continue;
+                                }
+                            }
                         }
 
+                        //Either way we are removing this
                         unset($targets[$index]);
-                        $cacheResults[$indexMap[$index]] = $cachedResult;
+
+                        if($cacheResultArrayHadError){
+                            if($verbose)
+                                echo 'Item '.$indexMap[$index].' failed to pass column checks, removing from results'.EOL;
+                            continue;
+                        }
+
+                        $cacheResults[$indexMap[$index]] = $cachedResultIsDBObject? $cachedResultArray[0] : $cachedResultArray;
                     }
+
                 }
 
                 //Push all cached results into final result array
@@ -277,7 +321,6 @@ namespace IOFrame{
 
             if($targets != [] || $cacheTargets === [])
                 $dbResults = $this->getFromTableByKey($targets,$keyCol,$tableName,$columns,array_merge($params,['extraConditions'=>$columnConditions]));
-
             if($dbResults !== false)
                 foreach($dbResults as $identifier=>$dbResult){
                     $results[$identifier] = $dbResult;
@@ -304,8 +347,12 @@ namespace IOFrame{
             //Add missing error codes - if we aren't using extra key columns.
             if(count($extraKeyColumns)===0 && $missingErrorCode !== -1)
                 foreach($targets as $target){
-                    if(gettype($target) === 'array')
+                    if(gettype($target) === 'array'){
+                        if($groupByFirstNKeys)
+                            for($i = 0; $i < $groupByFirstNKeys; $i++)
+                                array_pop($target);
                         $target = implode($keyDelimiter,$target);
+                    }
                     if(!is_array($results[$target]))
                         $results[$target] = $missingErrorCode;
                 }
