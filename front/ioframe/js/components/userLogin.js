@@ -3,6 +3,17 @@ if(eventHub === undefined)
 
 Vue.component('user-login', {
     props:{
+        text: {
+            type: Object,
+            default: function(){
+                return {
+                    email:'email',
+                    password: 'password',
+                    rememberMe: 'Remember Me',
+                    loginButton: 'Login'
+                };
+            }
+        },
         test:{
             type: Boolean,
             default: false
@@ -188,10 +199,10 @@ Vue.component('user-login', {
     <form novalidate>\
     \
     \
-    <input :class="[m.class]" type="email" id="m_log" name="m" placeholder="email" v-model="m.val" required>\
-        <input :class="[p.class]" type="password" id="p_log" name="p" placeholder="password" v-model="p.val" required>\
-            <label><input type="checkbox" name="rMe" v-model="rMe" checked>Remember Me!</label>\
-                <button @click.prevent="log">Login</button>\
+    <input :class="[m.class]" type="email" id="m_log" name="m" :placeholder="text.email" v-model="m.val" required>\
+        <input :class="[p.class]" type="password" id="p_log" name="p" :placeholder="text.password" v-model="p.val" required>\
+            <label> <input type="checkbox" name="rMe" v-model="rMe" checked> <span v-text="text.rememberMe"></span> </label>\
+                <button @click.prevent="log" v-text="text.loginButton"></button>\
             \
             </form>\
         </span>'

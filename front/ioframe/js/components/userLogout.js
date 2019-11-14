@@ -3,6 +3,14 @@ if(eventHub === undefined)
 
 Vue.component('user-logout', {
     props:{
+        text: {
+            type: Object,
+            default: function(){
+                return {
+                    logOutButton: 'Log Out'
+                };
+            }
+        },
         test:{
             type: Boolean,
             default: false
@@ -60,5 +68,5 @@ Vue.component('user-logout', {
             };
         }
     },
-    template: '<button @click.prevent="logOut">Log Out</button>'
+    template: '<button @click.prevent="logOut" v-text="text.logOutButton"></button>'
 });

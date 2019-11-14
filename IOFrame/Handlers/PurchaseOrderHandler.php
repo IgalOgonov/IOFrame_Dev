@@ -400,7 +400,7 @@ namespace IOFrame\Handlers{
                     ['COUNT(*)'],
                     array_merge($retrieveParams,['limit'=>0])
                 );
-                if(is_array($res)){
+                if(is_array($res) && (count($res) > 0) ){
                     $resCount = count($res[0]);
                     foreach($res as $resultArray){
                         for($i = 0; $i<$resCount/2; $i++)
@@ -475,7 +475,8 @@ namespace IOFrame\Handlers{
          *                  <id> => <code>
          *              ]
          *              if creating new orders:
-         *              -1 - fail
+         *              -1   - fail
+         *              <id> - ID of the FIRST newly created order.
          *          where the codes are from setOrder
          */
          function setOrders(array $inputs, $params = []){
@@ -715,9 +716,10 @@ namespace IOFrame\Handlers{
          *                                  Note that archived tables over at the db_backup_meta will have their iteration
          *                                  saved as meta information in case of more that one (the 'Meta' field will
          *                                  be 'Part 1', 'Part 2', ...)
-         *           'timeout'          => int, default 60 - In case repeatToLimit is true and this function is recursively
-         *                                                      executing, it will not execute if more time than
-         *                                                      limitExecutionTime (in seconds) has passed since the start.
+         *           'timeout'          => int, default 20 - In case repeatToLimit is true and this function is recursively
+         *                                                   executing, it will not execute if more time than
+         *                                                   limitExecutionTime (in seconds) has passed since the start.
+         *                                                   REMEMBER - max_execution_time in php.ini will be the upper limit of this param.
          *           'returnIDMeta'     => bool, default true - Instead of returning all the archived/deleted IDs, which
          *                                 could be millions, returns the minimum,maximum and number of deleted/archived IDs.
          *                                 Their return form becomes:
@@ -736,8 +738,9 @@ namespace IOFrame\Handlers{
          *          'deletedIDs'   => int[]|Object, IDs of the orders that were successfully deleted. Changes if 'returnIDMeta' is true.
          *
          *          'codeOrigin'   => string, 'backupTable', 'getOrders', 'timeout', 'deleteArchived' or ''
-         *          'code'         => int, 0 if we stopped naturally or reached repeatToLimit, OR the code from
-         *                                  backupTable()/getOrders() if we stopped cause that function threw the error code.
+         *          'code'         => int,  0 if we stopped naturally or reached repeatToLimit,
+         *                                  OR -1 if the order deletion function threw the code
+         *                                  OR the code from backupTable()/getOrders() if we stopped cause that function threw the error code.
          *          ]
          *
          */
@@ -747,7 +750,7 @@ namespace IOFrame\Handlers{
                  $params['verbose'] : $test ? true : false;
              $deleteArchived = isset($params['deleteArchived'])? $params['deleteArchived'] : true;
              $repeatToLimit = isset($params['repeatToLimit'])? $params['repeatToLimit'] : true;
-             $timeout = isset($params['timeout'])? $params['timeout'] : 60;
+             $timeout = isset($params['timeout'])? $params['timeout'] : 20;
              $returnIDMeta = isset($params['returnIDMeta'])? $params['returnIDMeta'] : true;
              $archivedIDs = isset($params['archivedIDs'])? $params['archivedIDs'] : [];
              $deletedIDs = isset($params['deletedIDs'])? $params['deletedIDs'] : [];
@@ -814,7 +817,7 @@ namespace IOFrame\Handlers{
                  return $results;
              }
              else{
-                 if($returnIDMeta)
+                 if(!$returnIDMeta)
                     $params['archivedIDs'] = array_merge($archivedIDs,$existingIDs);
                  else{
                      if(isset($params['archivedIDs']['smallestID']))
@@ -831,14 +834,17 @@ namespace IOFrame\Handlers{
                          $params['archivedIDs']['total'] = $params['archivedIDs']['total'] + count($existingIDs);
                      else
                          $params['archivedIDs']['total'] = count($existingIDs);
-
                  }
                  $results['archivedIDs'] = $params['archivedIDs'];
              }
 
              //Delete archived orders if needed
              if($deleteArchived){
-                 $archiveDeletion = $this->SQLHandler->deleteFromTable($this->SQLHandler->getSQLPrefix().$this->tableName,$conds,$params);
+                 $archiveDeletion = $this->SQLHandler->deleteFromTable(
+                     $this->SQLHandler->getSQLPrefix().$this->tableName,
+                     $conds,
+                     ['test'=>$test,'verbose'=>$verbose]
+                 );
                  //If we didn't delete orders properly, return
                  if($archiveDeletion === false){
                      $results['codeOrigin'] = 'deleteArchived';
@@ -846,7 +852,25 @@ namespace IOFrame\Handlers{
                      return $results;
                  }
                  //Notify we deleted the IDs
-                 $params['deletedIDs'] = array_merge($deletedIDs,$existingIDs);
+
+                 if(!$returnIDMeta)
+                     $params['deletedIDs'] = array_merge($deletedIDs,$existingIDs);
+                 else{
+                     if(isset($params['deletedIDs']['smallestID']))
+                         $params['deletedIDs']['smallestID'] = min($params['deletedIDs']['smallestID'],min($existingIDs));
+                     else
+                         $params['deletedIDs']['smallestID'] = min($existingIDs);
+
+                     if(isset($params['deletedIDs']['largestID']))
+                         $params['deletedIDs']['largestID'] = max($params['deletedIDs']['largestID'],max($existingIDs));
+                     else
+                         $params['deletedIDs']['largestID'] = max($existingIDs);
+
+                     if(isset($params['deletedIDs']['total']))
+                         $params['deletedIDs']['total'] = $params['deletedIDs']['total'] + count($existingIDs);
+                     else
+                         $params['deletedIDs']['total'] = count($existingIDs);
+                 }
                  $results['deletedIDs'] = $params['deletedIDs'];
 
                 //Delete orders from cache
@@ -1005,14 +1029,14 @@ namespace IOFrame\Handlers{
                             if($ID !== '@')
                                 array_push($existingOrders,$ID);
                         }
-                        $existingOrders = $this->getOrders($secondaryIDs,['test'=>$test,'verbose'=>$verbose,'getLimitedInfo'=>true]);
+                        $existingOrders = $this->getOrders($existingOrders,['test'=>$test,'verbose'=>$verbose,'getLimitedInfo'=>true]);
 
                         foreach($secondaryIDs as $secondaryID){
                             if(!isset($existingOrders[$secondaryID]))
                                 $results[$secondaryID]['Order_Info'] = 1;
-                            else
-                                $results[$secondaryID]['Order_Info'] = $existingOrders[$secondaryID];
                         }
+                        foreach($existingOrders as $id => $orderArr)
+                            $results[$id]['Order_Info'] = $orderArr;
                     }
                 }
 
@@ -1120,7 +1144,7 @@ namespace IOFrame\Handlers{
                 }
 
                 //Whether the ID exists
-                $assignmentExists = $mainUser? isset($existing[$secondaryID]) :  isset($existing[$mainID][$secondaryID]);
+                $assignmentExists = isset($existing[$secondaryID]);
 
                 //If it does not exist, update the result and unset the secondary ID
                 if(($assignmentExists && $create) || (!$assignmentExists && !$create)){
@@ -1138,7 +1162,7 @@ namespace IOFrame\Handlers{
                     $createdTime = $currentTime;
                 }
                 else{
-                    $createdTime =  $mainUser? $existing[$secondaryID] : $existing[$mainID][$secondaryID];
+                    $createdTime =  $existing[$secondaryID]['Created'];
                 }
                 array_push($assignmentArray,$userID);
                 array_push($assignmentArray,$orderID);
@@ -1156,12 +1180,12 @@ namespace IOFrame\Handlers{
                     if($input === '')
                         $input = null;
                     elseif($input === null && !$create){
-                        $input = $mainUser? $existing[$secondaryID][$dbColumnName] : $existing[$mainID][$secondaryID][$dbColumnName];
+                        $input = $existing[$secondaryID][$dbColumnName];
                     }
 
                     //Meta gets a special treatment if we are updating an existing relation
                     if(!$create)
-                        $existingMeta =  $mainUser? $existing[$secondaryID][$dbColumnName] : $existing[$mainID][$secondaryID][$dbColumnName];
+                        $existingMeta =  $existing[$secondaryID][$dbColumnName];
                     else
                         $existingMeta = null;
                     if($possibleInput === 'Meta' && $input !== null && IOFrame\Util\is_json($input) && IOFrame\Util\is_json($existingMeta) && !$create){
@@ -1296,10 +1320,10 @@ namespace IOFrame\Handlers{
         /** Gets all the orders of a single user. SLOWER than getOrderUsers, as it cannot use caching.
          * @param int $userID ID of the user.
          * @param array $params getFromCacheOrDB() params, as well as:
-         *          'getLimitedInfo'      - Will only return Order_ID, Relation_Type, Created and Last_Updated columns
          *          'orderIDs'            - int[], default [] - if not empty, will only get items with those ordersIDs.
+         *          'getLimitedInfo'      - bool, default false -  Will only return Order_ID, Relation_Type, Created and Last_Updated columns
          *          'returnLimitedOrders' - bool, default false - Returns all orders that belong to the user using
-         *                                getOrders() with 'getLimitedInfo' param.Dumps each ORDERS result into a
+         *                                getOrders() with 'getLimitedInfo' param. Dumps each ORDERS result into a
          *                                reserved 'Orders_Info' column in the order array for the relevant order.
          *          'relationType'        - string, default null - if set, will only return results where Relation_Type
          *                                is EXACTLY like this param.
@@ -1333,31 +1357,17 @@ namespace IOFrame\Handlers{
 
         /** Gets all the users of a single order.
          * @param int $orderID ID of the order.
-         * @param array $params of the form:
-         *          'relationType'      - string, default null - if set, will only return results where Relation_Type
-         *                                is EXACTLY like this param.
-         *          'relationTypeLike'  - string, default null, overridden by relationType - if set and not overridden,
-         *                                will only return results where Relation_Type is LIKE (RLIKE, Regex Like) this param.
-         *          'createdAfter'      - same as in getOrders() but applies to user<=>order relationships
-         *          'createdBefore'     - same as in getOrders() but applies to user<=>order relationships
-         *          'changedAfter'      - same as in getOrders() but applies to user<=>order relationships
-         *          'changedBefore'     - same as in getOrders() but applies to user<=>order relationships
-         *          'extraDBFilters'    - same as in getOrders() but applies to $userOrderColumnNames instead of the order ones.
-         *          'extraCacheFilters' - same as in getOrders() but applies to $userOrderColumnNames instead of the order ones.
-         *          ----- The parameters bellow disable caching -----
-         *          'orderBy'     - string, defaults to null. Possible values include 'Created' 'Last_Changed',
-         *                          and any of the names in $orderColumnNames
-         *          'orderType'   - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
-         *          'limit'       - string, SQL LIMIT, defaults to system default
-         *          'offset'      - string, SQL OFFSET
+         * @param array $params similar to getUserOrders
          *
-         * @return int[] of the form:
+         * @return int[] | int of the form:
          *          [
          *              <userID> => <Array of USERS_ORDERS columns>
          *          ]
+         *         OR
+         *          1 if not a single relation exists
          */
         function getOrderUsers(int $orderID, array $params = []){
-            return $this->getOrdersUsers($orderID, false, $params);
+            return $this->getOrdersUsers($orderID, false, $params)[$orderID];
         }
 
 
@@ -1404,7 +1414,7 @@ namespace IOFrame\Handlers{
          * @param int $orderID ID of the order.
          * @param array $inputs of the form:
          *          'relationType'      - string, default null - if set, will set the Relation_Type to the string.
-         *          'meta'              - string, default null - if set, will set the Meta to the string.
+         *          'meta'              - string, default null - if set, will set the Meta to the value.
          *                                                       SHOULD be a JSON encoded object.
          *          <Any additional column name in $orderColumnNames converted from Underscore_Case to camelCase>
          * @param array $params
@@ -1417,7 +1427,7 @@ namespace IOFrame\Handlers{
          *          3 - User does not exist
          * */
         function assignUserToOrder(int $orderID, int $userID, array $inputs = [],array $params = []){
-            return $this->assignUsersToOrder($orderID,[$userID,$inputs],$params)[$userID];
+            return $this->assignUsersToOrder($orderID,[[$userID,$inputs]],$params)[$userID];
         }
 
         /** Assigns an order to specific users. While generally one-to-many, in some cases you may want to assign an order
@@ -1469,7 +1479,7 @@ namespace IOFrame\Handlers{
         /** Removes a single user from an order .
          *
          * @param int $orderID ID of the order.
-         * @param int[] $userIDs IDs of the users.
+         * @param int $userID ID of the user.
          * @param array $params
          *          'existing' => Array, default null - array of getOrderUsers($orderID) in case we got it earlier
          * @return int Code:
@@ -1498,9 +1508,11 @@ namespace IOFrame\Handlers{
          * @param int $userID User identifier
          * @param int $orderID Orders ID
          * @param array $inputs Inputs of the form:
-         *                      'relationType' => string, Type of relation between the user and the order (e.g 'seller')
+         *                      'relationType'      - string, default null - Type of relation between the user and the order (e.g 'seller')
+         *                      'meta'              - string, default null - if set, will set the Meta to the string.
+         *                                            SHOULD be a JSON encoded object.
          *                      <Any additional column name in $userOrderColumnNames converted from Underscore_Case to camelCase>
-         * @param array $params same as updateOrderUsersAssignment()
+         * @param array $params same as updateUserOrdersAssignment()
          * @return int code:
          *          -1 could not reach the db (for all the )
          *          0 - All is well
@@ -1510,7 +1522,7 @@ namespace IOFrame\Handlers{
          *
          * */
         function updateOrderUserAssignment(int $userID, int $orderID, array $inputs, array $params = []){
-            return $this->updateOrderUsersAssignment($userID,[$orderID,$inputs],$params)[$orderID];
+            return $this->updateOrderUsersAssignment($userID,[[$orderID,$inputs]],$params)[$orderID];
         }
 
         /** Modifies a user-orders assignment meta information
@@ -1529,7 +1541,7 @@ namespace IOFrame\Handlers{
          *
          * */
         function updateUserOrdersAssignment(int $userID, array $inputs, array $params = []){
-            return $this->updateUsersOrders($userID,$inputs,true,false,$params);
+            return $this->setUsersOrders($userID,$inputs,true,false,$params);
         }
 
         /** Modifies a order-users assignment meta information
@@ -1548,7 +1560,7 @@ namespace IOFrame\Handlers{
          *
          * */
         function updateOrderUsersAssignment(int $orderID, array $inputs, array $params = []){
-            return $this->updateUsersOrders($orderID,$inputs,false,false,$params);
+            return $this->setUsersOrders($orderID,$inputs,false,false,$params);
         }
 
     }

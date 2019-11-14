@@ -7,6 +7,20 @@ Vue.component('user-registration', {
             type: Boolean,
             default: true
         },
+        text: {
+            type: Object,
+            default: function(){
+                return {
+                    userName:'username',
+                    userNameHelp: 'Must be 6-16 characters long, Must contain numbers and latters',
+                    password: 'password',
+                    passwordHelp: "Must be 8-64 characters long<br> Must include latters and numbers<br>Can include special characters except '>' and '<'",
+                    repeatPassword: 'repeat password',
+                    email: 'email',
+                    registrationButton: 'Register'
+                };
+            }
+        },
         test:{
             type: Boolean,
             default: false
@@ -164,19 +178,19 @@ Vue.component('user-registration', {
 \
     <form novalidate>\
 \
-    <input v-if="needsUsername" :class="[u.class]" type="text" id="u_reg" name="u" placeholder="username" v-model="u.val" required>\
+    <input v-if="needsUsername" :class="[u.class]" type="text" id="u_reg" name="u" :placeholder="text.username" v-model="u.val" required>\
     <a v-if="needsUsername" href="#"  id="u_reg-tooltip">?</a><br>\
-    <input :class="[p.class]" type="password" id="p_reg" name="p" placeholder="password" v-model="p.val" required>\
+    <input :class="[p.class]" type="password" id="p_reg" name="p" :placeholder="text.password" v-model="p.val" required>\
     <a href="#"  id="p_reg-tooltip">?</a><br>\
-    <input :class="[p2.class]" type="password" id="p2_reg" placeholder="repeat password" v-model="p2.val" required><br>\
-    <input :class="[m.class]" type="email" id="m_reg" name="m" placeholder="mail" v-model="m.val" required><br>\
-    <button @click.prevent="reg">Register</button>\
+    <input :class="[p2.class]" type="password" id="p2_reg" :placeholder="text.repeatPassword" v-model="p2.val" required><br>\
+    <input :class="[m.class]" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required><br>\
+    <button @click.prevent="reg" v-text="text.registrationButton"></button>\
 \
                 </form>\
                 </span>',
     mounted: function(){
         document.popupHandler = new ezPopup("pop-up-tooltip");
-        document.popupHandler.initPopup('u_reg-tooltip','Must be 6-16 characters long, Must contain numbers and latters','');
-        document.popupHandler.initPopup('p_reg-tooltip',"Must be 8-64 characters long<br> Must include latters and numbers<br>Can include special characters except '>' and '<'",'');
+        document.popupHandler.initPopup('u_reg-tooltip',this.text.userNameHelp,'');
+        document.popupHandler.initPopup('p_reg-tooltip',this.text.passwordHelp,'');
     }
 });
