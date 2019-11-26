@@ -668,7 +668,11 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['GALLERY_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery creation')],
                 ['GALLERY_UPDATE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery updating - includes adding/removing media to/from gallery')],
                 ['GALLERY_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allow unlimited gallery deletion')],
-                ['MEDIA_FOLDER_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allows creating media folders')]
+                ['MEDIA_FOLDER_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allows creating media folders')],
+                ['ORDERS_VIEW_AUTH',\IOFrame\Util\str2SafeStr('Allows viewing all orders')],
+                ['ORDERS_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modyfing all orders')],
+                ['USERS_ORDERS_VIEW_AUTH',\IOFrame\Util\str2SafeStr('Allow viewing all user-order relations')],
+                ['USERS_ORDERS_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modifying all user-order relations')]
             ];
 
             foreach($assignments as $k=>$v){

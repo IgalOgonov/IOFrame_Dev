@@ -109,7 +109,7 @@ namespace IOFrame\Handlers{
          * @params string $query Executes a query
          * @params array $paramsToBind binds all parameter values in $params[1] to their names inside query in $params[0]
          * @params array $params Includes parameters:
-         *                      'fetchAll' bool, default true - If true, also fetches all the results of the query.
+         *                      'fetchAll' bool, default false - If true, also fetches all the results of the query.
          *                      EXCLUDES 'test' and 'verbose'!
          *
          * @throws \Exception Throws back the exception after releasing the lock, if it was locked

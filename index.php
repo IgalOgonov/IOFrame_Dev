@@ -110,8 +110,11 @@ if(isset($matches[$routeTarget]) && is_array($matches[$routeTarget])){
 $pageSettings = new IOFrame\Handlers\SettingsHandler(SETTINGS_DIR_FROM_ROOT.'/pageSettings/',$defaultSettingsParams);
 
 //If the homepage was requested, and is defined in the settings, try to require the homepage
-if( $uri == '/' || $uri == '' || $uri == $settings->getSetting('pathToRoot') || $uri == $settings->getSetting('pathToRoot').'/'
-&& (gettype($pageSettings->getSetting('homepage')) == 'string') ){
+if(
+    ($uri == '/' || $uri == '' || $uri == $settings->getSetting('pathToRoot') || $uri == $settings->getSetting('pathToRoot').'/')
+    &&
+    (gettype($pageSettings->getSetting('homepage')) == 'string')
+){
     $extensions = ['php','html','htm'];
     //The homepage resides at the address defined at 'homepage'
     $url = __DIR__.'/'.$pageSettings->getSetting('homepage');

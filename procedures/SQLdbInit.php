@@ -10,7 +10,7 @@ namespace IOFrame{
         require __DIR__ . '/../IOFrame/Util/safeSTR.php';
 
 
-    /*Database initiation function. Does require the user to already have a MySQL database up, as well as a user with enough
+    /*Database initiation function. Does require the admin to already have a MySQL database up, as well as a user with enough
      * privileges.
      * @param SettingsHandler $localSettings
      * @returns bool true only if everything succeeded.
@@ -74,8 +74,15 @@ namespace IOFrame{
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."MAIL_TEMPLATES(
                                                               ID int PRIMARY KEY NOT NULL AUTO_INCREMENT,
                                                               Title varchar(255) NOT NULL,
-                                                              Content TEXT
+                                                              Content TEXT,
+                                                              Created_On varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
+
+            $makeIndex1 = $conn->prepare("CREATE INDEX IF NOT EXISTS Created_On ON ".$prefix.
+                "MAIL_TEMPLATES (Created_On);");
+            $makeIndex2 = $conn->prepare("CREATE INDEX IF NOT EXISTS Last_Updated ON ".$prefix.
+                "MAIL_TEMPLATES (Last_Updated);");
 
             $updateTB1 = $conn->prepare("INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
                                       VALUES( 'Account Activation Default Template', :Content)");
@@ -94,7 +101,9 @@ namespace IOFrame{
 
             try{
                 $makeTB->execute();
-                echo "MAIL TEMPLATES table created.".EOL;
+                $makeIndex1->execute();
+                $makeIndex2->execute();
+                echo "MAIL TEMPLATES table and indexes created.".EOL;
                 $updateTB1->execute();
                 $updateTB2->execute();
                 $updateTB3->execute();
@@ -242,8 +251,8 @@ namespace IOFrame{
                                                               Company_Name varchar (256),
                                                               Company_ID varchar (64),
                                                               Extra_Info TEXT,
-                                                              Created_On varchar(14) NOT NULL,
-                                                              Last_Updated varchar(14) NOT NULL,
+                                                              Created_On varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
     														  PRIMARY KEY(Contact_Type,Identifier)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             //Indexes
@@ -951,8 +960,8 @@ namespace IOFrame{
                                                               Resource_Local BOOLEAN NOT NULL,
                                                               Minified_Version BOOLEAN NOT NULL,
                                                               Version int DEFAULT 1 NOT NULL,
-                                                              Created varchar(14) NOT NULL,
-                                                              Last_Changed varchar(14) NOT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Changed varchar(14) NOT NULL DEFAULT 0,
                                                               Text_Content TEXT,
                                                               Blob_Content BLOB,
                                                                PRIMARY KEY(Resource_Type, Address)
@@ -1000,8 +1009,8 @@ namespace IOFrame{
                                                               Resource_Type varchar(64),
                                                               Collection_Name varchar(128),
                                                               Collection_Order TEXT DEFAULT NULL,
-                                                              Created varchar(14) NOT NULL,
-                                                              Last_Changed varchar(14) NOT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Changed varchar(14) NOT NULL DEFAULT 0,
                                                               Meta TEXT,
                                                                PRIMARY KEY(Resource_Type, Collection_Name)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
@@ -1157,8 +1166,8 @@ namespace IOFrame{
                                                               Relation_Type varchar(256) DEFAULT NULL,
                                                               Meta TEXT DEFAULT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
-                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,,
-                                                              UNIQUE (Order_ID,User_ID)
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              UNIQUE (Order_ID, User_ID),
                                                               FOREIGN KEY (User_ID)
                                                               REFERENCES ".$prefix."USERS(ID)
                                                               ON DELETE CASCADE,

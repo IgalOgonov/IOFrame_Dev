@@ -118,7 +118,7 @@ Vue.component('user-registration', {
                 })
                 .then(function (data) {
                         let respType;
-                        let response = xhr.responseText;
+                        let response = data;
                         // success
                         if(context.verbose)
                             console.log("Posted: "+data+" to user API"+" ,Succeeded in getting response to post.");

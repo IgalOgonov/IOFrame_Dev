@@ -509,7 +509,7 @@ namespace IOFrame\Handlers{
                 foreach($identifiers as $index => $identifier){
                     if($results[$identifiers[$index]] === -1)
                         $results[$identifiers[$index]] = 0;
-                    $identifiers[$index] = $this->cacheName.$identifiers[$index];
+                    $identifiers[$index] = $this->cacheName.$this->contactType.'/'.$identifiers[$index];
                 }
                 if(count($identifiers)>0){
                     if($verbose)
@@ -575,7 +575,7 @@ namespace IOFrame\Handlers{
                         echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
 
                     if(!$test)
-                        $this->RedisHandler->call( 'del', [ $this->cacheName.$identifier ] );
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$this->contactType.'/'.$identifier ] );
                 }
 
                 //Ok we're done
@@ -638,7 +638,7 @@ namespace IOFrame\Handlers{
                         echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
 
                     if(!$test)
-                        $this->RedisHandler->call( 'del', [ $this->cacheName.$identifier ] );
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$this->contactType.'/'.$identifier ] );
                 }
 
                 return ($res)? 0 : -1;

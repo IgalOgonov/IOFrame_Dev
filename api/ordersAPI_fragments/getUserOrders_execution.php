@@ -2,7 +2,7 @@
 
 $params = [
     'getLimitedInfo' =>$inputs['getLimitedInfo'],
-    'returnLimitedOrders' =>$inputs['returnLimitedOrders'],
+    'returnOrders' =>$inputs['returnOrders'],
     'relationType'=>$inputs['relationType'],
     'orderBy'=>$inputs['orderBy'],
     'limit'=>$inputs['limit'],

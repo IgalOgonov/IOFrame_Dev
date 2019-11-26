@@ -6,6 +6,10 @@
 if(!defined('helperFunctions'))
     require __DIR__ . '/../IOFrame/util/helperFunctions.php';
 
+require_once __DIR__ . '/../main/definitions.php';
+
+
+
 //Replace $strRem with $strRep in the file at $url (absolute path)
 function cleanseFile($url,$strRemove,$strRep, array $params = []){
 
@@ -51,7 +55,7 @@ function cleanseFile($url,$strRemove,$strRep, array $params = []){
 
     if($verbose){
         if(strrpos($temp,$strRemove) !== false)
-            echo 'Changed '.$strRemove.' to '.$strRep.' in file '.$url.'<br/>';
+            echo 'Changed '.$strRemove.' to '.$strRep.' in file '.$url.EOL;
     }
 
     if(!$test){
@@ -98,18 +102,18 @@ function cleanseFolder($url,$strRemove,$strRep, array $params = []){
 
 }
 
-/*
-cleanseFolder(
-    substr(__DIR__,0,-10).'/front/axizer',
-    'modules/systems',
-    'modules/back/systems',
+
+/*cleanseFolder(
+    substr(__DIR__,0,-10).'/api/axizer',
+    '/../../Axizer/Handlers/AxizerAdditionsHandler.php',
+    '/../../../Axizer/Handlers/AxizerAdditionsHandler.php',
     [
-        'test'=>false,
+        'test'=>true,
         'verbose'=>true,
         'subFolders'=>true,
         'forbidden'=>[],
         'required'=>[],
     ]
-)
-*/
+)*/
+
 ?>

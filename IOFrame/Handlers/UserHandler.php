@@ -735,7 +735,7 @@ namespace IOFrame\Handlers{
                             '', $templateNum, '{"uId":'.$uId.',"Code":"'.$confirmCode.'"}',$type = 'template' );
                     }
                     else{
-                        $mail->setTemplate($templateNum);
+                        $mail->setWorkingTemplate($templateNum);
                         if($mail->sendMailTemplate(
                             [[$uMail]],
                             $title,
@@ -1118,7 +1118,7 @@ namespace IOFrame\Handlers{
             // This creates the Reader object, which should be reused across
             // lookups.
             try{
-                $reader = new Reader($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/geoip-db/GeoLite2-Country.mmdb');
+                $reader = new \GeoIp2\Database\Reader($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/geoip-db/GeoLite2-Country.mmdb');
                 // Replace "city" with the appropriate method for your database, e.g.,
                 // "country".
                 try{

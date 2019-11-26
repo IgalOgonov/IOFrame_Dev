@@ -9,10 +9,9 @@
  *      - Gets an order from the DB
  *          id                  - int, order ID.
  *          includeOrderUsers   - bool, default true - gets the users related to the order, placed in a column 'User_Info'.
- *                                this might be
  *
  *        Examples:
- *          action=getOrders&id=1&includeOrderUsers=true
+ *          action=getOrder&id=1&includeOrderUsers=true
  *
  *        Returns:
  *        String - JSON encoded array of the DB fields
@@ -128,7 +127,7 @@
  *      - Gets all the orders of a single user.
  *          userID - int, ID of the user
  *          getLimitedInfo - bool, default false -  Will only return Order_ID, Relation_Type, Created and Last_Updated columns
- *          returnLimitedOrders - bool, default false - Returns all orders that belong to the user using
+ *          returnOrders        - bool, default false - Returns all orders that belong to the user using
  *                                getOrders() with 'getLimitedInfo' param. Dumps each ORDERS result into a
  *                                reserved 'Orders_Info' column in the order array for the relevant order.
  *          relationType        - string, default null - if set, will only return results where Relation_Type
@@ -328,7 +327,7 @@ switch($action){
         break;
 
     case 'getUserOrders':
-        $arrExpected = array_merge(["userID","returnLimitedOrders","getLimitedInfo","relationType"],$standardPaginationInputs);
+        $arrExpected = array_merge(["userID","returnOrders","getLimitedInfo","relationType"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
         require 'ordersAPI_fragments/getUserOrders_validation_checks.php';
