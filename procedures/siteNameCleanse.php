@@ -104,9 +104,9 @@ function cleanseFolder($url,$strRemove,$strRep, array $params = []){
 
 
 /*cleanseFolder(
-    substr(__DIR__,0,-10).'/api/axizer',
-    '/../../Axizer/Handlers/AxizerAdditionsHandler.php',
-    '/../../../Axizer/Handlers/AxizerAdditionsHandler.php',
+    substr(__DIR__,0,-10).'/api/test',
+    'test1',
+    'test2',
     [
         'test'=>true,
         'verbose'=>true,

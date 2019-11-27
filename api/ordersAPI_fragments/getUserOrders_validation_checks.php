@@ -4,9 +4,7 @@ if(!defined('validator'))
 
 //ID
 if($inputs['userID'] === null){
-    if($test)
-        echo 'User ID must be set!'.EOL;
-    exit(INPUT_VALIDATION_FAILURE);
+    $inputs['userID'] = $details['ID'];
 }
 else{
     if(!filter_var($inputs['userID'],FILTER_VALIDATE_INT)){
@@ -33,6 +31,13 @@ if($inputs['orderBy'] !== null) {
         exit(INPUT_VALIDATION_FAILURE);
     }
 }
+
+//orderType
+if($inputs['orderType'] !== null) {
+    $inputs['orderType'] = $inputs['orderType'] || 0;
+}
+else
+    $inputs['orderType'] = 0;
 
 
 //Limit, max 500, min 1

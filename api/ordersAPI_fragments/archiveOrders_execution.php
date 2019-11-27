@@ -7,6 +7,7 @@ $params = [
     'typeIs'=>$inputs['typeIs'],
     'statusIs'=>$inputs['statusIs'],
     'orderBy'=>$inputs['orderBy'],
+    'orderType'=>$inputs['orderType'],
     'limit'=>$inputs['limit'],
     'offset'=>$inputs['offset'],
     'createdAfter'=>$inputs['createdAfter'],

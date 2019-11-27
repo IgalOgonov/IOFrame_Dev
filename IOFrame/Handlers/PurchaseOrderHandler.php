@@ -326,6 +326,8 @@ namespace IOFrame\Handlers{
             //If we are using any of this functionality, we cannot use the cache
             if($offset || $limit ||  $orderBy || $orderType)
                 $retrieveParams['useCache'] = false;
+            elseif($getLimitedInfo)
+                $retrieveParams['updateCache'] = false;
 
             //Create all the conditions for the db/cache
             if($typeIs!== null){
@@ -909,7 +911,7 @@ namespace IOFrame\Handlers{
 
             $secondaryIDs = (!$mainUser && isset($params['orderIDs']))? $params['orderIDs'] : [];
 
-            $returnLimitedOrders = ($mainUser && isset($params['returnLimitedOrders']))? $params['returnLimitedOrders'] : false;
+            $returnOrders = ($mainUser && isset($params['returnOrders']))? $params['returnOrders'] : false;
             $relationType = isset($params['relationType'])? $params['relationType'] : null;
             $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
             $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
@@ -1023,13 +1025,13 @@ namespace IOFrame\Handlers{
                     }
 
                     //Get extra order information
-                    if($returnLimitedOrders){
+                    if($returnOrders){
                         $existingOrders = [];
                         foreach($results as $ID=> $resArray){
                             if($ID !== '@')
                                 array_push($existingOrders,$ID);
                         }
-                        $existingOrders = $this->getOrders($existingOrders,['test'=>$test,'verbose'=>$verbose,'getLimitedInfo'=>true]);
+                        $existingOrders = $this->getOrders($existingOrders,['test'=>$test,'verbose'=>$verbose,'getLimitedInfo'=>$getLimitedInfo]);
 
                         foreach($secondaryIDs as $secondaryID){
                             if(!isset($existingOrders[$secondaryID]))
@@ -1322,7 +1324,7 @@ namespace IOFrame\Handlers{
          * @param array $params getFromCacheOrDB() params, as well as:
          *          'orderIDs'            - int[], default [] - if not empty, will only get items with those ordersIDs.
          *          'getLimitedInfo'      - bool, default false -  Will only return Order_ID, Relation_Type, Created and Last_Updated columns
-         *          'returnLimitedOrders' - bool, default false - Returns all orders that belong to the user using
+         *          'returnOrders'        - bool, default false - Returns all orders that belong to the user using
          *                                getOrders() with 'getLimitedInfo' param. Dumps each ORDERS result into a
          *                                reserved 'Orders_Info' column in the order array for the relevant order.
          *          'relationType'        - string, default null - if set, will only return results where Relation_Type
@@ -1341,11 +1343,11 @@ namespace IOFrame\Handlers{
          *          'offset'              - string, SQL OFFSET
          *
          * @return array of the form:
-         *          if 'returnLimitedOrders' is false:
+         *          if 'returnOrders' is false:
          *          [
          *              <orderID> => <Array of USERS_ORDERS columns> OR 1 if 'orderIDs' was not empty and some orders didn't exist
          *          ]
-         *          if 'returnLimitedOrders' is true:
+         *          if 'returnOrders' is true:
          *          [
          *              <orderID> => <Array of USERS_ORDERS columns merged with ORDERS information (or 1 if the order no
          *                            longer exists) in the column Order_Info>, OR 1 if 'orderIDs' was not empty and some orders didn't exist

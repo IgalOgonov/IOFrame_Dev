@@ -252,7 +252,7 @@ $PurchaseOrderHandler = new \IOFrame\Handlers\PurchaseOrderHandler(
 );
 
 //We also get the session details for that very reason
-$loggedIn = $_SESSION['logged_in'];
+$loggedIn = isset($_SESSION['logged_in'])? $_SESSION['logged_in'] : false;
 //There is not a single action here you may perform if you are not logged in
 if(!$loggedIn){
     if($test)

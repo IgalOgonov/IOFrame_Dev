@@ -2,7 +2,7 @@ if(document.eventHub === undefined)
     document.eventHub = new Vue();
 
 //***************************
-//******BAP PRODUCT CATEGORIES APP*******
+//****** CATEGORIES APP*******
 //***************************//
 var IOFrameDocsToC = new Vue({
     el: '#toc',

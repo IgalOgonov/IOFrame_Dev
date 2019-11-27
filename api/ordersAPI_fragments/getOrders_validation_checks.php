@@ -43,6 +43,12 @@ if($inputs['orderBy'] !== null) {
     }
 }
 
+//OrderType
+if($inputs['orderType'] !== null) {
+    $inputs['orderType'] = $inputs['orderType'] || 0;
+}
+else
+    $inputs['orderType'] = 0;
 
 //Limit, max 500, min 1
 if($inputs['limit'] !== null){

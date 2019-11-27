@@ -5,6 +5,7 @@ $params = [
     'returnOrders' =>$inputs['returnOrders'],
     'relationType'=>$inputs['relationType'],
     'orderBy'=>$inputs['orderBy'],
+    'orderType'=>$inputs['orderType'],
     'limit'=>$inputs['limit'],
     'offset'=>$inputs['offset'],
     'createdAfter'=>$inputs['createdAfter'],
