@@ -359,26 +359,40 @@ namespace IOFrame\Util{
      * @return array
      * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
      * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
+     * @author Igal Ogonov <igal1333 (at) hotmail (dot) com>
      */
     function array_merge_recursive_distinct ( array $array1, array $array2, array $params = [] )
     {
         $deleteOnNull = isset($params['deleteOnNull'])? $params['deleteOnNull'] : false;
         $merged = $array1;
 
+        //If one of the arrays is null, and we are deletin on null, it means it might has been deleted
+        if($deleteOnNull && ($array1 === null || $array2 === null) )
+            return ($array1 === null)? $array2 : $array1;
+
+        //Merge every element from array 2 into array 1
         foreach ( $array2 as $key => &$value )
         {
             if ( is_array ( $value ) && isset ( $merged [$key] ) && is_array ( $merged [$key] ) )
             {
                 $merged [$key] = array_merge_recursive_distinct ( $merged [$key], $value, $params );
+                //If we merged with an array full of nulls, delete the result
+                if($merged[$key] === null)
+                    unset($merged [$key]);
             }
             else
             {
+                //Merge
                 if(!$deleteOnNull || $value !== null)
                     $merged [$key] = $value;
-                elseif(isset($merged [$key]))
+                //Delete on null
+                elseif(array_key_exists($key,$merged))
                     unset($merged [$key]);
             }
         }
+
+        if($deleteOnNull && $merged == [])
+            $merged = null;
 
         return $merged;
     }

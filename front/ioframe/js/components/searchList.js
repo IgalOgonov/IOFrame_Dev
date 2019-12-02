@@ -177,7 +177,7 @@ Vue.component('search-list', {
     },
     template: '\
          <div class="search-list">\
-            <div class="filter-container">\
+            <div class="filter-container" v-if="filters.length>0">\
                 <div v-html="filterList" class="filters"></div>\
                 <button @click="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="\'Search\'" ></div></button>\
             </div>\

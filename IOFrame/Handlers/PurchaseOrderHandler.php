@@ -151,7 +151,7 @@ namespace IOFrame\Handlers{
                 [
                     [
                         'ID',
-                        $orderIDs,
+                        array_merge($orderIDs,['CSV']),
                         'IN'
                     ],
                     [
@@ -178,7 +178,8 @@ namespace IOFrame\Handlers{
         /** Unlocks orders locked with a specific session lock.
          * @param string[] $orderIDs Array of order identifiers
          * @param array $params Parameters of the form:
-         *              'key' - string, default null - if not NULL, will only try to unlock orders that have a specific key.
+         *              'key' - string, default null - if not NULL, will only try to unlock orders that
+         *                      have a specific key. TODO Fix this - does not work properly with key for some reason
          * @return bool true if reached DB, false if didn't reach DB
          *
          * */
@@ -200,14 +201,14 @@ namespace IOFrame\Handlers{
             if($key === null)
                 $conds = [
                     'ID',
-                    $orderIDs,
+                    array_merge($orderIDs,['CSV']),
                     'IN'
                 ];
             else
                 $conds = [
                     [
                         'ID',
-                        $orderIDs,
+                        array_merge($orderIDs,['CSV']),
                         'IN'
                     ],
                     [
@@ -675,7 +676,7 @@ namespace IOFrame\Handlers{
             //If successful, set results and erase the cache
             if(!$createNew){
                 //Unlock orders if we locked them earlier
-                $this->unlockOrders($identifiers,array_merge($params,['key'=>$key]));
+                $this->unlockOrders($identifiers,$params);
 
                 if($res){
                     //The bellow code will do nothing if createNew is false, as $identifiers is empty
