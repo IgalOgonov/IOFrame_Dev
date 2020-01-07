@@ -677,7 +677,9 @@ namespace IOFrame\Handlers{
                             'changeTime' => time()
                         ];
                         if($verbose){
-                            echo 'Cannot get mutex on resource!'.EOL;
+                            if(is_file($minifiedAddress.'_mutex'))
+                                echo 'Mutex already exists! ';
+                            echo 'Cannot get mutex on resource! '.$minifiedAddress.EOL;
                         }
                         $mutex->deleteMutex();
                         continue;
@@ -686,11 +688,23 @@ namespace IOFrame\Handlers{
                     //Remember - either of those may not exist
                     $timeMinifiedChanged = @filemtime($minifiedAddress);
                     $timeOriginalChanged = @filemtime($fullAddress);
+                    if($verbose)
+                        echo $minifiedAddress.' changed at '.$timeMinifiedChanged.', '.$fullAddress.' changed at '.$timeOriginalChanged.EOL;
                     //If the file exists, and was changed later than the minified version, minify it again
                     if($timeOriginalChanged && $timeOriginalChanged > $timeMinifiedChanged){
                         $minifier->add($fullAddress);
                         if(!$test){
-                            $minifier->minify($minifiedAddress);
+                            try {
+                                //Set the file modification time to 1 second ago - to avoid synchronization problems
+                                touch($fullAddress, time()-1);
+                                $minifier->minify($minifiedAddress);
+                            } catch (\Exception $e) {
+                                //TODO Log this
+                                if($verbose)
+                                    echo 'Could not minify file '.$minifiedAddress.', exception: '.$e->getMessage().EOL;
+                                $mutex->deleteMutex();
+                                continue;
+                            }
                         }
                         if($verbose)
                             echo 'Minifying file '.$fullAddress.' to '.$minifiedAddress.EOL;

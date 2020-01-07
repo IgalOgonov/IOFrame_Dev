@@ -384,6 +384,10 @@ namespace IOFrame\Handlers{
                         ){
                             $inputJSON = json_decode($inputs[$index][3],true);
                             $existingJSON = json_decode($existing[$addressMap[$index]]['Text_Content'],true);
+                            if($inputJSON == null)
+                                $inputJSON = [];
+                            if($existingJSON == null)
+                                $existingJSON = [];
                             $inputs[$index][3] =
                                 json_encode(IOFrame\Util\array_merge_recursive_distinct($existingJSON,$inputJSON,['deleteOnNull'=>true]));
                             if($inputs[$index][3] == '[]')
@@ -1075,8 +1079,7 @@ namespace IOFrame\Handlers{
          *          Possible codes:
          *          -1 - Could not connect to db.
          *           0 - All good
-         *           1 - Name already exists and 'override' is false
-         *           2 - Name doesn't exist and 'update' is true
+         *           1 - Name already exists and 'override' is false OR Name doesn't exist and 'update' is true
          * */
         function setResourceCollection(string $name, string $type, string $meta = null, array $params = []){
             return $this->setResourceCollections([[$name,$meta]],$type,$params)[$name];

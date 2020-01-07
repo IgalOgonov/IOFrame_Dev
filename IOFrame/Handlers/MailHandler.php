@@ -705,9 +705,8 @@ namespace IOFrame\Handlers{
                     //content
                     if(!isset($inputs[$index][2]) || $inputs[$index][2] === null)
                         $inputs[$index][2] = $existing[$templateMap[$index]]['Content'];
-                    else
+                    if($safeStr)
                         $inputs[$index][2] = IOFrame\Util\str2SafeStr($inputs[$index][2]);
-
                     //Add the template to the array to set
                     array_push($templatesToSet,[
                         $inputs[$index][0],

@@ -1,3 +1,4 @@
+
 <?php
 
 $dirToRoot = IOFrame\Util\htmlDirDist($_SERVER['REQUEST_URI'],$settings->getSetting('pathToRoot'));
@@ -50,11 +51,11 @@ if(is_dir($settings->getSetting('absPathToRoot').'front/ioframe/js/plugins')){
     localStorage.setItem('CSRF_token','<?php echo $_SESSION['CSRF_token'];?>');
 
     document.addEventListener('DOMContentLoaded', function(e) {
-        //console.log('Doc loaded',Date.now());
+        //Define callbacks if not defined
+        if(document.callbacks === undefined)
+            document.callbacks = {};
         //Initiate the page
-        initPage(document.pathToRoot, {
-
-        });
+        initPage(document.pathToRoot, document.callbacks);
     }, true);
 
 </script>

@@ -82,7 +82,12 @@ namespace IOFrame{
          *                                      ...
          *                                       'AND'(Default) / 'OR'
          *                                      ]
-         *                                      where possible conditions are '>','<','=', '!=', 'RLIKE' and 'NOT RLIKE'.
+         *                                      where possible conditions are '>','<','=', '!=', 'IN', 'INREV', 'RLIKE' and 'NOT RLIKE'.
+         *                                      The difference between IN and INREV is that in the first, the 1st parameter is
+         *                                      the name of the column that matches one of the strings in the 2nd parameter, while
+         *                                      with INREV (REV is reverse) the 1st parameter is a string that matches one of the
+         *                                      values of the column names in the 2nd parameter. In both cases, the both parameters
+         *                                      can be strings - only the order matters.
          *                                      The conditions work the same as their MySQL counterparts.
          *                                      More complex conditions are not supported as of now
          *                  'useCache'  - Whether to use cache at all
@@ -270,6 +275,30 @@ namespace IOFrame{
                                                 break;
                                             case '!=':
                                                 if($cachedResult2[$condition[0]]!=$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case 'INREV':
+                                            case 'IN':
+
+                                                $inArray = false;
+
+                                                $colIndex = ($condition[2] === 'IN')? 0 : 1;
+                                                $stringIndex = ($condition[2] === 'IN')? 1 : 0;
+
+                                                if(!is_array($condition[$colIndex]))
+                                                    $arr1 = [$condition[$colIndex]];
+                                                else
+                                                    $arr1 = $condition[$colIndex];
+
+                                                if(!is_array($condition[$stringIndex]))
+                                                    $arr2 = [$condition[$stringIndex]];
+                                                else
+                                                    $arr2 = $condition[$stringIndex];
+
+                                                foreach($arr1 as $colName)
+                                                    if(in_array($cachedResult2[$colName],$arr2))
+                                                        $inArray = true;
+                                                if($inArray)
                                                     $resultPasses++;
                                                 break;
                                             case 'RLIKE':
