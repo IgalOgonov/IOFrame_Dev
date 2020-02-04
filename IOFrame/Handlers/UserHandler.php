@@ -1,7 +1,6 @@
 <?php
 namespace IOFrame\Handlers{
     use IOFrame;
-    use GeoIp2\Database\Reader;
     use Monolog\Logger;
     use Monolog\Handler\IOFrameHandler;
     define('UserHandler',true);
@@ -1112,30 +1111,9 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
-            //First save country code
-            require_once 'ext/GeoIP/vendor/autoload.php';
 
-            // This creates the Reader object, which should be reused across
-            // lookups.
-            try{
-                $reader = new \GeoIp2\Database\Reader($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/geoip-db/GeoLite2-Country.mmdb');
-                // Replace "city" with the appropriate method for your database, e.g.,
-                // "country".
-                try{
-                    $record = $reader->country($_SERVER['REMOTE_ADDR']);
-                    $countryRes=$record->country->isoCode;
-                }
-                catch(\Exception $e){
-                    if($verbose)
-                        echo 'IP not in country db!'.EOL;
-                    $countryRes='Unkonwn';
-                }
-            }
-            catch(\Exception $e){
-                if($verbose)
-                    echo 'Country DB Does not exist!'.EOL;
-                $countryRes='Unkonwn';
-            }
+            //TODO Solve
+            $countryRes='Unkonwn';
 
             //Check if the username-ip combo already exists
             $u = $checkRes[0]["Username"];

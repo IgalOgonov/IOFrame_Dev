@@ -262,6 +262,12 @@ section.closed {
     background: rgb(220,230,240);
 }
 
+seperator{
+    border: 1px black solid;
+    width: 100%;
+    display: block;
+    margin: 10px 0px;
+}
 </style>
 ';
 

@@ -90,6 +90,9 @@ namespace IOFrame{
          *                                      can be strings - only the order matters.
          *                                      The conditions work the same as their MySQL counterparts.
          *                                      More complex conditions are not supported as of now
+         *                  'fixSpecialConditions' - bool, default false. If true, will check and change specific conditions
+         *                                           that are invalid in SQL. Current list is:
+         *                                          'INREV'
          *                  'useCache'  - Whether to use cache at all
          *                  'getFromCache' - Whether to try to get items from cache
          *                  'updateCache' - Whether to try to update cache with DB results
@@ -119,6 +122,8 @@ namespace IOFrame{
             $type = isset($params['type'])? $params['type'] : '';
 
             $compareCol = isset($params['compareCol'])? $params['compareCol'] : true;
+
+            $fixSpecialConditions = isset($params['fixSpecialConditions'])? $params['fixSpecialConditions'] : false;
 
             $columnConditions = isset($params['columnConditions'])? $params['columnConditions'] : [];
 
@@ -258,7 +263,7 @@ namespace IOFrame{
 
                                 $resultPasses = 0;
 
-                                foreach ($columnConditions as $condition) {
+                                foreach ($columnConditions as $index => $condition) {
                                     if(isset($cachedResult2[$condition[0]]))
                                         switch($condition[2]){
                                             case '>':
@@ -279,7 +284,6 @@ namespace IOFrame{
                                                 break;
                                             case 'INREV':
                                             case 'IN':
-
                                                 $inArray = false;
 
                                                 $colIndex = ($condition[2] === 'IN')? 0 : 1;
@@ -348,8 +352,16 @@ namespace IOFrame{
                     }
             }
 
+            $dbConditions = $columnConditions;
+            if($fixSpecialConditions)
+                foreach ($dbConditions as $index => $condition) {
+                    if($condition[2] === 'INREV')
+                        //Set this to IN, for the DB query
+                        $dbConditions[$index][2] = 'IN';
+                }
+
             if($targets != [] || $cacheTargets === [])
-                $dbResults = $this->getFromTableByKey($targets,$keyCol,$tableName,$columns,array_merge($params,['extraConditions'=>$columnConditions]));
+                $dbResults = $this->getFromTableByKey($targets,$keyCol,$tableName,$columns,array_merge($params,['extraConditions'=>$dbConditions]));
             if($dbResults !== false)
                 foreach($dbResults as $identifier=>$dbResult){
                     $results[$identifier] = $dbResult;
