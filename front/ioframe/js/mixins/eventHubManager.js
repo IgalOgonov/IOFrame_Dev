@@ -8,10 +8,10 @@
  * incorrectly.
  * **/
 const eventHubManager = {
-    data(){
+    data: function(){
         return{
             events:[],
-            eventHub:{}
+            eventHub:null
         }
     },
     created: function(){

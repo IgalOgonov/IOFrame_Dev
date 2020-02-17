@@ -8,7 +8,7 @@ var galleries = new Vue({
     el: '#galleries',
     mixins:[sourceURL],
     data: {
-        configObject: document.siteConfig,
+        configObject: JSON.parse(JSON.stringify(document.siteConfig)),
         //Modes, and array of available operations in each mode
         modes: {
             search:{

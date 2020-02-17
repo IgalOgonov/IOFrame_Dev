@@ -9,7 +9,7 @@
 * 'beforeRelog' - Called if you are not logged in, but have credentials to relog, before relog.
 * 'afterRelogSuccess' - Called after you successfully tried to relog.
 * 'afterRelogFailure' - Called after you tried to relog and failed.
-* 'sessionInfoUpdated' - The default function to call aftersession info is updated - usually just page reload.
+* 'sessionInfoUpdated' - The default function to call after session info is updated - usually just page reload.
 *
 * */
 function initPage(pathToRoot, callbacks = {}){

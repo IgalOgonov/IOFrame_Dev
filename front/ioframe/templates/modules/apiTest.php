@@ -5,6 +5,7 @@
         <input type="text" id="target" name="target" placeholder="target API" v-model="target" required>
         <textarea  id="content" name="content" placeholder="API request content" v-model="content" required></textarea>
         <span class="form-group">
+            <input type="text" id="imgName" name="imgName" placeholder="Upload POST name" v-model="imgName">
             <img id="preview1" src="" style="height: 100px;width: 100px;cursor: pointer;">
             <input id="uploaded1" name="uploaded1" type="file" style="display:none;">
         </span>

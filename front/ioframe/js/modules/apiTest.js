@@ -8,6 +8,7 @@ var apiTest = new Vue({
     data: {
         target:'',
         content:'',
+        imgName:'',
         req: 'test',
         inputs: '',
         resp: ''
@@ -27,8 +28,10 @@ var apiTest = new Vue({
             });
             data.append('req', this.req);
             let image = document.querySelector('#uploaded1');
+            let imageName = document.querySelector('#imgName');
+            imageName = imageName.value? imageName.value : 'image';
             if(image.files.length>0){
-                data.append('image', image.files[0]);
+                data.append(imageName, image.files[0]);
             }
             let file = document.querySelector('#uploaded2');
             if(file.files.length>0){

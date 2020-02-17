@@ -36,7 +36,7 @@ Vue.component('media-viewer', {
         displayElementsOrdered: {
             type: Array,
             default: function () {
-                return []
+                return [];
             }
         },
         //The current url which is viewed
@@ -114,7 +114,7 @@ Vue.component('media-viewer', {
     template: '\
          <div class="media-container">\
             <div class="media-url-container" v-if="allowSearching">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\')" @click="goToRoot">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.png\')" @click="goToRoot">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\')" @click="folderUp">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\')" @click="changeURLRequest(url)">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\')" @click="toggleEditing">\
