@@ -18,6 +18,11 @@ Vue.component('ioframe-gallery', {
                 ];
             }
         },
+        //Displays only this number of items in the gallery wheel. You can still navigate to all items
+        displayNumber:{
+            type: Number,
+            default: 5
+        },
         //Instead of changing "selected", always keeps it as the middle member of the gallery (rounded up) and rotates the
         //gallery to match it
         centerGallery:{
@@ -43,6 +48,17 @@ Vue.component('ioframe-gallery', {
         missingImageUrl:{
             type: String,
             default: ''
+        },
+        //If this is set, when there are more images than can be displayed, those elements will be displayed at the side where
+        //the additional images cannot be displayed (for example - images of 3 dots)
+        outOfDisplayImagesUrl:{
+            type: Object,
+            default:  function(){
+                return {
+                    prev: null,
+                    next: null
+                };
+            }
         },
         //URLs to images of left/right buttons. If not provided, buttons will be styled or not styled according to styledNavigationButtons
         navigationButtons:{
@@ -169,65 +185,67 @@ Vue.component('ioframe-gallery', {
                         setTimeout(this.initImages,delay,delay,(count -1));
                     return;
                 }
-                //An image is invalid if it failed to load, or if the missing icon was loaded from earlier but the actual image
-                //address isn't the missing icon
-                let valid = (
-                    image.naturalHeight !== 0 &&
-                    !(image.attributes.src === this.missingImageUrl && this.gallery[index].url !== this.missingImageUrl)
-                );
-                if(!valid && this.missingImageUrl !== ''){
-                    this.gallery[index].url = this.missingImageUrl;
-                    this.gallery[index].loaded = true;
-                }
-                //We could still have a leftover valid image from earlier
-                else{
-                    let context = this;
-                    let placeholder;
-                    let previewPlaceholder;
-                    placeholder = this.$el.querySelector('.gallery-member-placeholder-'+index);
-                    if(hasPreview)
-                        previewPlaceholder = this.$el.querySelector('.gallery-member-preview-placeholder-'+index);
-                    let hasMissingUrl = this.missingImageUrl;
+                let context = this;
+                let placeholder;
+                let previewPlaceholder;
+                placeholder = this.$el.querySelector('.gallery-member-placeholder-'+index);
+                if(hasPreview)
+                    previewPlaceholder = this.$el.querySelector('.gallery-member-preview-placeholder-'+index);
+                let hasMissingUrl = this.missingImageUrl;
 
-                    //Image starts loading
-                    image.onloadstart = function(){
-                        //Make the placeholder visible and move the image away
-                        if(context.loadingImageUrl !== ''){
-                            image.style.height = '0';
-                            image.style.width = '0';
-                            image.style.opacity = '0';
-                            placeholder.style.display = 'initial';
-                            if(hasPreview){
-                                preview.style.position = 'fixed!important';
-                                preview.style.left = '100vw!important';
-                                previewPlaceholder.style.display = 'initial';
-                            }
+                //Image starts loading
+                image.onloadstart = function(){
+                    //Make the placeholder visible and move the image away
+                    if(context.loadingImageUrl !== ''){
+                        image.style.height = '0';
+                        image.style.width = '0';
+                        image.style.opacity = '0';
+                        placeholder.style.display = 'initial';
+                        if(hasPreview){
+                            preview.style.position = 'fixed';
+                            preview.style.left = '100vw';
+                            previewPlaceholder.style.display = 'initial';
                         }
-                    };
+                    }
+                };
 
-                    //Image finished loading
-                    image.onloadend = function(){
-                        //Image was loaded
-                        context.gallery[index].loaded = true;
+                //Error
+                image.onerror = function(){
+                    if(context.missingImageUrl !== ''){
+                        context.gallery[index].url = context.missingImageUrl;
+                        if(context.verbose)
+                            console.log('Image '+index+' is not valid!');
+                    }
+                    image.onerror = function(){};
+                };
 
-                        //Remove placeholder, return image to normal position
-                        if(context.loadingImageUrl !== ''){
-                            image.style = {};
-                            placeholder.style.display = 'none';
-                            if(hasPreview){
-                                preview.style = {};
-                                previewPlaceholder.style.display = 'none';
-                            }
+                //Image finished loading
+                image.onloadend = function(){
+                    image.onloadstart = function(){};
+                    //Image was loaded
+                    context.gallery[index].loaded = true;
+
+                    //Remove placeholder, return image to normal position
+                    if(context.loadingImageUrl !== ''){
+                        image.style = {};
+                        placeholder.style.display = 'none';
+                        if(hasPreview){
+                            preview.style = {};
+                            previewPlaceholder.style.display = 'none';
                         }
-                        //If the image isn't valid, and missingImageUrl is set, set the image to that Url
-                        let valid = (
-                            image.naturalHeight !== 0 &&
-                            !(image.attributes.src === context.missingImageUrl && context.gallery[index].url !== context.missingImageUrl)
-                        );
-                        if(!valid && context.missingImageUrl !== '')
-                            context.gallery[index].url = context.missingImageUrl;
-                    };
-                }
+                    }
+                    //If the image isn't valid, and missingImageUrl is set, set the image to that Url
+                    let valid = (
+                        image.naturalHeight !== 0 &&
+                        !(image.attributes.src === context.missingImageUrl && context.gallery[index].url !== context.missingImageUrl)
+                    );
+                    if(!valid && context.missingImageUrl !== ''){
+                        context.gallery[index].url = context.missingImageUrl;
+                        if(context.verbose)
+                            console.log('Image '+index+' is not valid!');
+                    }
+                    image.onloadend = function(){};
+                };
             }
         },
         //Moves selection to the next/previous image
@@ -287,7 +305,48 @@ Vue.component('ioframe-gallery', {
     computed:{
         //whether navigation button URLs were provided or not
         navigationButtonsProvided: function(){
-            return this.navigationButtons.left && this.navigationButtons.right;
+            return this.navigationButtons.prev && this.navigationButtons.next;
+        },
+        //Returns if current indices that are in display range
+        indicesInDisplayRange: function(){
+            let indices = [];
+            let leftOverBack = 0;
+            let leftOverFront = 0;
+            let arrLength = this.gallery.length;
+            let offsetForward = Math.ceil(this.displayNumber / 2);
+            let offsetBack = Math.floor(this.displayNumber / 2);
+            for(let i = this.selected - offsetBack; i<this.selected; i++){
+                if(i < 0)
+                    leftOverBack ++;
+                else
+                    indices.push(i);
+            }
+            for(let i = this.selected; i<this.selected + offsetForward + leftOverBack; i++){
+                if(i > arrLength)
+                    leftOverFront ++;
+                else
+                    indices.push(i);
+            }
+            for(let i = this.selected - offsetBack; i>this.selected - offsetBack - leftOverFront; i--){
+                if(i > 0)
+                    indices.push(i);
+            }
+
+            return indices;
+        },
+        //Calculates whether there are previous items which are out of display range
+        prevItemsOutOfDisplayRange: function(){
+            if(this.infiniteLoop)
+                return this.displayNumber < this.images.length;
+            else
+                return this.indicesInDisplayRange.indexOf(0) === -1;
+        },
+        //Calculates whether there are next items which are out of display range
+        nextItemsOutOfDisplayRange: function(){
+            if(this.infiniteLoop)
+                return this.displayNumber < this.images.length;
+            else
+                return this.indicesInDisplayRange.indexOf(this.images.length) === -1;
         }
     },
     watch: {
@@ -314,22 +373,32 @@ Vue.component('ioframe-gallery', {
 
             <div class="slider">
 
-                <button class="prev" @click="moveSelection(false)">
-                    <img v-if="navigationButtons.prev" :src="navigationButtons.prev">
+                <button v-if="prevItemsOutOfDisplayRange" class="prev" @click.prevent="moveSelection(false)">
+                    <div v-if="navigationButtons.prev" v-html="navigationButtons.prev"></div>
                     <div v-else="">&#60</div>
                 </button>
 
                 <div class="gallery-container">
 
-                    <div v-for="(item, index) in gallery" class="image-container gallery" :class="[{selected:selected === index}, 'image-'+index]" @click="select(index)">
+                    <div v-if="prevItemsOutOfDisplayRange && outOfDisplayImagesUrl.prev"  class="out-of-view prev" v-html="outOfDisplayImagesUrl.prev"></div>
+
+                    <div
+                    v-for="(item, index) in gallery"
+                    v-if="indicesInDisplayRange.indexOf(index)!==-1"
+                    class="image-container gallery"
+                    :class="[{selected:selected === index}, 'image-'+index]"
+                    @click="select(index)"
+                    >
                         <img v-if="loadingImageUrl" :src="loadingImageUrl" class="gallery-member" :class="'gallery-member-placeholder-'+index" style="display:none;">
                         <img :src="item.url" :alt="item.alt? item.alt : ''" class="gallery-member" :class="'gallery-member-'+index">
                     </div>
 
+                    <div v-if="nextItemsOutOfDisplayRange && outOfDisplayImagesUrl.next" class="out-of-view next" v-html="outOfDisplayImagesUrl.next"></div>
+
                 </div>
 
-                <button class="next" @click="moveSelection(true)">
-                    <img v-if="navigationButtons.next" :src="navigationButtons.next">
+                <button v-if="nextItemsOutOfDisplayRange"  class="next" @click.prevent="moveSelection(true)">
+                    <div v-if="navigationButtons.next" v-html="navigationButtons.next"></div>
                     <div v-else="">&#62</div>
                 </button>
 
