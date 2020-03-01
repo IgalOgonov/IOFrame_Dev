@@ -198,7 +198,7 @@ namespace IOFrame\Handlers{
             isset($params['orderBy'])?
                 $orderBy = $params['orderBy'] : $orderBy = null;
             isset($params['orderType'])?
-                $orderType = $params['orderType'] : $orderType = 0;
+                $orderType = $params['orderType'] : $orderType = null;
             isset($params['limit'])?
                 $limit = $params['limit'] : $limit = null;
             isset($params['offset'])?
@@ -242,10 +242,12 @@ namespace IOFrame\Handlers{
             }
 
             //orderType
-            if($orderType == 0)
-                $orderType = 'ASC';
-            else
-                $orderType = 'DESC';
+            if($orderType !== null){
+                if($orderType == 0)
+                    $orderType = 'ASC';
+                else
+                    $orderType = 'DESC';
+            }
             //Prepare the query to be executed
             $query .= $columnsToSelect.' FROM '.$tableName;
 
@@ -272,7 +274,8 @@ namespace IOFrame\Handlers{
                 }
                 else
                     $query .= $orderBy;
-                $query .=' '.$orderType;
+                if($orderType !== null)
+                    $query .=' '.$orderType;
             }
 
             //If we have a limit

@@ -408,17 +408,19 @@ namespace IOFrame\Handlers{
             curl_setopt($ch, CURLOPT_USERAGENT, 'api');
             curl_setopt($ch, CURLOPT_TIMEOUT, 1);
             curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
             curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, 10);
 
             curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-            curl_exec ($ch);
+
+            $res = curl_exec ($ch);
+
+            //TODO use log handler to log anything that isn't 0
 
             curl_close ($ch);
-
         }
 
         /** TEMPLATE RELATED STUFF **/

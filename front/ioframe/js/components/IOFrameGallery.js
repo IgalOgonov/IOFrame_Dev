@@ -193,6 +193,14 @@ Vue.component('ioframe-gallery', {
                     previewPlaceholder = this.$el.querySelector('.gallery-member-preview-placeholder-'+index);
                 let hasMissingUrl = this.missingImageUrl;
 
+                /*In some cases, we'll return here from previous search results, and have an invalid image "loaded" from cache*/
+                if(context.missingImageUrl !== '' && image.naturalHeight === 0 && image.complete){
+                    if(context.verbose)
+                        console.log('Image '+index+' cached despite being invalid!');
+                    context.gallery[index].url = context.missingImageUrl;
+                    continue;
+                }
+
                 //Image starts loading
                 image.onloadstart = function(){
                     //Make the placeholder visible and move the image away
