@@ -436,6 +436,7 @@ namespace IOFrame\Handlers{
          *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'onDuplicateKey' if true, will add ON DUPLICATE KEY UPDATE.
          *                      'onDuplicateKeyExp' if 'onDuplicateKey' is true, this can be set to be a custom expression for updating
+         *                      'onDuplicateKeyColExp' allows custom expressions only for specific columns.
          *                      'returnRows' If true, will return the ID if the FIRST inserted row (their count depends on $values)
          *                      'justTheQuery' If true, will only return the query and not execute it.
          * @params bool $test indicates test mode
@@ -458,6 +459,8 @@ namespace IOFrame\Handlers{
                 $onDuplicateKey = $params['onDuplicateKey'] : $onDuplicateKey = false;
             isset($params['onDuplicateKeyExp'])?
                 $onDuplicateKeyExp = $params['onDuplicateKeyExp'] : $onDuplicateKeyExp = [];
+            isset($params['onDuplicateKeyColExp'])?
+                $onDuplicateKeyColExp = $params['onDuplicateKeyColExp'] : $onDuplicateKeyColExp = [];
             isset($params['returnRows'])?
                 $returnRows = $params['returnRows'] : $returnRows = false;
             isset($params['justTheQuery'])?
@@ -484,7 +487,10 @@ namespace IOFrame\Handlers{
                 //By default, updates each column with relevant values
                 if($onDuplicateKeyExp == []){
                     foreach($columns as $colName){
-                        $query .= $colName.'=VALUES('.$colName.'), ';
+                        if(!isset($onDuplicateKeyColExp[$colName]))
+                            $query .= $colName.'=VALUES('.$colName.'), ';
+                        else
+                            $query .= $colName.'='.$this->queryBuilder->expConstructor($onDuplicateKeyColExp[$colName]).', ';
                     }
                     $query =  substr($query,0,-2).' ';
                 }

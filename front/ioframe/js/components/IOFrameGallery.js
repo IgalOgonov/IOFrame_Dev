@@ -193,13 +193,13 @@ Vue.component('ioframe-gallery', {
                     previewPlaceholder = this.$el.querySelector('.gallery-member-preview-placeholder-'+index);
                 let hasMissingUrl = this.missingImageUrl;
 
-                /*In some cases, we'll return here from previous search results, and have an invalid image "loaded" from cache*/
+                /*/!*In some cases, we'll return here from previous search results, and have an invalid image "loaded" from cache*!/
                 if(context.missingImageUrl !== '' && image.naturalHeight === 0 && image.complete){
                     if(context.verbose)
                         console.log('Image '+index+' cached despite being invalid!');
                     context.gallery[index].url = context.missingImageUrl;
                     continue;
-                }
+                }*/
 
                 //Image starts loading
                 image.onloadstart = function(){
@@ -323,6 +323,14 @@ Vue.component('ioframe-gallery', {
             let arrLength = this.gallery.length;
             let offsetForward = Math.ceil(this.displayNumber / 2);
             let offsetBack = Math.floor(this.displayNumber / 2);
+
+            //In this case, just return everything
+            if(this.gallery.length <= this.displayNumber){
+                for(let i = 0; i<this.displayNumber; i++)
+                    indices.push(i);
+                return indices;
+            }
+
             for(let i = this.selected - offsetBack; i<this.selected; i++){
                 if(i < 0)
                     leftOverBack ++;

@@ -450,11 +450,11 @@ namespace IOFrame\Handlers{
                             }
                         }
                         //This happens if some info was missing
-                        if(!$anyNewAttributes){
+                        /*if(!$anyNewAttributes){
                             $contactToSet = [];
                             $results[$identifier] = 4;
                             unset($identifiers[array_search($identifier,$identifiers)]);
-                        }
+                        }*/
                     }
 
                     if($contactToSet !== []){

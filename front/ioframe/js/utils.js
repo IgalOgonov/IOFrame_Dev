@@ -355,8 +355,6 @@ function bindImagePreview(input,img,params = {}){
     //Whether to make clicks on the image open the upload
     var bindClick = (params['bindClick'])?
         true : false;
-    console.log(params['bindClick']);
-    console.log(params['bindClick']);
     if(bindClick){
         if(isElement(params['bindClick']))
             params['bindClick'].onclick = function () {

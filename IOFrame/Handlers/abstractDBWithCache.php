@@ -331,14 +331,14 @@ namespace IOFrame{
                             }
                         }
 
-                        //Either way we are removing this
-                        unset($targets[$index]);
-
                         if($cacheResultArrayHadError){
                             if($verbose)
                                 echo 'Item '.$indexMap[$index].' failed to pass column checks, removing from results'.EOL;
                             continue;
                         }
+
+                        //Either way we are removing this
+                        unset($targets[$index]);
 
                         $cacheResults[$indexMap[$index]] = $cachedResultIsDBObject? $cachedResultArray[0] : $cachedResultArray;
                     }

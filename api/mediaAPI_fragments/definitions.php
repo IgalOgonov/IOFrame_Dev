@@ -38,9 +38,9 @@ CONST MEDIA_FOLDER_CREATE_AUTH = 'MEDIA_FOLDER_CREATE_AUTH';
 //Allowed Regex filter regex
 CONST REGEX_REGEX = '^[\w\.\-\_ ]{1,128}$';
 //Regex to validate gallery name
-CONST GALLERY_REGEX = '^[\w ]{1,128}$';
+CONST GALLERY_REGEX = '^[\w \/]{1,128}$';
 //Regex to validate upload name
-CONST UPLOAD_NAME_REGEX = '^[\w ]{1,64}$';
+CONST UPLOAD_NAME_REGEX = '^[\w \/]{1,64}$';
 //Regex to validate upload name
 CONST UPLOAD_FILENAME_REGEX = '^[\w\_\-\. ]{1,128}$';
 //Maximum length for image alt

@@ -160,13 +160,13 @@ namespace IOFrame\Handlers{
                     $requestedName.'.'.$uploaded_ext : md5( uniqid().$uploaded_name ).'.'.$uploaded_ext;
                 $temp_file     = ( ( ini_get( 'upload_tmp_dir' ) == '' ) ? ( sys_get_temp_dir() ) : ( ini_get( 'upload_tmp_dir' ) ) );
                 $temp_file    .= '/' . md5( uniqid() . $uploaded_name ) . '.' . $uploaded_ext;
-
                 // Is it an image?
-                if( ( in_array(strtolower( $uploaded_ext ),['jpg','jpeg','png']) ) &&
+                if( ( in_array(strtolower( $uploaded_ext ),['jpg','jpeg','png','svg','gif']) ) &&
                     ( $uploaded_size < $maxImageSize ) &&
-                    ( $uploaded_type == 'image/jpeg' || $uploaded_type == 'image/png' ) &&
-                    getimagesize( $uploaded_tmp ) ) {
-                    // Strip any metadata, by re-encoding image (Note, using php-Imagick is recommended over php-GD)
+                    ( in_array(strtolower( $uploaded_type ),['image/svg+xml','image/jpeg','image/png','image/gif']) ) &&
+                    ($uploaded_type == 'image/svg+xml' || getimagesize( $uploaded_tmp ) )
+                ){
+                    // Strip any metadata, by re-encoding image
                     if( $uploaded_type == 'image/jpeg' ) {
                         if(!$test){
                             $img = imagecreatefromjpeg( $uploaded_tmp );
@@ -175,7 +175,7 @@ namespace IOFrame\Handlers{
                         if($verbose)
                             echo 'Writing JPEG image to temp directory'.EOL;
                     }
-                    else {
+                    elseif( $uploaded_type == 'image/png') {
                         if(!$test){
                             $img = imagecreatefrompng( $uploaded_tmp );
                             imagepng( $img, $temp_file, 9*(1-$imageQualityPercentage/100));
@@ -183,7 +183,24 @@ namespace IOFrame\Handlers{
                         if($verbose)
                             echo 'Writing PNG image to temp directory'.EOL;
                     }
-                    if(!$test)
+                    elseif( $uploaded_type == 'image/gif') {
+                        if(!$test){
+                            /*$img = imagecreatefromgif( $uploaded_tmp );
+                            imagegif( $img, $temp_file);*/
+                            /*TODO Render gifs safely - for now, only the unsafe version is supported, since you cannot parse animations natively */
+                            rename($uploaded_tmp,$temp_file);
+                        }
+                        if($verbose)
+                            echo 'Writing PNG image to temp directory'.EOL;
+                    }
+                    // SVGs dont really get parsed or validated - if you only embed them in IMG tags they should be able to do no harm.
+                    elseif( $uploaded_type == 'image/svg+xml'){
+                        if($verbose)
+                            echo 'Uploaded image is an svg'.EOL;
+                        //For consistency
+                        rename($uploaded_tmp,$temp_file);
+                    }
+                    if(!$test && isset($img))
                         imagedestroy( $img );
 
                     switch($opMode){
@@ -241,7 +258,7 @@ namespace IOFrame\Handlers{
                 // Invalid file
                 else {
                     if($verbose)
-                        echo 'Image '.$uploadName.' was not uploaded. We can only accept JPEG or PNG images of size up to '.$maxImageSize.EOL;
+                        echo 'Image '.$uploadName.' was not uploaded. We can only accept JPEG,PNG or SVG images of size up to '.$maxImageSize.EOL;
                     $res[$uploadName] = 1;
                 }
             }

@@ -88,6 +88,7 @@ namespace IOFrame{
          *              'offset'=> SQL parameter OFFSET. Only changes anything if limit is set.
          *              'orderBy'=> Same as SQLHandler
          *              'orderType'=> Same as SQLHandler
+         *              'prependPrefix' => bool, default true - whether to prepend the SLQ prefix to $tableName
          *              'extraConditions'   => Extra conditions one may pass,
          *              'extraKeyColumns'   => Array of additional columns that are considered key columns.
          *              'keyColumnPrefixes' => Array of prefixes to prepend to the key columns when building the query.
@@ -126,6 +127,7 @@ namespace IOFrame{
          * */
         protected function getFromTableByKey(array $keys, $keyCol, string $tableName, array $columns = [], array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
+            $prependPrefix = isset($params['prependPrefix'])? $params['prependPrefix'] : true;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
 
@@ -199,7 +201,8 @@ namespace IOFrame{
             }
 
             $conds = [];
-            $tableName = $this->SQLHandler->getSQLPrefix().$tableName;
+            if($prependPrefix)
+                $tableName = $this->SQLHandler->getSQLPrefix().$tableName;
             $tempRes = [];
 
             //If keys are not empty, we need to get specific rows
