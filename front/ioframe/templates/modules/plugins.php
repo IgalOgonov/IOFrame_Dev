@@ -7,23 +7,28 @@
     <form id="options-form"
           v-bind:class="{isActive:showPrompt, isInactive:!showPrompt}"
         >
-    <div is="plugin-install-prompt"
-         v-for="(value, key) in currentOptions"
-         v-bind:key="key"
-         v-bind:option-name="key"
-         v-bind:name="value.name"
-         v-bind:type="value.type"
-         v-bind:list="value.list"
-         v-bind:desc="value.desc"
-         v-bind:optional="value.optional"
-         v-bind:placeholder="value.placeholder"
-         v-bind:max-length="value.maxLength"
-         v-bind:max-num="value.maxNum"
-         class="option">
-    </div>
-    <span>Are you sure you want to {{currentAction}} {{currentPluginName}}?</span>
-        <button @click.prevent="handleForm">Yes</button>
-        <button @click.prevent="togglePrompt">No</button>
+
+        <div is="plugin-install-prompt"
+             v-for="(value, key) in currentOptions"
+             v-bind:key="key"
+             v-bind:option-name="key"
+             v-bind:name="value.name"
+             v-bind:type="value.type"
+             v-bind:list="value.list"
+             v-bind:desc="value.desc"
+             v-bind:optional="value.optional"
+             v-bind:placeholder="value.placeholder"
+             v-bind:max-length="value.maxLength"
+             v-bind:max-num="value.maxNum"
+             class="option">
+        </div>
+
+        <span>Are you sure you want to {{currentAction}} {{currentPluginName}}?</span>
+
+        <div class="buttons">
+            <button class="positive-1 plugin-button" @click.prevent="handleForm">Yes</button>
+            <button class="cancel-1 plugin-button" @click.prevent="togglePrompt">No</button>
+        </div>
     </form>
 
     <table class = plugins>
@@ -55,7 +60,7 @@
             @reverse="reverse(key)"
             ></tr>
     </table>
-    <div class="ui-button"><button @click="toggleTest">Toggle Test Mode</button></div>
+    <div class="ui-button"><button class="dangerous-1" @click="toggleTest">Toggle Test Mode</button></div>
     <div v-bind:class="{isActive:(showResponse && testMode), isInactive:!showResponse || !testMode}"><b>Server response:</b><br>
             <span v-html="serverResponse"></span>
     </div>

@@ -14,13 +14,16 @@ var galleries = new Vue({
             search:{
                 operations:{
                     create:{
-                        title:'Create New Gallery'
+                        title:'Create New Gallery',
+                        button:'positive-1'
                     },
                     'delete':{
-                        title:'Delete'
+                        title:'Delete',
+                        button:'negative-1'
                     },
                     'cancel':{
-                        title:'Cancel'
+                        title:'Cancel',
+                        button:'cancel-1'
                     }
                 },
                 title:'View Galleries'

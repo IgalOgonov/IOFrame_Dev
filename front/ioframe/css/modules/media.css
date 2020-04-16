@@ -1,0 +1,135 @@
+/* Media */
+#media{
+    padding: 0px 20px;
+}
+
+#media .modes > button.selected,
+#media  .operations > button.selected {
+    font-weight: 800;
+}
+
+/* Component specific CSS*/
+
+/*Component itself*/
+.image-uploader,
+.image-editor{
+    padding: 10px 0px;
+}
+
+/* Image container */
+.image-uploader .image-container,
+.image-editor .image-container{
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    transition: 0.5s linear;
+}
+.image-uploader .image-container:hover,
+.image-editor .image-container:hover{
+    background: rgba(0,0,0,0.1);
+}
+.image-uploader .image-container > img,
+.image-editor .image-container > img{
+    max-width: 100%;
+}
+
+/*Information container*/
+.image-uploader .info-container,
+.image-editor .info-container{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Properties */
+.image-uploader .properties,
+.image-editor .properties{
+    flex: 1;
+    min-width: 300px;
+}
+.image-uploader .properties > *,
+.image-editor .properties > *{
+    font-size: 1.25em;
+    border-radius: 2px;
+    min-width: 70%;
+}
+.image-uploader .properties > .property,
+.image-editor .properties > .property{
+    display: block;
+    border: 1px rgb(163, 171, 207) solid;
+    margin: 5px;
+    padding: 5px;
+}
+.image-uploader .properties > label,
+.image-editor .properties > label{
+    font-weight: 800;
+    color: rgb(120, 120, 120);
+}
+/*Divs are for static properties*/
+.image-uploader .properties > div.property,
+.image-editor .properties > div.property {
+    max-width: max-content;
+    border: none;
+    background: rgb(218, 221, 239);
+}
+
+/*Buttons*/
+.image-uploader .operations > button,
+.image-editor .operations > button,
+.image-uploader .initiate-galleries,
+.image-editor .initiate-galleries {
+    text-transform: uppercase;
+    margin: 5px 5px 5px 5px;
+    font-weight: 800;
+    display: inline-flex;
+    transition: all 0.5s, color 0s;
+    font-size: 1.25em;
+    padding: 10px 20px;
+}
+.image-editor .operations > button >img,
+.image-uploader .operations > button >img {
+    height: 20px;
+    margin: 0px 0px 0px 10px;
+    align-self: center;
+}
+
+/*Gelleries*/
+.image-editor .galleries-container,
+.image-uploader .galleries-container {
+    max-width: max-content;
+    margin: 10px 0px;
+    min-width: 250px;
+}
+.image-editor .initiate-galleries,
+.image-uploader .initiate-galleries{
+    background: rgb(224,244,255);
+    border: 1px rgb(163, 171, 207) solid;
+    color:black;
+}
+.image-editor .initiate-galleries:hover,
+.image-uploader .initiate-galleries:hover{
+    background: #000;
+    color:white;
+}
+.image-editor .galleries-container > *,
+.image-uploader .galleries-container > *{
+    text-align: center;
+}
+.image-editor .gallery-title,
+.image-uploader .gallery-title{
+    width: 100%;
+    padding: 0px 10px;
+    background: rgb(136, 146, 191);
+}
+.image-editor .gallery,
+.image-uploader .gallery{
+    padding: 5px;
+    font-size: 1.5em;
+}
+.image-editor .gallery:nth-child(2n),
+.image-uploader .gallery:nth-child(2n) {
+    background: rgb(236, 251, 255);
+}
+.image-editor .gallery:nth-child(2n+1),
+.image-uploader .gallery:nth-child(2n+1) {
+    background: rgb(224,244,255);
+}

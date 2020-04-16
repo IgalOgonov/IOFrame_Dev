@@ -2,13 +2,6 @@
     overflow: hidden;
 }
 
-a{
-    text-decoration: none !important;
-}
-a:visited{
-     color: LightSeaGreen !important;
- }
-
 h1{
     text-align: center;
     color: rgb(0, 0, 149);
@@ -26,7 +19,7 @@ div.wrapper {
     min-height: 150px;
     margin: auto;
     margin-bottom:30px;
-    background-color: rgba(0, 140, 207, 0.2);
+    background-color: rgb(224,244,255);
     background-attachment: fixed;
 }
 
@@ -47,12 +40,25 @@ div.option>a{
     width: 100%;
 }
 
+#options-form .buttons,
+#plugin-order-list .buttons
+{
+    display: flex;
+    max-width: 300px;
+}
+
 .plugin-buttons {
     text-align: center;
 }
 
-.plugin-button {
+#plugin-list button,
+#plugin-order-list button {
     margin: 1px;
+    padding: 5px 10px;
+}
+
+button.activeButton {
+    border: 1px rgb(0,0,0) solid;
 }
 
 .plugin-icons {
@@ -105,8 +111,7 @@ div.option>a{
 
 table tr td{
     padding: 2px;
-    border: 2px black;
-    border-style: solid dashed;
+    border: 1px solid rgb(163,171,207);
     background-color: rgba(0, 140, 207, 0.2);
 }
 table tr th{

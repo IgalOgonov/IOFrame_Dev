@@ -168,7 +168,7 @@ namespace IOFrame{
                                                               PRIMARY KEY (Username, IP),
                                                               FOREIGN KEY (Username)
                                                                 REFERENCES ".$prefix."USERS(Username)
-                                                                ON DELETE CASCADE
+                                                                ON DELETE CASCADE ON UPDATE CASCADE
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
                 $makeTB->execute();

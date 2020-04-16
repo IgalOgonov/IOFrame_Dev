@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<?php
+
+%%TEMPLATE_DEFINITIONS%%
+
+%%TEMPLATE_HEADERS_START%%
+
+%%TEMPLATE_RESOURCE_ARRAYS%%
+
+%%TEMPLATE_GET_RESOURCES%%
+
+echo '<title>%%TEMPLATE_TITLE%%</title>';
+
+%%TEMPLATE_HEADER_RESOURCES%%
+?>
+
+
+<?php
+$siteConfig = array_merge($siteConfig,
+    [
+        'page'=> [
+            'id' => '%%TEMPLATE_ID%%',
+            'title' => '%%TEMPLATE_TITLE%%'
+        ]
+    ]);
+?>
+
+<script>
+    document.siteConfig = <?php echo json_encode($siteConfig)?>;
+    if(document.siteConfig.page.title !== undefined)
+        document.title = document.siteConfig.page.title;
+</script>
+
+<?php %%TEMPLATE_HEADERS_END%% ?>
+
+<body>
+
+%%IF(HAS_WRAPPER)<div class="wrapper">%%
+%%TEMPLATE_TEMPLATES%%
+%%IF(HAS_WRAPPER) </div>%%
+
+</body>
+
+
+<?php
+
+%%TEMPLATE_FOOTERS_START%%
+
+%%TEMPLATE_FOOTER_RESOURCES%%
+
+%%TEMPLATE_FOOTERS_END%%
+
+?>

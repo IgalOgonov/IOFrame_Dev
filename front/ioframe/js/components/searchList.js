@@ -3,7 +3,8 @@ if(eventHub === undefined)
 
 Vue.component('search-list', {
     mixins:[
-        eventHubManager
+        eventHubManager,
+        sourceURL
     ],
     props: {
         //Test Mode

@@ -1,0 +1,93 @@
+body > .wrapper {
+    display: flex;
+}
+
+/*Main app*/
+.main-app {
+    padding: 0px 10px;
+    max-width: calc(100vw - 220px);
+    padding: 10px;
+}
+
+/* Loading */
+.loading-cover {
+    background: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/*Modes + Operations menu*/
+.modes{
+    display: flex;
+}
+.modes,
+.operations {
+    padding: 5px 0px 5px 0px;
+    flex-direction: row;
+}
+
+.modes > button.selected,
+.operations > button.selected {
+    font-weight: 800;
+    box-shadow: 0px 3px 6px #00000029;
+}
+
+/*Operations menu alone*/
+.operations-container {
+    display: flex;
+    border-top: rgb(203, 203, 203) 1px solid;
+    border-bottom: rgb(203, 203, 203) 1px solid;
+    margin: 10px 0px 10px 0px;
+}
+
+.operations-container > .operations-title {
+    align-self: center;
+    font-size: 20px;
+    font-weight: 800;
+    padding: 5px 20px;
+}
+
+.operations > input {
+    width: 100%;
+    border: 1px #808080 solid;
+    font-size: 1.25em;
+    padding: 5px;
+}
+
+
+/*buttons*/
+
+.modes > button {
+    margin: 0px 10px;
+}
+
+.modes > button,
+.operations > button {
+    font-size: 1.25em;
+    padding: 9px 52px;
+    margin: 5px;
+}
+
+.operations > button {
+    text-transform: uppercase;
+    margin: 5px 5px 5px 5px;
+    font-weight: 800;
+    font-size: 18px;
+    display: inline-flex;
+}
+
+/*Icon, if exists*/
+.operations > button > img {
+    height: 20px;
+    margin: 0px 0px 0px 10px;
+    align-self: center;
+}
+
+/*Alters*/
+.alert{
+    min-width: calc(100% - 10px);
+    max-width: calc(100% - 10px);
+    margin: 5px;
+}

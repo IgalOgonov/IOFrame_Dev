@@ -1,0 +1,86 @@
+#mails {
+    margin: 50px;
+}
+
+#mails h2 {
+    margin-bottom: 50px;
+}
+#mails .delete{
+    color: red;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+#mails .actions button{
+    font-weight: bold;
+    padding: 5px 10px;
+}
+#mails .actions button{
+    margin-bottom: 20px;
+}
+#mails .container {
+    display: flex;
+    flex-direction: column;
+}
+#mails .templates{
+    margin-right: 50px;
+}
+#mails .title {
+    font-size: 1.3em;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid transparent;
+    transition: 0.2s ease-in-out;
+}
+#mails .edit{
+    display: flex;
+    flex-direction: column;
+    padding: 5px 10px;
+    margin: 10px 0px;
+    border: 1px rgb(163, 171, 207) solid;
+    background: rgb(236, 251, 255);
+}
+#mails .title:hover,
+#mails .title.selected {
+    color: rgb(9, 19, 64);
+    background-color: rgb(236, 251, 255);
+    border: 1px rgb(163, 171, 207) solid;
+}
+#mails textarea{
+    margin: 20px;
+    margin-left: 0;
+    margin-top: 0;
+    border: 2px solid #927441;
+}
+#mails input,
+#mails .preview,
+#mails textarea{
+    margin: 10px;
+    padding: 10px;
+    min-width: 800px;
+    border: 1px rgb(163, 171, 207) solid;
+}
+#mails .preview{
+    background: white;
+}
+#mails input{
+    height: 30px;
+}
+#mails .edit button{
+    font-size: 1.1em;
+    height: 40px;
+    width: 100px;
+    margin: 0;
+}
+#mails .actions{
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+#mails .title:not(:last-child) {
+    margin-bottom: 20px;
+}

@@ -724,7 +724,7 @@ namespace IOFrame\Handlers{
                     $this->SQLHandler->insertIntoTable(
                         $tname,
                         ['settingKey','settingValue'],
-                        [["_Last_Changed","STRING"],[(string)time(),"STRING"]],
+                        [[["_Last_Changed","STRING"],[(string)time(),"STRING"]]],
                         ['onDuplicateKey'=>true,'test'=>$test,'verbose'=>$verbose]
                     );
             }

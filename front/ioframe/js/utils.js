@@ -42,7 +42,7 @@ function alertLog(str, type = 'info', targetElement = document.body, params = {}
         params.extraClasses += ' alert-'+type;
 
     if(params.dismissible === undefined)
-        params.dismissible = 'button';
+        params.dismissible = 'click';
 
     if(params.closeClass === undefined)
         params.closeClass = '';

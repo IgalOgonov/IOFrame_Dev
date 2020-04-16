@@ -13,16 +13,12 @@ if(php_sapi_name() != "cli"){
     die('This file must be accessed through the CLI!');
 }
 
-require __DIR__ . '/../main/definitions.php';
-if(!defined('SettingsHandler'))
-    require __DIR__ . '/../IOFrame/Handlers/SettingsHandler.php';
-if(!defined('helperFunctions'))
-    require __DIR__ . '/../IOFrame/Util/helperFunctions.php';
+require 'defaultInclude.php';
 if(!defined('PluginHandler'))
     require __DIR__ . '/../IOFrame/Handlers/PluginHandler.php';
 
 //--------------------Initialize Root DIR--------------------
-$baseUrl = IOFrame\Util\replaceInString('\\','/',substr(__DIR__,0,-8));
+$baseUrl = $settings->getSetting('absPathToRoot');
 
 //--------------------Initialize EOL --------------------
 if(!defined("EOL"))

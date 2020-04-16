@@ -2,7 +2,7 @@ if(eventHub === undefined)
     var eventHub = new Vue();
 
 Vue.component('media-editor', {
-    mixins:[sourceIcon],
+    mixins:[sourceURL],
     props: {
         //Identifier
         identifier: {
@@ -85,13 +85,13 @@ Vue.component('media-editor', {
                 </div>\
             </div>\
             <div class="operations" v-if="edited">\
-                <button class="update positive" @click="updateImage"">\
+                <button class="update positive-1" @click="updateImage"">\
                     <div v-text="\'Confirm\'"></div>\
-                    <img :src="sourceIcon(\'confirm\')">\
+                    <img :src="sourceURL()+\'img/icons/confirm-icon.svg\'">\
                 </button>\
-                <button class="reset cancel" @click="resetImage">\
+                <button class="reset cancel-1" @click="resetImage">\
                     <div v-text="\'Reset\'"></div>\
-                    <img :src="sourceIcon(\'cancel\')">\
+                    <img :src="sourceURL()+\'img/icons/cancel-icon.svg\'">\
                 </button>\
             </div>\
          </div>\

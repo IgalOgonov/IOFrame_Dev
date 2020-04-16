@@ -24,16 +24,19 @@ var media = new Vue({
                         title:'Rename (filename)'
                     },
                     'delete':{
-                        title:'Delete'
+                        title:'Delete',
+                        button:'negative-1'
                     },
                     'deleteMultiple':{
-                        title:'Delete Multiple'
+                        title:'Delete Multiple',
+                        button:'negative-1'
                     },
                     'create':{
                         title:'Create Folder'
                     },
                     'cancel':{
-                        title:'Cancel'
+                        title:'Cancel',
+                        button:'cancel-1'
                     }
                 },
                 title:'View Media'
@@ -60,8 +63,8 @@ var media = new Vue({
         view2Target:'',
         view2UpToDate:false,
         isLoading:false,
-        verbose:false,
-        test:false
+        verbose:true,
+        test:true
     },
     created:function(){
         //Tells viewer to load initial target

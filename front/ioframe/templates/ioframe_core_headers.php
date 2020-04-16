@@ -5,16 +5,15 @@ $dirToRoot = IOFrame\Util\htmlDirDist($_SERVER['REQUEST_URI'],$settings->getSett
 $currentPage = substr($_SERVER['PHP_SELF'],strlen($settings->getSetting('pathToRoot')));
 $currentPageURI = substr($_SERVER['REQUEST_URI'],strlen($settings->getSetting('pathToRoot')));
 $rootURI = $settings->getSetting('pathToRoot');
+require_once 'definitions.php';
 
 /* -- Initiate resource handler and get core JS files and the CSS file--*/
-$IOFrameJSRoot = 'front/ioframe/js/';
-$IOFrameCSSRoot = 'front/ioframe/css/';
 if(!isset($FrontEndResourceHandler))
     $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 $coreJS = $FrontEndResourceHandler->getJSCollection( 'IOFrameCoreJS',['rootFolder'=>$IOFrameJSRoot]);
-echo '<script src=\''.$dirToRoot.'front/ioframe/js/'.$coreJS['relativeAddress'].'\'></script>';
+echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$coreJS['relativeAddress'].'\'></script>';
 $ezAlertCSS = $FrontEndResourceHandler->getCSS(['ezAlert.css'],['rootFolder'=>$IOFrameCSSRoot])['ezAlert.css'];
-echo '<link rel="stylesheet" href=\''.$dirToRoot.'front/ioframe/css/'.$ezAlertCSS['relativeAddress'].'\'>';
+echo '<link rel="stylesheet" href=\''.$dirToRoot.$IOFrameCSSRoot.$ezAlertCSS['relativeAddress'].'\'>';
 
 /*Include plugins JS files, if those exist*/
 $jsIncludes = $orderedPlugins;

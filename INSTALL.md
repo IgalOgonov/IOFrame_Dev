@@ -39,8 +39,8 @@ Install following [this guide](https://help.ubuntu.com/lts/serverguide/httpd.htm
 **PHP**  
 Install 7.3+ following [this guide](https://thishosting.rocks/install-php-on-ubuntu/), or whichever other one you find.  
 The main thing to know is that you need to install some important PHP modules like php7.3-curl on your own. The above guide covers important PHP 7.3 modules as well.  
-As far as I recall, the important modules tthat aren't default are:  
-PDO, and cURL. 
+As far as I recall, the important modules that aren't default are:  
+PDO, cURL, mbstring, gd.  
 The redis module is also important, but optional, and is described later.
 
 **MySQL/MariaDB**  
@@ -48,7 +48,11 @@ Install MariaDB [from here](https://linuxize.com/post/how-to-install-mariadb-on-
 
 **PHPMyAdmin**  [OPTIONAL]  
 While not required, it is extremely useful and is used in a low of examples here (as well as a general DB management tool).  
-[This guide](https://tecadmin.net/install-phpmyadmin-in-ubuntu/) seems to cover it well enough.  
+[This guide](https://tecadmin.net/install-phpmyadmin-in-ubuntu/) seems to cover it well enough. 
+
+**Adminer**  [OPTIONAL]  
+An alternative to PHPMyAdmin, some consider to be better, albait less known.  
+[This guide](https://www.ubuntuboss.com/how-to-install-adminer-on-ubuntu-18-04/) seems to cover it well enough.  
 
 **Redis** [OPTIONAL]  
 Highly recommended in any production system, as it affects performance drastically, and you cannot run proper multi-node setups without a redis node to centralize the user sessions.  
@@ -67,7 +71,7 @@ Go to your server root (default /var/www/html), and run
 
 ## Configurations  - Windows & Linux
 **PHP**  
-The framework allows you to control your session lifetime. However, the PHP setting may always through it out before your own value, if the PHP value is lower. Go over to C:\wamp64\bin\php\php<version> on Windows, etc/php/<version>/apache2/php.ini on Linux, open php.ini, and edit the line
+The framework allows you to control your session lifetime. However, the PHP setting may always through it out before your own value, if the PHP value is lower. Go over to C:\wamp64\bin\php\php<version> on Windows, /etc/php/\<version\>/apache2/php.ini on Linux, open php.ini, and edit the line
 
     session.gc_maxlifetime = <Something>
 
@@ -96,7 +100,7 @@ Also, create a DB and a user with full permissions in it - remember their names.
 Make sure that the SQL mode 'NO_BACKSLASH_ESCAPES' is **NOT** enabled.
 
 **Redis**  [OPTIONAL]  
-Go over to C:\wamp64\bin\php\php<version> on Windows, etc/php/<version>/apache2/php.ini on Linux, open php.ini, and add extension=php_redis at the bottom of the extension=<something> list.
+Go over to C:\wamp64\bin\php\php\<version\> on Windows, /etc/php/\<version\>/apache2/php.ini on Linux, open php.ini, and add extension=php_redis at the bottom of the extension=<something> list.
 Now it looks like:
 
     ...
@@ -125,8 +129,8 @@ Go to the folder you cloned IOFrame to, and run
 
     chmod 777 -R IOFrame (Or whichever name you cloned it under)
     
-There are probably safer ways to make it work, but this is the fastest, and a threat model where an attacker who compromises your linux VM / Server compromises the whole system is not irrational.  
-If you do know a safer solution for Linux, feel free to contact me.
+There are safer ways to make it work, but this is the fastest, and a threat model where an attacker who compromises your linux VM / Server compromises the whole system is not irrational.  
+If you do want a safer solution for Linux, feel free to [follow the guide here](https://stackoverflow.com/questions/2900690/how-do-i-give-php-write-access-to-a-directory), or post a quick guide somewhere and send me a link to put here.
 
 **Apache**  
 In order for the routing to work, the following must be true:  
@@ -135,7 +139,7 @@ In order for the routing to work, the following must be true:
 This can be enabled in WAMP64->Apache->Modules on windows,  
 or by running the following on Linux: 
 
-    sudo a2enmod rewrite
+    sudo a2enmod rewrite  
     sudo service apache2 restart
 	
 2. You need to set "RewriteEngine On" in the root directory (by default the root .htaccess file has it, but you can add it to the config file too, in the directive below).
@@ -145,7 +149,7 @@ At that same directive (inside the same <Directory></Directory> tag), realso set
 Those can be found in the Apache configuration directory, typically  
     C:\wamp64\bin\apache\apache2.4.39\conf on windows,  
 or in  
-    /etc/apache2  
+    /etc/apache2/
 on linux.  
 Without it, expect the router to fail, and the framework api calls fail with it.
 

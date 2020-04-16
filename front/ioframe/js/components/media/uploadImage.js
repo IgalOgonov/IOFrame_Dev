@@ -2,6 +2,7 @@ if(eventHub === undefined)
     var eventHub = new Vue();
 
 Vue.component('media-uploader', {
+    mixins:[sourceURL],
     props: {
         //Identifier
         identifier: {
@@ -71,11 +72,11 @@ Vue.component('media-uploader', {
                 </div>\
             </div>\
             <div class="operations" v-if="uploaded">\
-                <button class="update positive" @click="uploadImage"">\
+                <button class="update positive-1" @click="uploadImage"">\
                     <div v-text="\'Upload\'"></div>\
                     <img :src="imageURL(\'icons/confirm-icon.svg\')">\
                 </button>\
-                <button class="reset cancel" @click="resetImage">\
+                <button class="reset cancel-1" @click="resetImage">\
                     <div v-text="\'Reset\'"></div>\
                     <img :src="imageURL(\'icons/cancel-icon.svg\')">\
                 </button>\

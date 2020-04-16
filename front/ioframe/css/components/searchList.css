@@ -1,0 +1,142 @@
+/*** Search list itself ***/
+.search-list{
+    margin: 10px 0px;
+}
+
+/*** Filters ***/
+.search-list .filter-container{
+    display:flex;
+    padding: 5px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.search-list .filters{
+    display: flex;
+    flex-wrap: wrap;
+    max-width: max-content;
+    margin: 0px 10px;
+    justify-content: center;
+}
+
+/* Pagination*/
+.search-list .pagination button {
+    margin: 0px 3px;
+    padding: 5px 10px;
+}
+
+.search-list .pagination button.selected {
+    box-shadow: 0px 0px 2px 1px black;
+    font-weight: 800;
+    padding: 5px 10px;
+}
+
+.search-list .pagination button:not([class="go-to"]) {
+    background: none;
+    color: #777;
+}
+
+.search-list .pagination button[class="go-to"] {
+    background: #ddd;
+}
+
+.search-list .pagination button:not([class="go-to"]).selected {
+    color: black;
+}
+
+.search-list .pagination button:not([class="go-to"]):hover {
+    background: #ddd !important;
+}
+
+
+.search-list .pagination .go-to-page {
+    margin: 0px 15px;
+}
+.search-list .pagination .total-pages {
+    margin: 0px 15px;
+}
+
+.search-list .pagination .go-to-page input{
+    max-width: 60px;
+    padding: 5px 3px;
+    border: none;
+}
+
+.search-list .pagination .total-pages span:nth-child(2) {
+    font-weight: 800;
+    padding: 5px;
+}
+
+.search-list .pagination .go-to-page input{
+    background: transparent;
+}
+
+/*Button*/
+.search-list .filter-container > button{
+    color: #000;
+    flex: 1;
+    font-size: 1.25em;
+    font-weight: 800;
+    min-width: 100px;
+    max-width: 150px;
+    margin: 5px 0px;
+    padding: 5px;
+    border: 1px solid rgb(190, 196, 223);
+    background: rgb(236, 251, 255);
+    cursor: pointer;
+}
+.search-list .filter-container > button:hover{
+    background: rgb(224,244,255);
+    border: 1px solid rgb(190, 196, 223);
+}
+
+/*Labels*/
+.filter-container label > h2 {
+    font-size: 1.25em;
+}
+
+.search-list .filters > .filter-group {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px;
+    background: rgb(236, 251, 255);
+    border: 1px rgb(163, 171, 207) solid;
+    margin: 5px;
+}
+
+
+/*Inputs*/
+.search-list .filters input[type="text"] {
+    min-width: 200px;
+}
+.search-list .filters input {
+    margin: 2px;
+    padding: 4px;
+    border: 1px rgb(163, 171, 207) solid;
+    background: rgb(250,252,255);
+}
+
+/*Common result style*/
+.search-list .search-results {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0px;
+}
+.search-list .search-results > .search-titles {
+    font-weight: 800;
+}
+.search-list .search-results > * {
+    display: flex;
+    border: 1px solid rgb(190, 196, 223);
+    background: rgb(236, 251, 255);
+    padding: 10px 5px;
+    margin: 5px 0px;
+    border-radius: 2px;
+}
+.search-list .search-item {
+    cursor: pointer;
+}
+.search-list .search-item:hover,
+.search-list .search-item.selected{
+    background: rgb(161,233,246);
+}

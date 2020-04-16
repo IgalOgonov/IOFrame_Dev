@@ -1,0 +1,46 @@
+/*** Back Menu ***/
+#menu{
+    min-width: 200px;
+    min-height: 100vh;
+    background: rgb(236, 251, 255);
+    font-size: 1.25em;
+    margin-right: 5px;
+}
+/* Logo */
+#menu > .logo{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#menu > .logo > img{
+    height: 100px;
+}
+
+/* children */
+#menu > *{
+    display: block;
+}
+
+/* children that aren't the logo */
+#menu > *:not(.logo).selected{
+    font-weight: 800;
+}
+#menu > *:not(.logo){
+    background: rgb(236, 251, 255);
+    padding: 5px;
+    font-size: 1em;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s, color 0s;
+    border: 1px solid rgb(163, 171, 207);
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+#menu > *:not(.logo):last-child{
+    border-bottom: none;
+}
+#menu > *:not(.logo).selected,
+#menu > *:not(.logo):hover{
+    background: rgb(161,233,246);
+}

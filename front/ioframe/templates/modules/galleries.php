@@ -1,5 +1,5 @@
 <div id="galleries" class="main-app">
-    <div class="loading" v-if="isLoading">
+    <div class="loading-cover" v-if="isLoading">
     </div>
 
     <h1 v-if="title!==''" v-text="title"></h1>
@@ -11,6 +11,7 @@
             @click="switchModeTo(index)"
             v-text="item.title"
             :class="{selected:(currentMode===index)}"
+            class="positive-3"
             >
         </button>
     </div>
@@ -22,10 +23,9 @@
                 v-if="shouldDisplayOperation(index)"
                 v-for="(item,index) in modes[currentMode].operations"
                 @click="operation(index)"
-                :class="[index,{selected:(currentOperation===index)}]"
+                :class="[index,{selected:(currentOperation===index)},(item.button? item.button : 'positive-3')]"
                 >
                 <div v-text="item.title"></div>
-                <img :src="sourceURL() + '/img/icons/' + index + '-icon.svg'">
             </button>
         </div>
     </div>
@@ -39,12 +39,12 @@
             type="text"
             >
         <button
-            :class="{negative:(currentOperation === 'remove' || currentOperation === 'delete'), positive:(currentOperation === 'add')}"
+            :class="(currentOperation === 'remove' ? 'negative-1' : 'positive-1')"
             @click="confirmOperation" >
             <div v-text="'Confirm'"></div>
             <img :src="sourceURL() + '/img/icons/confirm-icon.svg'">
         </button>
-        <button class="cancel" @click="cancelOperation" >
+        <button class="cancel-1" @click="cancelOperation" >
             <div v-text="'Cancel'"></div>
             <img :src="sourceURL() + '/img/icons/cancel-icon.svg'">
         </button>

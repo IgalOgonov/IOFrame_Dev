@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__.'/../../IOFrame/Handlers/PurchaseOrderHandler.php';
+require __DIR__.'/../../IOFrame/Handlers/PurchaseOrderHandler.php';
 
 $PurchaseOrderHandler = new \IOFrame\Handlers\PurchaseOrderHandler(
     $settings,
@@ -54,12 +54,12 @@ var_dump(
 echo EOL;
 
 echo 'Getting all orders:'.EOL;
-/*var_dump(
-    $ContactHandler->getContacts(
+var_dump(
+    $PurchaseOrderHandler->getOrders(
         [],
         ['test'=>true,'verbose'=>true]
     )
-);*/
+);
 echo EOL;
 
 
@@ -197,6 +197,7 @@ var_dump(
         ['test'=>true,'verbose'=>true]
     )
 );
+echo EOL;
 
 echo 'Getting users of order 5:'.EOL;
 var_dump(
@@ -205,6 +206,7 @@ var_dump(
         ['test'=>true,'verbose'=>true]
     )
 );
+echo EOL;
 
 echo 'Removing users 1,2 of order 1:'.EOL;
 var_dump(

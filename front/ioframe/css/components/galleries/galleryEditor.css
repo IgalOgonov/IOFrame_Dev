@@ -1,0 +1,17 @@
+/***First viewer***/
+/*Correct display*/
+.gallery-editor .gallery-viewer .media-object-container {
+    min-width: 200px;
+    min-height: 200px;
+    max-height: 200px;
+    max-width: 200px;
+    transition: 0.25s;
+}
+.gallery-editor .gallery-viewer .media-display {
+    min-height: min-content;
+}
+/*Hover / Dragged over*/
+.gallery-editor .gallery-viewer .media-object-container:hover,
+.gallery-editor .gallery-viewer .media-object-container.draggedOver {
+    background: rgba(0,0,0,0.1);
+}

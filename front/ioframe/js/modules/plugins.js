@@ -125,12 +125,12 @@ Vue.component('plugin', {
               <span class ="plugin-description">{{description}}</span>    </td>\
           <td class ="plugin-statuses"> {{status}}</td>\
           <td class = "plugin-buttons">\
-            <button class="plugin-quick-install plugin-button"  v-bind:class="{isActive:installButtons(\'quick\'), isInactive:!installButtons(\'quick\')}" @click="qinstall">Quick Install</button><br>\
-            <button class="plugin-full-install plugin-button" v-bind:class="{isActive:installButtons(\'full\'), isInactive:!installButtons(\'full\')}" @click="finstall">Full Install</button>\
+            <button class="plugin-quick-install plugin-button positive-1"  v-bind:class="{isActive:installButtons(\'quick\'), isInactive:!installButtons(\'quick\')}" @click="qinstall">Quick Install</button><br>\
+            <button class="plugin-full-install plugin-button positive-1" v-bind:class="{isActive:installButtons(\'full\'), isInactive:!installButtons(\'full\')}" @click="finstall">Full Install</button>\
           </td>\
           <td class = "plugin-buttons">\
-            <button class="plugin-quick-uninstall plugin-button" v-bind:class="{isActive:uninstallButtons(\'quick\'), isInactive:!uninstallButtons(\'quick\')}" @click="quninstall">Quick Uninstall</button><br>\
-            <button class="plugin-full-uninstall plugin-button" v-bind:class="{isActive:uninstallButtons(\'full\'), isInactive:!uninstallButtons(\'full\')}" @click="funinstall">Uninstall</button>\
+            <button class="plugin-quick-uninstall plugin-button negative-1" v-bind:class="{isActive:uninstallButtons(\'quick\'), isInactive:!uninstallButtons(\'quick\')}" @click="quninstall">Quick Uninstall</button><br>\
+            <button class="plugin-full-uninstall plugin-button negative-1" v-bind:class="{isActive:uninstallButtons(\'full\'), isInactive:!uninstallButtons(\'full\')}" @click="funinstall">Uninstall</button>\
           </td>\
         </tr>\
         ',

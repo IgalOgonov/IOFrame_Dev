@@ -2,9 +2,8 @@
 
 /*Css of body*/
 body{
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(250, 252, 255);
     scroll-behavior: smooth;
-    color: rgb(55,55,55);
 }
 
 body, button{

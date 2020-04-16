@@ -7,3 +7,4 @@ front/ioframe/js/min/
 front/ioframe/css/min/
 *min.js
 *min.css
+!vue.min.js

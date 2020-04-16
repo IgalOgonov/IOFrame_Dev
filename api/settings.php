@@ -8,6 +8,23 @@
  * "action"     - Requested action - described bellow
  * "params"     - Parameters, depending on action - described bellow
  *_________________________________________________
+ * getSettingsMeta
+ *      Gets all available setting collections. Note that this only includes those which were registered -
+ *      there might be other setting collections that aren't registered, for one reason or another.
+ *      params:
+ *          none (no target - this is equivalent of calling "getSettings" with target "metaSettings")
+ *      Returns:
+ *          JSON encoded array, where each member is also a JSON encoded array, of the form:
+ *          {
+ *              <settings collection identifier - used as "target" for the other actions>: {
+ *                  local:<bool, whether collection is local>
+ *                  db:<bool, whether collection is exists in the db>,
+ *                  [optional]title: <string, title of the settings collection>
+ *              }
+ *          }
+ *
+ *      Examples: target=siteSettings&action=getSettings
+ *_________________________________________________
  * getSetting
  *      Gets one setting.
  *      params:
@@ -62,13 +79,13 @@ require 'CSRF.php';
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 
-if(!isset($_REQUEST["target"]))
+if(!isset($_REQUEST["target"]) && $_REQUEST["action"] !== 'getSettingsMeta')
     exit('Target settings not specified!');
 
 if($test)
     echo 'Testing mode!'.EOL;
 
-$target = $_REQUEST["target"];
+$target = isset($_REQUEST["target"])? $_REQUEST["target"] : '';
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
@@ -88,7 +105,10 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'getSettingsMeta':
     case 'getSettings':
+        if($action === 'getSettingsMeta')
+            $target = 'metaSettings';
         require 'settingsAPI_fragments/get_checks.php';
         require 'settingsAPI_fragments/getSettings_execution.php';
         echo json_encode($result);

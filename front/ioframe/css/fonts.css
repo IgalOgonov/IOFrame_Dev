@@ -1,0 +1,60 @@
+/** Fonts **/
+@font-face {
+    font-family: 'Bodoni MT';
+    src: url('fonts/BodoniMT.woff2') format('woff2'),
+    url('fonts/BodoniMT.woff') format('woff'),
+    url('fonts/BodoniMT.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Baskerville Old Face';
+    src: url('fonts/BASKVILL.woff2') format('woff2'),
+    url('fonts/BASKVILL.woff') format('woff'),
+    url('fonts/BASKVILL.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Courier New';
+    src: url('fonts/CourierNew.woff2') format('woff2'),
+    url('fonts/CourierNew.woff') format('woff'),
+    url('fonts/CourierNew.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'Lucida Console';
+    src: url('fonts/LucidaConsole.woff2') format('woff2'),
+    url('fonts/LucidaConsole.woff') format('woff'),
+    url('fonts/LucidaConsole.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'DM Serif';
+    font-style: normal;
+    src: url('fonts/DMSerifText-Regular.woff2') format('woff2'),
+    url('fonts/DMSerifText-Regular.woff') format('woff'),
+    url('fonts/DMSerifText-Regular.ttf') format('truetype');
+}
+@font-face {
+    font-family: 'DM Serif';
+    font-style: italic;
+    src: url('fonts/DMSerifText-Italic.woff2') format('woff2'),
+    url('fonts/DMSerifText-Italic.woff') format('woff'),
+    url('fonts/DMSerifText-Italic.ttf') format('truetype');
+}
+
+
+*{
+    font-family:'DM Serif',sans-serif;
+}
+
+*.font-special{
+    font-family:'Baskerville Old Face',sans-serif;
+}
+
+*.font-secondary{
+    font-family:'Courier New',sans-serif;
+}
+
+*.font-secondary-special{
+    font-family:'Lucida Console',sans-serif;
+}
+
+*.font-third{
+    font-family:'Bodoni MT',sans-serif;
+}

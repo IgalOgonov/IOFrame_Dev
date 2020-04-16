@@ -37,6 +37,8 @@ namespace IOFrame\Handlers{
         function readFileWaitMutex(string $url, string $fileName, $params = []){
 
             //Set defaults
+            $verbose = (isset($params['verbose']) && $params['verbose']) || (isset($params['test']) && $params['test']);
+
             if(!isset($params['sec']))
                 $sec = 2;
             else
@@ -65,6 +67,8 @@ namespace IOFrame\Handlers{
                     return $fileContents;
                 }
                 catch(\Exception $e){
+                    if($verbose)
+                        echo 'Exception when reading file -> '.$e->getMessage();
                     return false;
                 }
             }
@@ -80,6 +84,9 @@ namespace IOFrame\Handlers{
          * @param string $content content to write into the file
          * @param array $params of the form:
          *              'sec' - int, default 2 - seconds to wait for lock @LockHandler
+         *              'createNew' - bool, default true - Whether you want to allow creating new files, or force to check for existing ones.
+         *              'createFolders' - bool, default false - Will attempt to create folders when a file does not exist.
+         *              'override' - bool, default true - Whether you want to override existing files.
          *              'append' - bool, default false - Whether you want to append to the file's end, or rewrite it.
          *              'backUp' - bool, default false - set to true if you wish to back the file up with default $maxBackup
          *              'useNative' - bool, default false - Whether to use native PHP lock that is faster, but may not
@@ -94,6 +101,8 @@ namespace IOFrame\Handlers{
          * */
         function writeFileWaitMutex(string $url, string $fileName, string $content, $params = []){
             //Set defaults
+            $verbose = (isset($params['verbose']) && $params['verbose']) || (isset($params['test']) && $params['test']);
+
             if(!isset($params['sec']))
                 $sec = 2;
             else
@@ -103,6 +112,21 @@ namespace IOFrame\Handlers{
                 $append = false;
             else
                 $append = $params['append'];
+
+            if(!isset($params['createFolders']))
+                $createFolders = false;
+            else
+                $createFolders = $params['createFolders'];
+
+            if(!isset($params['createNew']))
+                $createNew = true;
+            else
+                $createNew = $params['createNew'];
+
+            if(!isset($params['override']))
+                $override = true;
+            else
+                $override = $params['override'];
 
             if(!isset($params['backUp']))
                 $backUp = false;
@@ -119,11 +143,45 @@ namespace IOFrame\Handlers{
             else
                 $LockHandler = $params['LockHandler'];
 
+            $fileExists = is_file($url.$fileName);
 
             if(substr($url,-1) != '/')
                 $url .= '/';
-            if(!is_file($url.$fileName))
+
+            if(!$createNew && !$fileExists){
+                if($verbose)
+                    echo $url.$fileName.' is not a file!';
                 return false;
+            }
+
+            if(!$override && $fileExists){
+                if($verbose)
+                    echo $url.$fileName.' already exists!';
+                return false;
+            }
+
+            if(($createNew || $createFolders)&& $append){
+                if($verbose)
+                    echo 'Cannot both allow creation of new files, and append to existing ones!';
+                return false;
+            }
+
+            if($createFolders && !$fileExists){
+                $folders = explode('/',$url.$fileName);
+                //Remove the file itself
+                array_pop($folders);
+                $newUrl = implode($folders,'/');
+                $folderExists = is_dir($newUrl);
+                while(count($folders) > 0 && !$folderExists){
+                    $name = array_pop($folders);
+                    $newUrl = implode($folders,'/');
+                    if(is_dir($newUrl)){
+                        mkdir($newUrl.'/'.$name);
+                        $folderExists = true;
+                    }
+                }
+            }
+
             //Native lock implementation
             if($useNative){
                 ($append)?
@@ -175,6 +233,8 @@ namespace IOFrame\Handlers{
                     throw new \Exception("Mutex locked for file ".$fileName);
             }
             catch(\Exception $e){
+                if($verbose)
+                    echo 'Exception when writing to file -> '.$e->getMessage();
                 return false;
             }
             return true;

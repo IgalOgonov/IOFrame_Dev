@@ -6,7 +6,7 @@ data.sigBytes=i+1}};function isElement(obj){try{return obj instanceof HTMLElemen
 function alertLog(str,type='info',targetElement=document.body,params={}){if(params.allowSpec===undefined)
 params.allowSpec=!0;if(params.extraClasses===undefined)
 params.extraClasses='alert-'+type;else params.extraClasses+=' alert-'+type;if(params.dismissible===undefined)
-params.dismissible='button';if(params.closeClass===undefined)
+params.dismissible='click';if(params.closeClass===undefined)
 params.closeClass='';if(document.alertHandler===undefined)
 document.alertHandler=new ezAlert('alert');document.alertHandler.initAlert(targetElement,str,params)}
 function IsJsonString(str){try{JSON.parse(str)}catch(e){return!1}
@@ -44,7 +44,7 @@ input=document.querySelector(input);if(!isElement(img))
 img=document.querySelector(img);if(!isElement(input)||!isElement(img)||img.nodeName!=='IMG'||input.nodeName!=='INPUT'){console.log('Elements not found or invalid!');resolve(!1);return}}
 let files=input.files;if(files.length===0){console.log('No files uploaded, cannot generate preview!');resolve(!1);return}
 let file=files[0];var imageType=file.type;var blob=null;file.arrayBuffer().then(function(resolve,reject){blob=new Blob([resolve],{type:imageType});let urlCreator=window.URL||window.webkitURL;img.src=urlCreator.createObjectURL(blob)})})}
-function bindImagePreview(input,img,params={}){var callback=(params.callback!==undefined)?params.callback:function(){};var bindClick=(params.bindClick)?!0:!1;console.log(params.bindClick);console.log(params.bindClick);if(bindClick){if(isElement(params.bindClick))
+function bindImagePreview(input,img,params={}){var callback=(params.callback!==undefined)?params.callback:function(){};var bindClick=(params.bindClick)?!0:!1;if(bindClick){if(isElement(params.bindClick))
 params.bindClick.onclick=function(){input.click()};else img.onclick=function(){input.click()}}
 input.onchange=function(){displayImageFromInput(input,img,{'checkElements':!1});callback()}}
 function getLuminance(R,G,B,percieved=!0,percentage=!0){let divider=1;let coefficientR=(percieved)?0.299:0.2126;let coefficientG=(percieved)?0.587:0.7152;let coefficientB=(percieved)?0.114:0.0722;if(percentage)

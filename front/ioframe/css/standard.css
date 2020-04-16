@@ -1,0 +1,208 @@
+/*Messages*/
+.message-dull{
+    background: rgba(0,0,0,0.1);
+    color: rgb(60, 60, 60);
+    border: 1px rgb(120, 120, 120) solid;
+}
+.message-info-1{
+    background: rgb(250,252,255);
+    color: rgb(34, 44, 89);
+    border: 1px  rgb(163, 171, 207) solid;
+}
+.message-info-2, .alert.alert-info{
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.message-warning-1{
+    background: rgb(218 209 104);
+    color: rgb(10, 10, 10);
+    border: 1px rgb(90,81, 0) solid;
+}
+.message-warning-2, .alert.alert-warning{
+    background: rgb(236, 251, 255);
+    color: rgb(190 140 40);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.message-error-1{
+    background: rgb(204 24 0);
+    color: rgb(10, 10, 10);
+    border: 1px rgb(77 0 0) solid;
+}
+.message-error-2, .alert.alert-error{
+    background: rgb(236, 251, 255);
+    color: rgb(204 24 0);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.message-success-1{
+    background: rgb(26 255 140);
+    color: rgb(10,10,10);
+    border: 1px rgb(0 77 0) solid;
+}
+.message-success-2, .alert.alert-success{
+    background: rgb(236, 251, 255);
+    color: rgb(0 179 64);
+    border: 1px rgb(163, 171, 207) solid;
+}
+
+/* Alerts */
+.alert{
+    text-align: center;
+    font-weight: 800;
+    width: 100%;
+}
+
+/* Buttons */
+button{
+    margin: 0;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+
+.standard .buttons{
+}
+
+.standard .buttons button{
+    padding: 5px 10px;
+    margin: 5px;
+}
+
+
+button.cancel-1{
+    background: rgb(245,246,255);
+    color: rgb(34, 44, 89);
+    border: 1px rgb(163, 171, 207) solid;
+}
+button.cancel-1:hover{
+    background: rgb(235,236,245);
+    color: rgb(70, 70, 70);
+    border: 1px rgb(190, 190, 190) solid;
+}
+
+button.cancel-2{
+    background: rgba(0,0,0,0.1);
+    color: rgb(60, 60, 60);
+    border: 1px rgb(120, 120, 120) solid;
+}
+button.cancel-2:hover{
+    background: rgba(0,0,0,0.2);
+    color: rgb(0, 0, 0);
+    border: 1px rgb(200, 200, 200) solid;
+}
+
+button.positive-1{
+    background: rgb(236, 251, 255);
+    color: rgb(45 150 7);
+    border: 1px rgb(161,233,246) solid;
+}
+button.positive-1:hover{
+    background: rgb(224,244,255);
+    color: rgb(60, 200, 10);
+    border: 1px rgb(161,233,246) solid;
+}
+
+button.positive-2{
+    background: rgb(40 200 70);
+    color: rgb(10,10,10);
+    border: 1px rgb(30 207 80) solid;
+}
+button.positive-2:hover{
+    background: rgb(40 255 100);
+    color: rgb(0,0,0);
+    border: 1px rgb(10 150 4) solid;
+}
+
+button.positive-3{
+    background: rgb(236, 251, 255);
+    color: rgb(54 145 160);
+    border: 1px rgb(161,233,246) solid;
+}
+button.positive-3:hover{
+    background: rgb(224,244,255);
+    color: rgb(105 196 211);
+    border: 1px rgb(161,233,246) solid;
+}
+
+button.dangerous-1{
+    background: rgb(236, 251, 255);
+    color: rgb(181, 161, 0);
+    border: 1px rgb(150, 40, 0) solid;
+}
+button.dangerous-1:hover{
+    color: rgb(255, 140, 0);
+    border: 1px rgb(205 100 0) solid;
+    background: rgb(224,244,255);
+}
+
+button.dangerous-2{
+    background: rgb(218 209 104);
+    color: rgb(10, 10, 10);
+    border: 1px rgb(90,81, 0) solid;
+}
+button.dangerous-2:hover{
+    background: rgb(255, 247, 148);
+    color: rgb(255, 26, 26);
+    border: 1px rgb(255, 193, 139) solid;
+}
+
+button.dangerous-3{
+    background: rgb(255 200 104);
+    color: rgb(120, 0, 0);
+    border: 1px rgb(90,81, 0) solid;
+}
+button.dangerous-3:hover{
+    background: rgb(255 230 124);
+    color: rgb(180, 0, 0);
+    border: 1px rgb(105,91, 0) solid;
+}
+
+button.negative-1{
+    background: rgb(236, 251, 255);
+    color: rgb(204 24 0);
+    border: 1px rgb(155 0 0) solid;
+}
+button.negative-1:hover{
+    color: rgb(254 44 10);
+    background: rgb(224,244,255);
+    border: 1px rgb(255 0 0) solid;
+}
+
+button.negative-2{
+    background: rgb(234 14 0);
+    color: rgb(240 240 240);
+    border: 1px rgb(77 0 0) solid;
+}
+button.negative-2:hover{
+    background: rgb(155 7 0);
+    color: rgb(255 255 255);
+    border: 1px rgb(37 0 0) solid;
+}
+
+button.standard-button-1{
+    border: none;
+    border-radius: 5px;
+}
+button.standard-button-1:hover{
+    border: none;
+}
+
+button.standard-button-2{
+    border: none;
+    border-radius: 0px;
+}
+button.standard-button-2:hover{
+    border: none;
+}
+
+button.standard-button-3{
+    border: none;
+    border-radius: 100%;
+}
+button.standard-button-3:hover{
+    border: none;
+}

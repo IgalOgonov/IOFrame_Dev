@@ -163,11 +163,18 @@ if(!is_dir('localFiles/resourceSettings')){
     fclose(fopen('localFiles/resourceSettings/settings','w'));
 }
 
+if(!is_dir('localFiles/metaSettings')){
+    if(!mkdir('localFiles/metaSettings'))
+        die('Cannot create settings directory for some reason - most likely insufficient user privileges, or it already exists');
+    fclose(fopen('localFiles/metaSettings/settings','w'));
+}
+
 $userSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/userSettings/');
 $pageSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/pageSettings/');
 $mailSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/mailSettings/');
 $siteSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/siteSettings/');
 $resourceSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/resourceSettings/');
+$metaSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/metaSettings/');
 
 //--------------------
 if(!file_exists('localFiles/_installSes') && isset($_SERVER['REMOTE_ADDR'])){
@@ -188,7 +195,7 @@ else{
         $installStage = 0;
         if(isset($_REQUEST['stage']))
             $installStage = $_REQUEST['stage'];
-        install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$installStage,$baseUrl);
+        install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,$installStage,$baseUrl);
     }
 }
 
@@ -197,6 +204,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                  IOFrame\Handlers\SettingsHandler $localSettings, IOFrame\Handlers\SettingsHandler $siteSettings,
                  IOFrame\Handlers\SettingsHandler $sqlSettings, IOFrame\Handlers\SettingsHandler $redisSettings,
                  IOFrame\Handlers\SettingsHandler $resourceSettings,
+                 IOFrame\Handlers\SettingsHandler $metaSettings,
                  $stage='0',$baseUrl){
     //Echo the return button
     if($stage!=0)
@@ -966,6 +974,10 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
 
             ];
 
+            $metaArgs = [
+
+            ];
+
             array_push($localArgs,["absPathToRoot",$baseUrl]);
             array_push($localArgs,["pathToRoot",
                 substr($_SERVER['SCRIPT_NAME'], 0, strlen($_SERVER['SCRIPT_NAME'])- strlen('/install.php'))]);
@@ -1011,6 +1023,15 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($resourceArgs,["autoMinifyJS",1]);
             array_push($resourceArgs,["autoMinifyCSS",1]);
             array_push($resourceArgs,["imageQualityPercentage",100]);
+
+            array_push($metaArgs,['localSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Local Node Settings'])]);
+            array_push($metaArgs,['redisSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Redis Settings'])]);
+            array_push($metaArgs,['sqlSettings',json_encode(['local'=>1,'db'=>0,'title'=>'SQL Connection Settings'])]);
+            array_push($metaArgs,['mailSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Mail Settings'])]);
+            array_push($metaArgs,['pageSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Page (redirection) Settings'])]);
+            array_push($metaArgs,['resourceSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Resource Settings'])]);
+            array_push($metaArgs,['siteSettings',json_encode(['local'=>0,'db'=>1,'title'=>'General Site Settings'])]);
+            array_push($metaArgs,['userSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Users Settings'])]);
 
 
             $res = true;
@@ -1058,6 +1079,15 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'Resource setting '.$val[0].' set to '.$val[1].EOL;
                 else{
                     echo 'Failed to set resource setting '.$val[0].' to '.$val[1].EOL;
+                    $res = false;
+                }
+            }
+
+            foreach($metaArgs as $key=>$val){
+                if($metaSettings->setSetting($val[0],$val[1],['createNew'=>true]))
+                    echo 'Resource setting '.$val[0].' set to '.$val[1].EOL;
+                else{
+                    echo 'Failed to set meta setting '.$val[0].' to '.$val[1].EOL;
                     $res = false;
                 }
             }

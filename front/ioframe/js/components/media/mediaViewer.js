@@ -3,7 +3,8 @@ if(eventHub === undefined)
 
 Vue.component('media-viewer', {
     mixins:[
-        eventHubManager
+        eventHubManager,
+        sourceURL
     ],
     props: {
         //Test Mode
@@ -114,7 +115,7 @@ Vue.component('media-viewer', {
     template: '\
          <div class="media-container">\
             <div class="media-url-container" v-if="allowSearching">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.png\')" @click="goToRoot">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\')" @click="goToRoot">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\')" @click="folderUp">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\')" @click="changeURLRequest(url)">\
                 <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\')" @click="toggleEditing">\
@@ -146,7 +147,7 @@ Vue.component('media-viewer', {
                         >\
                         <img \
                             v-else="" \
-                            :src="absoluteMediaURL(\'icons/folder-icon.svg\')"\
+                            :src="absoluteMediaURL(\'icons/folder.png\')"\
                             :draggable="draggable"\
                             ondragstart="eventHub.$emit(\'dragStart\',event)"\
                             ondragenter="eventHub.$emit(\'dragEnter\',event)"\
@@ -199,61 +200,52 @@ Vue.component('media-viewer', {
             //Assume request succeeded and images are not gonna be cropped
             this.imagesNeedCropping = true;
             //Request itself
-            updateCSRFToken().then(
-                function(token){
-                    data.append('CSRF_token', token);
-                    fetch(
-                        apiURL,
-                        {
-                            method: 'post',
-                            body: data,
-                            mode: 'cors'
-                        }
-                    )
-                    .then(function (json) {
-                        return json.text();
-                    })
-                    .then(function (data) {
-                        if(verbose)
-                            console.log('Request succeeded!');
-                        let response;
-                        //A valid response would be a JSON
-                        if(IsJsonString(data)){
-                            response = JSON.parse(data);
-                            if(response.length === 0)
-                                response = {};
-                            //If we are only returning folders, delete all results that aren't ones
-                            if(onlyFolders || onlyPictures){
-                                for(let k in response){
-                                    if( (response[k].folder && onlyFolders) || (!response[k].folder && onlyFolders) )
-                                        delete(response[k]);
-                                }
-                            }
-                        }
-                        //Any non-json response is invalid
-                        else
-                            response = data;
-                        if(verbose)
-                            console.log('Request data',response);
-                        const request = {
-                            from:identifier,
-                            content:response
-                        };
-                        if(verbose)
-                            console.log('Emitting viewElementsUpdated', request);
-                        eventHub.$emit('viewElementsUpdated', request);
-                        eventHub.$emit('viewInitiated', request);
-                    })
-                    .catch(function (error) {
-                        alertLog('View initiation failed! '+error,'error',thisElement);
-                            eventHub.$emit('viewInitiated', request);
-                    });
-                },
-                function(reject){
-                    alertLog('CSRF token expired. Please refresh the page to submit the form.','error',thisElement);
-                    eventHub.$emit('viewInitiated', request);
+            fetch(
+                apiURL,
+                {
+                    method: 'post',
+                    body: data,
+                    mode: 'cors'
                 }
-            );
+            )
+            .then(function (json) {
+                return json.text();
+            })
+            .then(function (data) {
+                if(verbose)
+                    console.log('Request succeeded!');
+                let response;
+                //A valid response would be a JSON
+                if(IsJsonString(data)){
+                    response = JSON.parse(data);
+                    if(response.length === 0)
+                        response = {};
+                    //If we are only returning folders, delete all results that aren't ones
+                    if(onlyFolders || onlyPictures){
+                        for(let k in response){
+                            if( (response[k].folder && onlyPictures) || (!response[k].folder && onlyFolders) )
+                                delete(response[k]);
+                        }
+                    }
+                }
+                //Any non-json response is invalid
+                else
+                    response = data;
+                if(verbose)
+                    console.log('Request data',response);
+                const request = {
+                    from:identifier,
+                    content:response
+                };
+                if(verbose)
+                    console.log('Emitting viewElementsUpdated', request);
+                eventHub.$emit('viewElementsUpdated', request);
+                eventHub.$emit('viewInitiated', request);
+            })
+            .catch(function (error) {
+                alertLog('View initiation failed! '+error,'error',thisElement);
+                    eventHub.$emit('viewInitiated', request);
+            });
         },
         folderUp: function(){
             if(this.url === '')
