@@ -53,14 +53,14 @@ var_dump($auth->getUsers(
             'group'=>['=','Test Group'],
             'separator'=>'OR',
             'limit'=>1,
-            'offset'=>1,
+            'offset'=>0,
             'test'=>true
         ])
     );
 echo EOL;
 
-echo EOL.'Getting user actions that are either PLUGIN_GET_INFO_AUTH or are in Test Group:'.EOL;
-var_dump($auth->getUserActions(
+echo EOL.'Getting users with actions that are either PLUGIN_GET_INFO_AUTH or are in Test Group:'.EOL;
+var_dump($auth->getUsersWithActions(
         [
             'action'=>['=','PLUGIN_GET_INFO_AUTH'],
             'group'=>['=','Test Group'],

@@ -11,21 +11,31 @@ var apiTest = new Vue({
         imgName:'',
         req: 'test',
         inputs: '',
-        resp: ''
+        resp: '',
+        separateVariables: false,
+        newVariableName: '',
+        variables:{}
     },
     methods:{
         send: function(){
             //output user inputs for testing
             this.resp = "Waiting...";
+
             //Data to be sent
             var data = new FormData();
-            let contentArray = this.content.split('&');
-            contentArray.forEach(function(postPair, index) {
-                postPair = postPair.split('=');
-                if(postPair.length == 1)
-                    postPair[1] = '';
-                data.append(postPair[0], postPair[1]);
-            });
+            if(this.separateVariables)
+                for(let name in this.variables){
+                    data.append(name, this.variables[name].value);
+                }
+            else{
+                let contentArray = this.content.split('&');
+                contentArray.forEach(function(postPair, index) {
+                    postPair = postPair.split('=');
+                    if(postPair.length == 1)
+                        postPair[1] = '';
+                    data.append(postPair[0], postPair[1]);
+                });
+            }
             data.append('req', this.req);
             let image = document.querySelector('#uploaded1');
             let imageName = document.querySelector('#imgName');
@@ -71,7 +81,17 @@ var apiTest = new Vue({
                 }
             )
 
-        }
+        },
+        //Adds a new variable
+        addVariable: function(newName){
+            this.variables[newName] = {value:''};
+            this.$forceUpdate();
+        },
+        //Removes a variable
+        removeVariable: function(name){
+            delete this.variables[name];
+            this.$forceUpdate();
+        },
     },
     mounted: function(){
         bindImagePreview(document.querySelector('#uploaded1'),document.querySelector('#preview1'),{

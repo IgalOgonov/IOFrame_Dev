@@ -166,20 +166,25 @@ namespace IOFrame\Handlers{
                 return false;
             }
 
-            if($createFolders && !$fileExists){
+            if(($createNew || $createFolders) && !$fileExists){
+                $couldCreate = false;
                 $folders = explode('/',$url.$fileName);
                 //Remove the file itself
-                array_pop($folders);
                 $newUrl = implode($folders,'/');
                 $folderExists = is_dir($newUrl);
-                while(count($folders) > 0 && !$folderExists){
-                    $name = array_pop($folders);
-                    $newUrl = implode($folders,'/');
-                    if(is_dir($newUrl)){
-                        mkdir($newUrl.'/'.$name);
-                        $folderExists = true;
-                    }
+
+                if(!$folderExists && !$createFolders)
+                    return false;
+
+                elseif(!$folderExists && $createFolders){
+                    $folderExists = mkdir($newUrl,0777,true);
                 }
+
+                if($folderExists)
+                    $couldCreate = touch($url.$fileName);
+
+                if(!$couldCreate)
+                    return false;
             }
 
             //Native lock implementation

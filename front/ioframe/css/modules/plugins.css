@@ -1,29 +1,13 @@
-.wrapper{
-    overflow: hidden;
-}
 
-h1{
+
+#plugins h1{
     text-align: center;
     color: rgb(0, 0, 149);
     font-weight: 700;
     background-color: rgba(135,135,255,0.15);
 }
 
-
-div.wrapper {
-    overflow-x: hidden;
-    position: relative;
-    border: 1px solid #999999;
-    z-index: 1;
-    max-width:1600px;
-    min-height: 150px;
-    margin: auto;
-    margin-bottom:30px;
-    background-color: rgb(224,244,255);
-    background-attachment: fixed;
-}
-
-div.option {
+#plugins div.option {
     background-color: aliceblue;
     border: 0px;
     display: table;
@@ -31,11 +15,11 @@ div.option {
     margin: 0px 0px 3px 3px;
 }
 
-div.option>a{
+#plugins div.option>a{
     font-weight: 800;
 }
 
-.plugins {
+#plugins .plugins {
     clear: both;
     width: 100%;
 }
@@ -47,7 +31,7 @@ div.option>a{
     max-width: 300px;
 }
 
-.plugin-buttons {
+#plugins .plugin-buttons {
     text-align: center;
 }
 
@@ -57,50 +41,50 @@ div.option>a{
     padding: 5px 10px;
 }
 
-button.activeButton {
+#plugins button.activeButton {
     border: 1px rgb(0,0,0) solid;
 }
 
-.plugin-icons {
+#plugins .plugin-icons {
     width: 64px;
 }
 
-.plugin-names {
+#plugins .plugin-names {
     text-align: center;
     font-family: Times, serif;
     font-size: 20px;
     font-weight: 700;
 }
 
-.real-name-popup {
+#plugins .real-name-popup {
 }
 
-.plugin-statuses {
+#plugins .plugin-statuses {
     text-align: center;
 }
 
-.plugin-summary {
+#plugins .plugin-summary {
     font-style: italic;
     font-size: 12px;
     font-weight: 700;
 }
 
-.isInactive{
+#plugins .isInactive{
     display: none;
 }
 
-.isActive{
+#plugins .isActive{
     display: inherit;
 }
 
-.isVisible{
+#plugins .isVisible{
     height: inherit;
     visibility: visible;
     opacity: 1;
     transition: opacity 0.2s linear;
 }
 
-.isInvisible{
+#plugins .isInvisible{
     height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -109,41 +93,68 @@ button.activeButton {
     transition: opacity 0.2s linear;
 }
 
-table tr td{
+#plugins table tr td{
     padding: 2px;
     border: 1px solid rgb(163,171,207);
     background-color: rgba(0, 140, 207, 0.2);
 }
-table tr th{
+#plugins table tr th{
     padding: 2px;
     text-align: center;
 }
 
-.ui-button {
+#plugins .ui-button {
     text-align: right;
 }
 
-.order-icons{
+#plugins .order-icons{
     text-align: center;
 }
 
-.order-indices{
+#plugins .order-indices{
     text-align: center;
     font-size: 30px;
     font-weight: 700;
     color: rgb(0, 140, 207);
 }
 
-.order-names{
+#plugins .order-names{
     font-size: 14px;
     font-weight: 700;
 }
 
-.active-order{
+#plugins .active-order{
     filter: contrast(200%) drop-shadow(1px 1px 2px teal) saturate(150%);
     transition: 0.1s ease-in-out;
 }
 
-.lowVisual{
+#plugins .lowVisual{
     filter: grayscale(80%) opacity(40%);
+}
+
+/* Responsiveness */
+@media only screen and (max-width: 1000px) {
+    #plugins .plugins tr:first-child{
+        display: none;
+    }
+    #plugins .plugins .plugin-icons {
+        width: 100%;
+        align-items: center;
+    }
+    #plugins .plugins .plugin-icons > img {
+        width: 64px;
+        height: 64px;
+    }
+    #plugins .plugins tr:not(:first-child){
+        display: grid;
+        width: calc(100vw - 100px);
+        min-width: 300px;
+        margin: 20px 0px;
+    }
+    #plugins .plugins tr > td{
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+    }
 }

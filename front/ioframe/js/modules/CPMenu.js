@@ -15,7 +15,8 @@ var CPMenu = new Vue({
                 url:    url of the page
                 }
              */
-        ]
+        ],
+        open:false
     },
     created:function(){
 

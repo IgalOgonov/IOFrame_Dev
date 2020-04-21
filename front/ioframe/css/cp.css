@@ -7,10 +7,11 @@ body > .wrapper {
     padding: 0px 10px;
     max-width: calc(100vw - 220px);
     padding: 10px;
+    width: 100%;
 }
 
 /* Loading */
-.loading-cover {
+.main-app .loading-cover {
     background: rgba(0, 0, 0, 0.5);
     position: absolute;
     width: 100%;
@@ -19,37 +20,37 @@ body > .wrapper {
 }
 
 /*Modes + Operations menu*/
-.modes{
+.main-app .modes{
     display: flex;
 }
-.modes,
-.operations {
+.main-app .modes,
+.main-app .operations {
     padding: 5px 0px 5px 0px;
     flex-direction: row;
 }
 
-.modes > button.selected,
-.operations > button.selected {
+.main-app .modes > button.selected,
+.main-app .operations > button.selected {
     font-weight: 800;
     box-shadow: 0px 3px 6px #00000029;
 }
 
 /*Operations menu alone*/
-.operations-container {
+.main-app .operations-container {
     display: flex;
     border-top: rgb(203, 203, 203) 1px solid;
     border-bottom: rgb(203, 203, 203) 1px solid;
     margin: 10px 0px 10px 0px;
 }
 
-.operations-container > .operations-title {
+.main-app .operations-container > .operations-title {
     align-self: center;
     font-size: 20px;
     font-weight: 800;
     padding: 5px 20px;
 }
 
-.operations > input {
+.main-app .operations > input {
     width: 100%;
     border: 1px #808080 solid;
     font-size: 1.25em;
@@ -59,18 +60,18 @@ body > .wrapper {
 
 /*buttons*/
 
-.modes > button {
+.main-app .modes > button {
     margin: 0px 10px;
 }
 
-.modes > button,
-.operations > button {
+.main-app .modes > button,
+.main-app .operations > button {
     font-size: 1.25em;
     padding: 9px 52px;
     margin: 5px;
 }
 
-.operations > button {
+.main-app .operations > button {
     text-transform: uppercase;
     margin: 5px 5px 5px 5px;
     font-weight: 800;
@@ -79,15 +80,41 @@ body > .wrapper {
 }
 
 /*Icon, if exists*/
-.operations > button > img {
+.main-app .operations > button > img {
     height: 20px;
     margin: 0px 0px 0px 10px;
     align-self: center;
 }
 
 /*Alters*/
-.alert{
+.main-app .alert{
     min-width: calc(100% - 10px);
     max-width: calc(100% - 10px);
     margin: 5px;
+}
+
+/* General search-list transition*/
+.main-app .search-list .search-item{
+    transition: all 0.5s, max-width 0s;
+}
+
+/*Titles*/
+.title{
+    font-size: 1em;
+    font-weight: 400;
+}
+
+
+@media (max-width: 1000px) {
+    .main-app {
+        min-width: calc(100vw - 50px);
+    }
+}
+
+
+@media (max-width: 600px) {
+    .main-app .modes,
+    .main-app .operations-container {
+        flex-direction: column;
+    }
 }

@@ -64,7 +64,7 @@ if(!defined('helperFunctions'))
  *           -- Options for combining minified local JS/CSS resources, and where to output minimized is placed;
  *              By default, each local file is minimized on the fly separably, and placed in the same folder as the original.
  *              Each option inside can also be a string, then it's the name, and the folder is 'min' --
- *           ['attributes']["minifyOptions"]:{
+ *           ['attributes']["minifyOptions"]:{ TODO
  *               ["js"]: {
  *                   "name":<string, name of the file all the JS files will be minified into>,
  *                   ["folder"]:<string, default 'min' - address the minified file will be placed into (relative to JS folder root)>
@@ -453,8 +453,6 @@ function createPage(array $config ,$params = []){
 
                 switch($type){
                     case 'css':
-                        if($item['create'])
-                            array_push($createItems['css'],$item);
                         $string = 'echo \'<link rel="stylesheet" href="\' . $dirToRoot . '.
                             ($item['rootVar'] === false?  $item['rootVar'] : $config['attributes']['cssRootVar']).
                             ' . '.
@@ -560,7 +558,7 @@ function createPage(array $config ,$params = []){
                 ($item['fileRoot']? $item['fileRoot'] : $config['attributes'][$itemType.'Root']);
 
             if($verbose)
-                echo 'Generating '.$itemType.( $item['template'] ? ', from template '.$templateRoot.$item['template']:'' ).
+                echo EOL.'Generating '.$itemType.( $item['template'] ? ', from template '.$templateRoot.$item['template']:'' ).
                     ', to '.$itemUrl.$item['path'].', character length: '.strlen($itemString).EOL;
             if(!$test)
                 $FileHandler->writeFileWaitMutex($itemUrl,$item['path'],$itemString,['verbose'=>$verbose,'createFolders'=>true]);

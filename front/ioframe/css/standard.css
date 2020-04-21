@@ -1,4 +1,12 @@
 /*Messages*/
+.message{
+    padding: 5px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    font-family: 'Courier New',sans-serif;
+}
+
 .message-dull{
     background: rgba(0,0,0,0.1);
     color: rgb(60, 60, 60);
@@ -57,7 +65,7 @@ button{
     margin: 0;
     background: none;
     border: none;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
@@ -205,4 +213,35 @@ button.standard-button-3{
 }
 button.standard-button-3:hover{
     border: none;
+}
+
+/* Scrollbar */
+*{
+    --scrollbarBG: rgb(218, 221, 239);
+    --thumbBG: rgb(111, 121, 166);
+    scrollbar-color: var(--thumbBG) var(--scrollbarBG);
+}
+
+
+/*Standard media sizes*/
+/*Big desktop*/
+@media only screen and (max-width: 1450px) {
+}
+/*Small desktop*/
+@media only screen and (max-width: 1250px) {
+}
+/*Huge tablet*/
+@media only screen and (max-width: 1150px) {
+}
+/*Big tablet*/
+@media only screen and (max-width: 1000px) {
+}
+/*Small tablet*/
+@media only screen and (max-width: 800px) {
+}
+/*Big phone*/
+@media only screen and (max-width: 600px) {
+}
+/*Small phone (down to 375)*/
+@media only screen and (max-width: 400px) {
 }

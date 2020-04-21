@@ -1,0 +1,32 @@
+/*Search results*/
+#settings .search-list {
+    min-width: 600px;
+}
+#settings .search-list .search-results > * > *:not(:first-child) {
+    flex: 0.5;
+}
+
+@media (max-width: 1000px) {
+    /*Search results*/
+    #settings .search-list {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    #settings .modes {
+        flex-direction: column;
+    }
+    #settings .search-list .search-titles {
+        display: none;
+    }
+    #settings .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #settings .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: rgba(0,0,0,0.1);
+    }
+}

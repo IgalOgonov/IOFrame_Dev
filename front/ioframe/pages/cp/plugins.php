@@ -43,7 +43,7 @@ $siteConfig = array_merge($siteConfig,
 
     <div class="wrapper">
         <?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'modules/CPMenu.php';?>
-        <div>
+        <div id="plugins">
             <?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'modules/plugins.php';?>
             <?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'modules/pluginList.php';?>
         </div>

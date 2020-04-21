@@ -140,3 +140,6 @@
 .search-list .search-item.selected{
     background: rgb(161,233,246);
 }
+.search-list .search-results > * > * {
+    flex: 1;
+}

@@ -1,1 +1,233 @@
-TEST
+if(eventHub === undefined)
+    var eventHub = new Vue();
+
+Vue.component('%%COMPONENT_NAME%%', {
+    mixins: [%%MIXINS%%],
+    props: {
+        //Current mode - create or update
+        mode: {
+            type: String,
+            default: 'create' //'create' / 'update'
+        },
+        //Item Identifier
+        id: {
+            type: String,
+            default: ''
+        },
+        //App Identifier
+        identifier: {
+            type: String,
+            default: ''
+        },
+        //Test Mode
+        test: {
+            type: Boolean,
+            default: false
+        },
+        //Verbose Mode
+        verbose: {
+            type: Boolean,
+            default: false
+        },
+    },
+    data: function(){
+        return {
+            configObject: JSON.parse(JSON.stringify(document.siteConfig)),
+            //Main item focused on in this component
+            mainItem:{
+            },
+            //Sometimes, you need to manially recompute Vue computed properties
+            recompute:{
+            },
+            //Whether the item is up to date
+            upToDate: this.mode == 'create',
+            //Whether we are currently updating the item
+            initiating: false
+        }
+    },
+    created:function(){
+        //Register eventhub
+        this.registerHub(eventHub);
+        //Register events
+        this.registerEvent('getResponse' ,this.handleItemGet);
+        this.registerEvent('setResponse' ,this.handleItemSet);
+
+        //Global config
+        if(this.configObject === undefined)
+            this.configObject = {};
+
+        if(this.mode === 'update')
+            this.getItemInfo();
+
+    },
+    mounted:function(){
+    },
+    updated: function(){
+        if(!this.upToDate && !this.initiating)
+            this.getItemInfo();
+    },
+    computed:{
+    },
+    methods:{
+        //Gets the info of the main item
+        getItemInfo: function(){
+
+            if(this.initiating){
+                if(this.verbose)
+                    console.log('Already getting main item info!!');
+                return;
+            }
+
+            /* ---- TODO Add validity checks if relevant ---- */
+
+            this.initiating = true;
+
+            if(this.verbose)
+                console.log('Getting item information!');
+
+            //Data to be sent
+            var data = new FormData();
+            //TODO Add all that's needed here
+            data.append('action', '');
+
+            this.apiRequest(
+                data,
+                'api/',
+                'getResponse',
+                {
+                    'verbose': this.verbose,
+                    'parseJSON':true,
+                    'identifier':this.identifier
+                }
+            );
+        },
+        //Tries to update the item
+        setItem: function(){
+
+            if(this.initiating){
+                if(this.verbose)
+                    console.log('Still getting item info!');
+                return;
+            }
+
+            //TODO Add all validation/checks here
+
+
+            //Data to be sent
+            var data = new FormData();
+            data.append('action', (this.mode === 'create'? '': '')); //TODO - might be the same set action
+            if(this.test)
+                data.append('req','test');
+
+
+            data.append('', this.item); //TODO Add what needs to be added here
+
+            if(this.verbose)
+                console.log('Setting item with parameters'); //TODO Add relevant parameters
+
+            this.apiRequest(
+                data,
+                'api/',
+                'setResponse',
+                {
+                    'verbose': this.verbose,
+                    'parseJSON':true,
+                    'identifier':this.identifier
+                }
+            );
+        },
+        //Handles item  update
+        handleItemSet: function(response){
+
+            if(this.verbose)
+                console.log('Recieved handleItemSet',response);
+
+            if(this.identifier && (response.from !== this.identifier))
+                return;
+
+            if(response.from)
+                response = response.content;
+
+            if (response === 'AUTHENTICATION_FAILURE') {
+                alertLog('Not authorized to ##INSERT ACTION HERE###! Check to see if you are logged in.','error',this.$el);
+                return;
+            }
+
+            /* Multi-stage response
+
+                let goOn = false;
+
+                if(typeof response === 'object')
+                    goOn = true;
+                else
+                    alertLog('Illegal ##INSERT ACTION HERE### response!','error',this.$el);
+
+                if(!goOn)
+                    return;
+                else
+                    goOn = false;
+
+                switch (response.) { //TODO Add response stage
+                    case -1:
+                        alertLog('Server error!','error',this.$el);
+                        break;
+                    default:
+                        goOn = true;
+                        break;
+                }
+
+             */
+
+            /* Single-stage response
+
+                 switch (response) {
+                    case -1:
+                        alertLog('Server error!','error',this.$el);
+                        break;
+                    case 0:
+                        alertLog('Item updated!','success',this.$el);
+                        break;
+                    default:
+                        break;
+                }
+
+             */
+
+        },
+        //Handles the response to the get request
+        handleItemGet: function(response){
+
+            if(this.verbose)
+                console.log('Recieved handleItemGet',response);
+
+            if(this.identifier && response.from !== this.identifier)
+                return;
+
+            if(response.from)
+                response = response.content;
+
+            if(typeof response === 'object'){
+            }
+
+            this.initiating = false;
+            this.upToDate = true;
+        },
+        //Resets inputs
+        resetInputs: function(){
+
+        },
+        //Saves inputs as the actual data (in case of a successful update or whatnot)
+        setInputsAsCurrent: function(){
+
+        }
+    },
+    watch: {
+    },
+    template: `
+    <div class="%%COMPONENT_NAME%%">
+        <div class="wrapper">
+
+        </div>
+    </div>
+    `
+});

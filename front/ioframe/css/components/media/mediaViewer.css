@@ -8,6 +8,7 @@
     display: flex;
     padding: 10px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .media-container > .media-url-container > .media-url-icon,
@@ -25,6 +26,7 @@
     flex: 1;
     border-radius: 2px;
     background: white;
+    padding: 3px;
     margin-left: 5px;
     font-size: 1.25em;
     max-width: 950px;

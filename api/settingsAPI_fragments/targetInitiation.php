@@ -9,6 +9,6 @@ if($target == 'localSettings' || $target == 'redisSettings'){
 $defaultSettingsParams['initiate'] = true;
 
 $targetSettings = new IOFrame\Handlers\SettingsHandler(
-    $rootFolder.'/'.SETTINGS_DIR_FROM_ROOT.'/'.$target.'/',
+    $rootFolder.SETTINGS_DIR_FROM_ROOT.'/'.$target.'/',
     $defaultSettingsParams
 );

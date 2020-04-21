@@ -365,8 +365,6 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Query to send: '.$query.EOL;
             $res = $this->SQLHandler->exeQueryBindParam($query,[],['fetchAll'=>true]);
-            if($verbose)
-                echo var_dump($res);
 
 
             // Now, extract all info from the result:
@@ -805,6 +803,12 @@ namespace IOFrame\Handlers{
             else
                 $offset = null;
 
+            //Getting actions with a limit/offset would risk getting incomplete data about user actions without knowing it
+            if($includeActions){
+                $limit = null;
+                $offset = null;
+            }
+
             if(isset($params['orderByExp']))
                 $orderByExp = $params['orderByExp'];
             else
@@ -1040,6 +1044,8 @@ namespace IOFrame\Handlers{
             }
             $query .= ') as Meaningless_Alias ORDER BY '.$orderByExp;
 
+            $queryWithoutLimit = $query;
+
             if($limit != null){
                 if($offset != null)
                     $query .= ' LIMIT '.$offset.','.$limit;
@@ -1050,8 +1056,7 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Query to send: '.$query.EOL;
             $response = $this->SQLHandler->exeQueryBindParam($query,[],['fetchAll'=>true]);
-            if($verbose)
-                var_dump($response);
+
 
             $result = [];
 
@@ -1069,8 +1074,16 @@ namespace IOFrame\Handlers{
             }
             else{
                 foreach($response as $row){
-                    array_push($result,$row['ID']);
+                    $result[$row['ID']] = [];
                 }
+            }
+
+            //If we ar just getting IDs, we can also get the corrent number of total results
+            if(!$includeActions){
+                $queryWithoutLimit = str_replace('DISTINCT ID','COUNT(DISTINCT ID)',$queryWithoutLimit);
+                $totals = $this->SQLHandler->exeQueryBindParam($queryWithoutLimit,[],['fetchAll'=>true]);
+                if($totals)
+                    $result['@'] = ['#'=>$totals[0][0]];
             }
 
             return $result;
@@ -1084,7 +1097,7 @@ namespace IOFrame\Handlers{
          * @param array $params same as getUsers
          * @returns array same as getUsers
          */
-        function getUserActions(array $params = []){
+        function getUsersWithActions(array $params = []){
             return $this->getUsers(array_merge($params,['includeActions'=>true]));
         }
 
@@ -1096,7 +1109,9 @@ namespace IOFrame\Handlers{
          *                  'limit' => int, SQL Limit clause
          *                  'offset' => int, SQL offset clause (only matters if limit is set)
          * @returns array of the form [
-         *                             <Action Name> => <Description>
+         *                             <Action Name> => {
+         *                                                  'description' => <Description>
+         *                                              }
          *                             ...
          *                            ]
          */
@@ -1133,6 +1148,15 @@ namespace IOFrame\Handlers{
                 $params
             );
 
+            $totals = $this->SQLHandler->selectFromTable(
+                $actionsTable,
+                [],
+                ['COUNT(*)'],
+                array_merge($params,['limit'=>null,'offset'=>null])
+            );
+            if(isset($totals[0]))
+                $totals = $totals[0][0];
+
             $res = [];
 
             if($safeStr){
@@ -1142,8 +1166,12 @@ namespace IOFrame\Handlers{
 
             if(is_array($response))
                 foreach($response as $row){
-                    $res[$row['Auth_Action']] = $safeStr ? IOFrame\Util\safeStr2Str($row['Description']) : $row['Description'];
+                    $res[$row['Auth_Action']] = [
+                        'description' => ( $safeStr ? IOFrame\Util\safeStr2Str($row['Description']) : $row['Description'] )
+                    ];
                 }
+
+            $res['@'] = ['#'=>$totals];
 
             return $res;
         }
@@ -1303,6 +1331,12 @@ namespace IOFrame\Handlers{
                 $offset = (int)$params['offset'];
             else
                 $offset = null;
+
+            //Getting actions with a limit/offset would risk getting incomplete data about group actions without knowing it
+            if($includeActions){
+                $limit = null;
+                $offset = null;
+            }
 
             if(isset($params['orderByExp']))
                 $orderByExp = $params['orderByExp'];
@@ -1525,6 +1559,8 @@ namespace IOFrame\Handlers{
             );
             $query .= ') as Meaningless_Alias ORDER BY '.$orderByExp;
 
+            $queryWithoutLimit = $query;
+
             if($limit != null){
                 if($offset != null)
                     $query .= ' LIMIT '.$offset.','.$limit;
@@ -1535,8 +1571,6 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Query to send: '.$query.EOL;
             $response = $this->SQLHandler->exeQueryBindParam($query,[],['fetchAll'=>true]);
-            if($verbose)
-                var_dump($response);
 
 
             $result = [];
@@ -1552,8 +1586,16 @@ namespace IOFrame\Handlers{
             }
             else{
                 foreach($response as $row){
-                    array_push($result,$row['Auth_Group']);
+                    $result[$row['Auth_Group']] = [];
                 }
+            }
+
+            //If we ar just getting IDs, we can also get the corrent number of total results
+            if(!$includeActions){
+                $queryWithoutLimit = str_replace('DISTINCT Auth_Group','COUNT(DISTINCT Auth_Group)',$queryWithoutLimit);
+                $totals = $this->SQLHandler->exeQueryBindParam($queryWithoutLimit,[],['fetchAll'=>true]);
+                if($totals)
+                    $result['@'] = ['#'=>$totals[0][0]];
             }
 
             return $result;

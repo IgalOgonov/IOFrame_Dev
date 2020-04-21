@@ -22,7 +22,7 @@ const IOFrameCommons = {
          *
          * */
         apiRequest: function(data,apiName,eventName,params = {}){
-            let apiURL = document.pathToRoot + apiName;
+            let apiURL = document.rootURI + apiName;
             let verbose = params.verbose || false;
             let parseJSON = params.parseJSON || false;
             let identifier = params.identifier || false;

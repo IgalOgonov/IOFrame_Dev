@@ -56,6 +56,9 @@ Vue.component('search-list', {
          *   'title': String, <Title of the column you want to be displayed>,
          *   'parser': Function, parses the values to be displayed.
          *                       the output is HTML! Beware of XSS.
+         *   'custom': Boolean, default false - if true, then the id is just the identifier of the column - the column itself
+         *                      renders something custom based of the item. Parser then refers to the item as a whole
+         *                      (rather than item[id] - what's referred to as column "value" earlier), and must be set.
          *   'idSuffix': String, sometimes, you to display different properties of the same object from the API response.
          *               In that case, the main ID will be similar - however, you need to differentiate beteen them somehow.
          *               This is what the ID suffix is for - it appends to the end of the ID in the HTML, but does not affect
@@ -147,6 +150,16 @@ Vue.component('search-list', {
                 return []
             }
         },
+        /* Extra classes for an item. May be a string (a specific class for each item), a array of strings (similar), or
+           a function (which parses the item, and returns a AN ARRAY OF STRINGS - even if it's one string) */
+        extraClasses: {
+            default: null
+        },
+        //Whether to render invisible titles before each item (so they can be displayed via CSS later if need be)
+        invisibleTitles: {
+            type: Boolean,
+            default: true
+        },
         //Test Mode
         test: {
             type: Boolean,
@@ -212,10 +225,9 @@ Vue.component('search-list', {
             <div class="search-results">\
                 <div class="search-titles" v-html="renderTitles"></div>\
                 <div v-for="(item,index) in items"\
-                class="search-item" \
                 v-html="renderItem(index)"\
                 @click="requestSelection(index)"\
-                :class="{selected:selected===index}"></div>\
+                :class="calculateItemClasses(index)"></div>\
             </div>\
             \
             <div class="pagination" v-if="pagesArray.length > 1">\
@@ -670,16 +682,47 @@ Vue.component('search-list', {
             return result;
         },
 
+        //Calculates any classes an item might have
+        calculateItemClasses: function(index){
+            let item = this.items[index];
+            let classes = ['search-item'];
+            if(this.selected===index)
+                classes.push('selected');
+            //Calculate extra classes if needed
+            if(this.extraClasses){
+                switch(typeof this.extraClasses){
+                    case 'function':
+                        let res = this.extraClasses(item);
+                        if(typeof res === 'string')
+                            classes.push(res);
+                        else if(res)
+                            classes = [...classes,...res];
+                        break;
+                    case 'object':
+                        classes = [...classes,...this.extraClasses];
+                        break;
+                    //Default is 'string'
+                    default:
+                        classes.push(this.extraClasses);
+                }
+            };
+            return classes;
+        },
+
         //Renders the results of a search
         renderItem: function(index){
+
             let items = this.items;
             let item = items[index];
             let columns = this.columns;
             let result = '';
 
+
+
             //Render item
             for(let k in columns){
                 let identifier;
+
                 //Handler complex identifier
                 if(columns[k].id.indexOf('.') != -1)
                     identifier = columns[k].id.replace('.','-');
@@ -691,6 +734,7 @@ Vue.component('search-list', {
                 result += '<span class="search-item-property '+identifier+'">';
 
                 var value;
+
                 if(columns[k].id.indexOf('.') != -1){
                     let identifiers = columns[k].id.split('.');
                     value = item;
@@ -698,11 +742,27 @@ Vue.component('search-list', {
                         value = value[identifiers[tempIdentifier]];
                     }
                 }
-                else
-                    value = item[columns[k].id];
+                else{
+                    value = columns[k].custom? item : item[columns[k].id];
+                }
+
                 if(columns[k].parser !== undefined)
                     value = columns[k].parser(value);
+                else if(columns[k].custom){
+                    value = 'Custom value must have a parsing function';
+                }
+
+                //Enclose value
+                value = '<span>'+value+'</span>';
+
+                //Renders title
+                if(this.invisibleTitles){
+                    let title = columns[k].title? columns[k].title : columns[k].id;
+                    value ='<h3 style="display:none" class="search-item-title">'+title+'</h3>' + value;
+                }
+
                 result += value;
+                
                 result += '</span>';
             };
 

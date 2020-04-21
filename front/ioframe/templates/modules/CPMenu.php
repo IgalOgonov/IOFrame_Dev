@@ -1,4 +1,7 @@
-<nav id="menu">
+<nav id="menu" :class="{open:open}">
+    <div class="button-wrapper">
+        <button @click.prevent="open = !open" v-text="open? '<' : '>'">  </button>
+    </div>
     <a :href="logo.url" class="logo">
         <img :src="logo.imgURL">
     </a>

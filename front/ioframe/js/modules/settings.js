@@ -1,10 +1,10 @@
 if(eventHub === undefined)
     var eventHub = new Vue();
 
-var %%VARIABLE_NAME%% = new Vue({
-    el: '#%%ELEMENT_NAME%%',
-    name: '#%%VUE_NAME%%',
-    mixins:[%%MIXINS%%],
+var settings = new Vue({
+    el: '#settings',
+    name: '#settings',
+    mixins:[sourceURL,eventHubManager],
     data(){
         return {
             configObject: JSON.parse(JSON.stringify(document.siteConfig)),
@@ -12,125 +12,54 @@ var %%VARIABLE_NAME%% = new Vue({
             modes: {
                 search:{
                     operations:{
-                        'delete':{
-                            title:'Delete'
-                        },
                         'cancel':{
                             title:'Cancel'
                         }
                     },
-                    title:'View ' //TODO Add
+                    title:'View Settings'
                 },
                 edit:{
                     operations:{},
-                    title:'Edit ' //TODO Add
-                },
-                create:{
-                    operations:{},
-                    title:'Create ' //TODO Add
+                    title:'Edit Settings'
                 }
             },
-            //Filters to display for the search list //TODO Expend common filters
+            //Filters to display for the search list
             filters:[
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'createdAfter',
-                            title:'Created After',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        },
-                        {
-                            name:'createdBefore',
-                            title:'Created Before',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        }
-                    ]
-                },
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'changedAfter',
-                            title:'Changed After',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        },
-                        {
-                            name:'changedBefore',
-                            title:'Changed Before',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        }
-                    ]
-                },
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'includeRegex',
-                            title:'Include',
-                            placeholder:'Text Product name includes',
-                            type:'String',
-                            min:0,
-                            max: 64,
-                            validator: function(value){
-                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
-                            }
-                        },
-                        {
-                            name:'excludeRegex',
-                            title:'Exclude',
-                            placeholder:'Text Product name excludes',
-                            type:'String',
-                            min:0,
-                            max: 64,
-                            validator: function(value){
-                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
-                            }
-                        },
-                    ]
-                }
             ],
-            //Result columns to display, and how to parse them //TODO Expend with more
+            //Result columns to display, and how to parse them
             columns:[
                 {
-                    id:'identifier',
-                    title:'' //TODO Add
+                    id:'title',
+                    title:'Name'
                 },
                 {
-                    id:'created',
-                    title:'Date Created',
-                    parser:function(timestamp){
-                        timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                    id:'local',
+                    title:'Local Setting?',
+                    parser:function(value){
+                        return value? 'Yes' : 'No';
                     }
                 },
                 {
-                    id:'updated',
-                    title:'Last Changed',
-                    parser:function(timestamp){
-                        timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                    id:'db',
+                    title:'Global Setting?',
+                    parser:function(value){
+                        return value? 'Yes' : 'No';
                     }
                 }
             ],
-            //SearchList API (and probably the only relevant API) URL TODO Edit
-            url:'',
-            //Current page  //TODO Remove if no search list
-            page:0,
-            //Go to page  //TODO Remove if no search list
-            pageToGoTo: 1,
-            //Limit  //TODO Remove if no search list
-            limit:50,
-            //Total available results //TODO Remove if no search list
-            total: 0,
+            //SearchList API (and probably the only relevant API) URL
+            url:document.rootURI+'api/settings',
             //Main items
             items: [],
-            extraParams: {}, //TODO Remove if no extra params for search list
-            selected:-1, //TODO Remove if no selection (although unlikely)
+            selected:-1,
+            //Function to parse the class of each item
+            extraClasses: function(x){
+                if(x.local && !x.db){
+                    return 'message-warning-2';
+                }
+                else
+                    return false;
+            },
             //Current Mode of operation
             currentMode:'search',
             //Current operation
@@ -139,27 +68,24 @@ var %%VARIABLE_NAME%% = new Vue({
             operationInput: '',
             //Whether we are currently loading
             initiated: false,
-            verbose:true, //TODO remove this when done building
+            verbose:true,
             test:false
         }
     },
     created:function(){
         this.registerHub(eventHub);
         this.registerEvent('requestSelection', this.selectElement);
-        this.registerEvent('searchResults', this.parseSearchResults); //TODO Add relevant events
+        this.registerEvent('searchResults', this.parseSearchResults);
     },
     computed:{
         //Main title TODO
         title:function(){
             switch(this.currentMode){
                 case 'search':
-                    return '';
+                    return 'Available Setting Collections';
                     break;
                 case 'edit':
-                    return '';
-                    break;
-                case 'create':
-                    return '';
+                    return 'Editing Settings Collection';
                     break;
                 default:
             }
@@ -167,9 +93,6 @@ var %%VARIABLE_NAME%% = new Vue({
         //Text for current operation TODO
         currentOperationText:function(){
             switch(this.currentOperation){
-                case 'delete':
-                    return 'Delete selected?';
-                    break;
                 default:
                     return '';
             }
@@ -185,6 +108,10 @@ var %%VARIABLE_NAME%% = new Vue({
         currentModeHasOperations:function(){
             return Object.keys(this.modes[this.currentMode].operations).length>0;
         },
+        //Selected setting identifier
+        selectedId: function(){
+            return (this.selected === -1 ? '' : this.items[this.selected].identifier);
+        }
     },
     watch:{
     },
@@ -201,43 +128,18 @@ var %%VARIABLE_NAME%% = new Vue({
             this.items = [];
             this.initiated = true;
 
-            //In this case the response was an error code, or the page no longer exists
-            if(response.content['@'] === undefined)
+            //A valid response in our case is only an object
+            if(typeof response !== 'object')
                 return;
 
-            this.total = (response.content['@']['#'] - 0) ;
-            delete response.content['@'];
-
             for(let k in response.content){
+                response.content[k] = JSON.parse(response.content[k]);
                 response.content[k].identifier = k;
                 this.items.push(response.content[k]);
             }
         },
-        goToPage: function(page){
-            if(!this.initiating && page.from == 'search'){
-                let newPage;
-                page = page.content;
-
-                if(page === 'goto')
-                    page = this.pageToGoTo-1;
-
-                if(page < 0)
-                    newPage = Math.max(this.page - 1, 0);
-                else
-                    newPage = Math.min(page,Math.ceil(this.total/this.limit));
-
-                if(this.page === newPage)
-                    return;
-
-                this.page = newPage;
-
-                this.initiated = false;
-            }
-        },
         shouldDisplayMode: function(index){
             if(index==='edit' && (this.selected === -1) )
-                return false;
-            if(index==='create' && (this.selected !== -1))
                 return false;
 
             return true;
@@ -291,9 +193,6 @@ var %%VARIABLE_NAME%% = new Vue({
 
             if(this.currentMode === 'search'){
                 switch (currentOperation){
-                    case 'delete':
-                        data.append('action',''); //TODO Add what's needed
-                        break;
                     default:
                         break;
                 };
@@ -320,9 +219,6 @@ var %%VARIABLE_NAME%% = new Vue({
             if(this.test)
                 console.log('Operation',operation);
             switch (operation){
-                case 'delete':
-                    this.currentOperation = 'delete';
-                    break;
                 case 'cancel':
                     this.cancelOperation();
                     this.selected = -1;

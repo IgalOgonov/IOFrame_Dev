@@ -1,10 +1,12 @@
 /*** Back Menu ***/
 #menu{
-    min-width: 200px;
     min-height: 100vh;
     background: rgb(236, 251, 255);
     font-size: 1.25em;
     margin-right: 5px;
+    position: relative;
+    transition: 0.5s linear;
+    min-width: 200px;
 }
 /* Logo */
 #menu > .logo{
@@ -17,15 +19,15 @@
 }
 
 /* children */
-#menu > *{
+#menu > a{
     display: block;
 }
 
 /* children that aren't the logo */
-#menu > *:not(.logo).selected{
+#menu > a:not(.logo).selected{
     font-weight: 800;
 }
-#menu > *:not(.logo){
+#menu > a:not(.logo){
     background: rgb(236, 251, 255);
     padding: 5px;
     font-size: 1em;
@@ -37,10 +39,61 @@
     border-right: none;
     border-top: none;
 }
-#menu > *:not(.logo):last-child{
+#menu > a:not(.logo):last-child{
     border-bottom: none;
 }
-#menu > *:not(.logo).selected,
-#menu > *:not(.logo):hover{
+#menu > a:not(.logo).selected,
+#menu > a:not(.logo):hover{
     background: rgb(161,233,246);
+}
+
+/*Toggle wrapper / button*/
+#menu > .button-wrapper{
+    position: relative;
+    height: 0;
+    left: 200px;
+    transition: 0.5s ease-out;
+}
+#menu > .button-wrapper{
+    display: none;
+}
+#menu > .button-wrapper > button{
+    padding: 20px;
+    background: rgb(236, 251, 255);
+    border-radius: 20px;
+    margin: 10px 0px 0px 10px;
+    border: rgb(28 119 134) 1px solid;
+    transition: 0.5s ease-out;
+}
+#menu.open > .button-wrapper > button{
+    border-radius: 0px 0px 20px 0px;
+    border-left: none;
+    border-top: none;
+    padding: 40px 20px;
+    margin: 0px;
+}
+
+@media only screen and (max-width: 1000px) {
+    /*Open/Closed rules*/
+    #menu.open {
+        right: 0;
+        min-width: 200px;
+    }
+    /*Toggle wrapper / button*/
+    #menu{
+        margin: 0px 50px 0px 0px;
+        right: 200px;
+        min-width: 0px;
+        width: 0px;
+    }
+    #menu.open > .button-wrapper,
+    #menu > .button-wrapper{
+        position: relative;
+        height: 0;
+        left: 195px;
+        display: block;
+    }
+    #menu.open > .button-wrapper{
+        left: 200px;
+    }
 }

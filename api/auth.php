@@ -7,6 +7,7 @@
  * Parameters:
  * "action"     - Requested action - described bellow
  * "params"     - Parameters, depending on action - described bellow
+ * "limit/offset" - can be passed as explicit parameters, will the override whatever is in "params"
  *_________________________________________________
  * getRank
  *      Returns:
@@ -45,8 +46,14 @@
  *          Filter parameters are arrays or single values of type Strings/IDs, depending on filter type - group and actions are STRINGs,
  *          ids are INTs. For 'NOT IN' and 'IN' it's arrays, for the rest single values.
  *      Returns: Array of the form
- *              If fetching user IDs - JSON array of relevant (in respect to filters) user IDs
- *              If fetching user IActions - JSON array of the form: [
+ *              If fetching user IDs - JSON array of relevant (in respect to filters) user IDs of the form:[
+ *                                                               <UserID> =><empty object>
+ *                                                               ...
+ *                                                               '@' => {
+ *                                                                    '#'=><Number of results without limit/offset>
+ *                                                               }
+ *                                                              ]
+ *              If fetching user Actions - JSON array of the form: [
  *                                                               <UserID> =>[
  *                                                                            "@" => Array of Actions
  *                                                                            <groupName> => Array of Actions
@@ -54,23 +61,31 @@
  *                                                                           ]
  *                                                               ...
  *                                                              ]
- *              where "@" are actions belonging directly to the user.
+ *              where "@" inside each user are actions belonging directly to the user, and '@' inside the main results is meta information.
+ *              When fetching actions, limit/offset are ignored, and there is no '@' key in the main array.
  *      Examples:
  *          action=getUsers&params={"action":[["=","PLUGIN_GET_INFO_AUTH"]],"group":["=","Test Group"],"separator":"OR","limit":2,"offset":0}
  *_________________________________________________
- * getUserActions
+ * getUsersWithActions
  *      Views all user actions (can be filtered with $params). Is an alias of getUsers.
  *      Note that if allowed to be viewed without enforcing an ID condition '=' or 'IN' (or at least a similar group
  *      condition), the results could reach insane sizes, and the query would be very slow, as there is no way to limit
  *      this.
+ *
+ *      Returns:
  * Examples:
- *          action=getUserActions&params={"action":["=","PLUGIN_GET_INFO_AUTH"],"group":["=","Test Group"],"separator":"OR"}
+ *          action=getUsersWithActions&params={"action":["=","PLUGIN_GET_INFO_AUTH"],"group":["=","Test Group"],"separator":"OR"}
  *_________________________________________________
  * getActions
  *      Returns all the actions in a JSON encoded array of the form
  *                            [
- *                             <Action Name> => <Description>
+ *                             <Action Name> => {
+ *                                  'description'=><Description>
+ *                             }
  *                             ...
+ *                             '@' => {
+ *                                  '#'=><Number of results without limit/offset>
+ *                             }
  *                            ]
  *
  * Examples:
@@ -99,17 +114,24 @@
  *      params:
  *              Same as for getUsers
  *      Returns:
- *          If fetching Groups - JSON encoded array of relevant (in respect to filters) group names.
+ *          If fetching Groups - JSON encoded array  of the form: [
+ *                                                               <Group Name> => <Empty object>
+ *                                                               ...
+ *                                                               '@' => {
+ *                                                                    '#'=><Number of results without limit/offset>
+ *                                                               }
+ *                                                              ]
  *          If fetching Groups Actions - JSON object of the form: [
  *                                                               <Group Name> => Array of Actions
  *                                                               ...
  *                                                              ]
+ *          When fetching actions, limit/offset are ignored, and there is no '@' key in the main array.
  * Examples:
  *      action=getGroups&params={"action":[["=","BAN_USERS_AUTH"],["=","TREE_C_AUTH"]],"separator":"OR"}
  *_________________________________________________
  * getGroupActions
  *      Returns all groups and their actions. Is an alias of getGroups.
- *      See getUserActions for similarities to getGroups
+ *      See getUsersWithActions for similarities to getGroups
  *
  * Examples:
  *      action=getGroupActions&params={"id":[["=","1"]],"action":["=","BAN_USERS_AUTH"],"separator":"AND"}
@@ -177,7 +199,14 @@ $action = $_REQUEST["action"];
 if(isset($_REQUEST['params']))
     $params = json_decode($_REQUEST['params'],true);
 else
-    $params = null;
+    $params = [];
+
+$commons = ['limit','offset'];
+foreach($commons as $common){
+    if($_REQUEST[$common]){
+        $params[$common] = $_REQUEST[$common];
+    }
+}
 
 switch($action){
     case 'getRank':
@@ -206,9 +235,9 @@ switch($action){
         echo json_encode($result);
         break;
 
-    case 'getUserActions':
+    case 'getUsersWithActions':
         require 'authAPI_fragments/get_checks.php';
-        require 'authAPI_fragments/getUserActions_execution.php';
+        require 'authAPI_fragments/getUsersWithActions_execution.php';
         echo json_encode($result);
         break;
 

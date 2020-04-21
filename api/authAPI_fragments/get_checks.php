@@ -5,11 +5,13 @@ if(!defined('validator'))
 
 //Input checks
 
-if($params == null){
+if($params == null && ($action === 'getUsersWithActions' || $action === 'getGroupActions') ){
     if($test)
         echo 'Params must be set!';
     exit('INPUT_VALIDATION_FAILURE');
 }
+elseif($params == null)
+    $params = [];
 
 $expectedParams = ['id','action','group','separator','includeActions','limit','offset','orderByExp'];
 
@@ -94,7 +96,7 @@ foreach($expectedParams as $expectedParam){
                 }
                 break;
             case 'includeActions':
-                //No using this API for actions if it's not getUserActions or getGroupActions!
+                //No using this API for actions if it's not getUsersWithActions or getGroupActions!
                 if($action == 'getUsers' || $action == 'getGroups')
                     $params[$expectedParam] = false;
                 break;
@@ -122,7 +124,7 @@ foreach($expectedParams as $expectedParam){
                     case 'getGroups':
                         $allowedExpressions = ['Auth_Group'];
                         break;
-                    case 'getUserActions':
+                    case 'getUsersWithActions':
                         $allowedExpressions = ['ID','Auth_Group','Auth_Action'];
                         break;
                     case 'getGroupActions':
@@ -139,7 +141,6 @@ foreach($expectedParams as $expectedParam){
                 }
                 break;
         }
-
 }
 
 
