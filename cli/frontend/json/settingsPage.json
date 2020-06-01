@@ -10,7 +10,8 @@
 	},
 	"template":"pages/base.txt",
 	"variables":{
-		"HAS_WRAPPER":true
+		"HAS_WRAPPER":true,
+		"IS_CONTROL_PANEL":true
 	},
 	"items":{
 		"js":[
@@ -50,8 +51,7 @@
 					"path":"modules/settings.css",
 					"create":true
 				},
-				"modules/CPMenu.css",
-				"modules/settings.css"
+				"modules/CPMenu.css"
 		],
 		"templates":[
 			{

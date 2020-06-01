@@ -36,6 +36,8 @@ CONST MEDIA_FOLDER_CREATE_AUTH = 'MEDIA_FOLDER_CREATE_AUTH';
 
 /* Validation */
 //Allowed Regex filter regex
+CONST RESOURCE_TYPE_REGEX = '^[a-zA-Z][\w]{0,63}$';
+//Allowed Regex filter regex
 CONST REGEX_REGEX = '^[\w\.\-\_ ]{1,128}$';
 //Regex to validate gallery name
 CONST GALLERY_REGEX = '^[\w \/]{1,128}$';
@@ -43,6 +45,8 @@ CONST GALLERY_REGEX = '^[\w \/]{1,128}$';
 CONST UPLOAD_NAME_REGEX = '^[\w \/]{1,64}$';
 //Regex to validate upload name
 CONST UPLOAD_FILENAME_REGEX = '^[\w\_\-\. ]{1,128}$';
+//Regex to validate upload name
+CONST DATA_TYPE_REGEX = '^\w+\/[-.\w]+(?:\+[-.\w]+)?$';
 //Maximum length for image alt
 CONST IMAGE_ALT_MAX_LENGTH = 128;
 //RMaximum length for image name
@@ -51,8 +55,11 @@ CONST IMAGE_NAME_MAX_LENGTH = 128;
 CONST IMAGE_CAPTION_MAX_LENGTH = 1024;
 //RMaximum length for gallery name
 CONST GALLERY_NAME_MAX_LENGTH = 128;
-//Regex to validate upload name
-CONST ALLOWED_EXTENSIONS = ['jpg','jpeg','png','gif','bmp','svg'];
+//Various extensions
+CONST ALLOWED_EXTENSIONS_IMAGES = ['jpg','jpeg','png','gif','bmp','svg'];
+CONST ALLOWED_EXTENSIONS_AUDIO = ['ogg','mp3','wav','webm'];
+CONST ALLOWED_EXTENSIONS_VIDEO = ['mp4','webm','ogg'];
+CONST ALLOWED_EXTENSIONS = ['jpg','jpeg','png','gif','bmp','svg','ogg','mp3','wav','mp4','webm'];
 
 
 

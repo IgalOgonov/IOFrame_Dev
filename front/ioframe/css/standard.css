@@ -222,6 +222,57 @@ button.standard-button-3:hover{
     scrollbar-color: var(--thumbBG) var(--scrollbarBG);
 }
 
+/* Forms */
+form label{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+form{
+    background-color: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+/*input, textarea, select*/
+form input:not([type=submit]) {
+    margin: 3px 0px 3px 0px;
+    padding:5px;
+    background-color: rgba(200,200,200,0.1);
+    border: none;
+    border-left: solid 3px darkgrey;
+    transition: 0.2s ease-in-out;
+}
+form textarea {
+    border: 1px rgb(163, 171, 207) solid;
+    padding: 5px;
+    background-color: rgba(200,200,200,0.1);
+    height: 28px;
+    transition: all 0.2s ease-in-out, height 0s, width 0s;
+}
+form input:focus,
+form textarea:focus{
+    background-color: rgba(200,200,200,0.3);
+}
+form input:hover:not(:focus),
+form textarea:hover:not(:focus){
+    background-color: rgba(200,200,200,0.2);
+}
+
+/* Select */
+select{
+    padding: 5px;
+    background: rgb(250,252,255);
+    border: 1px rgb(163, 171, 207) solid;
+    transition: background 0.2s ease-in-out;
+    /*remove annoying arrow*/
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+select:hover{
+    background: rgb(204,240,253);
+}
 
 /*Standard media sizes*/
 /*Big desktop*/

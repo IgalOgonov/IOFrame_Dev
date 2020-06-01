@@ -4,13 +4,14 @@
  *
  *      See standard return values at defaultInputResults.php
  *_________________________________________________
- * uploadImages
- *      - Uploads images. By default, only admins have the authentication to do this.
+ * uploadMedia
+ *      - Uploads media files. By default, only admins have the authentication to do this.
+ *        type : string, default 'local', otherwise 'db' or 'link' - whether to save the files locally or in the database, or they are just links.
  *        items: (json) Array where  of the form:
  *              [
  *              <upload name 1>: [
  *                              'filename' : string, default '' - if set will save the image file under this name,
- *                                       otherwise with a random one.
+ *                                       otherwise with a random one. REQUIRED for a link.
  *                              'alt' : string, default '' - alt tag for the image (meta information)
  *                              'name' : string, default '' - "pretty" image name(meta information)
  *                              'caption' : string, default '' - image caption
@@ -18,8 +19,9 @@
  *              <upload name 2>: ...,
  *              ...
  *              ]
- *              items can also be left unset - then, all posted files that are images will be saved with random names.
- *              NOTE: images posted but not specified in "items" will NOT be uploaded.
+ *              items can also be left unset if the mode isn't 'link' - then, all posted files that are images will be saved
+ *              with random names.
+ *              NOTE: images posted but not specified in "items" will be uploaded with default values, un;ess the type is 'link'.
  *        address : string, default '' - path to upload the images, RELATIVE TO IMAGE FOLDER ROOT
  *        imageQualityPercentage : int, default 100 - self explanatory
  *        gallery : string, default '' - if set, all uploaded images will be added to this gallery.
@@ -28,9 +30,10 @@
  *        (also posted, but caught by $_FILES) <upload name 2>
  *        ...
  *
- *        Examples: action=uploadImages&address=docs/installScreenshots/testFolder
- *                  action=uploadImages&address=docs/installScreenshots/testFolder&imageQualityPercentage=50&gallery=Test Gallery&
+ *        Examples: action=uploadMedia&address=docs/installScreenshots/testFolder
+ *                  action=uploadMedia&address=docs/installScreenshots/testFolder&imageQualityPercentage=50&gallery=Test Gallery&
                     items={"image":{"filename":"Test Filename","alt":"Alternative Title","name":"Pretty Name"}}
+ *                  action=uploadMedia&type=link&items={"image":{"filename":"https://www.ietf.org/static/img/ietf-logo.e4b6ca0dd271.gif","alt":"Alternative Title","name":"Pretty Name"}}&gallery=Test Gallery
  *
  *        Returns Array of the form:
  *
@@ -43,22 +46,24 @@
  *          Codes:
  *          [String] Resource address RELATIVE TO IMAGE ROOT
  *         -1 Image upload would work locally, but failed to connect to DB for needed operations
- *          0 success, but could not return resource address
+ *          0 success, but could not return resource address (also returns 0 on )
  *          1 Image of incorrect size/format
  *          2 Could not move image to requested path
  *          3 Could not overwrite existing image
- *          4 Image upload would work locally, but resource update failed
- *          5 Image upload would work locally, but gallery does not exist
+ *          4 Could not upload a file because safeMode is true and the file type isnt supported
+ *          104 Image upload would work locally, but resource update failed
+ *          105 Image upload would work locally, but gallery does not exist
  *_________________________________________________
  * getImages
  *      - Gets ALL available images/folders at an address (defaults to root image folder).
  *        address: string, default '' - if not empty, will return images at the folder specified by address, RELATIVE to image root.
  *                                  The default root image folder is <SERVER_ROOT>.'/front/ioframe/img'.
- *        getAll: bool, default false - if the address is empty, and this is true, will get ALL available media, not the root folder.
- *        The following are usable only if getAll is true:
+ *        getDB: bool, default false - if the address is empty, and this is true, will get ALL available media, not the local one.
+ *        The following are usable only if getDB is true:
+ *          dataType: string, default null - will only return files of a specific data type. '@' for null.
  *          includeLocal: bool, default false - If this is true, will get ALL the local images IN ADDITION to remote ones.
  *                                              Those images will be displayed IN ADDITION to the remote limit.
- *          limit: int, default 50, max 500, min 1 - when getAll is true, you may limit the number of items you get
+ *          limit: int, default 50, max 500, min 1 - when getDB is true, you may limit the number of items you get
  *          offset: int, default 0 - used for pagination purposes with limit
  *          createdAfter      - int, default null - Only return items created after this date.
  *          createdBefore     - int, default null - Only return items created before this date.
@@ -71,7 +76,7 @@
  *
  *        Examples: action=getImages
  *                  action=getImages&address=docs/installScreenshots
- *                  action=getImages&getAll=1&limit=20&offset=40&createdAfter=0&createdBefore=999999999999&changedAfter=0&changedBefore=999999999999&includeRegex=test
+ *                  action=getImages&getDB=1&limit=20&offset=40&createdAfter=0&createdBefore=999999999999&changedAfter=0&changedBefore=999999999999&includeRegex=test
  *
  *      Returns json Array of the form:
  *      [
@@ -92,9 +97,22 @@
  *          What keeps different files in similar addresses unique is the file extension.
  *          Also, local resources that do not actually exist will be ignored.
  *
- *          * On getAll, will also return an item with the key @, containing meta information about the query.
+ *          * On getDB, will also return an item with the key @, containing meta information about the query.
  *            As of writing it it only contains the child '#', which holds the number of query results if there
  *            was no limit.
+ *
+ *_________________________________________________
+ * getDBMedia
+ *      - Gets a database media file
+ *        address:  string, image address (identifier)
+ *        resourceType:  string, default 'img' - resource type
+ *
+ *        Examples: action=getDBMedia&address=image
+ *
+ *        Returns:
+ *          Outputs the media if found,
+ *          400 on invalid or missing address,
+ *          a 404 page if no media is found.
  *_________________________________________________
  * updateImage
  *      - Updates meta information about the image
@@ -103,6 +121,8 @@
  *        alt:  string, default '' - alt tag for the image
  *        caption : string, default '' - image caption
  *        deleteEmpty : bool, default false - parameters that are unset will be deleted instead
+ *        remote: bool, default false - if true, will only affect DB resources
+ *
  *        Examples: action=updateImage&address=docs/installScreenshots/1.png&name=Amazing Image&alt=A great picture
  *                  action=updateImage&address=docs/installScreenshots/1.png&name=Less Amazing Image
  *                  action=updateImage&address=docs/installScreenshots/1.png&alt=Google, Index this
@@ -117,6 +137,7 @@
  *        oldAddress:  string, old Address of the image
  *        newAddress:  string, new Address of the image
  *        copy: bool, default false - whether to copy the image
+ *        remote: bool, default false - if true, will only affect DB resources, and have a different return scheme
  *
  *        Examples:
  *          action=moveImage&oldAddress=docs/installScreenshots/1.png&newAddress=docs/installScreenshots/potato.png
@@ -127,17 +148,24 @@
  *              0 - success
  *              1 - newAddress address already exists
  *              2 - oldAddress address does not exist
- *      *note - DOES NOT TELL YOU if a resource does not exist locally - will simply ignore it.
+ *      *note - in local mode, DOES NOT TELL YOU if a resource does not exist locally - will simply ignore it.
  *_________________________________________________
  * deleteImages
  *      - Deletes images.
  *        addresses:  (json) Array of strings - addresses you want to delete.
+ *        remote: bool, default false - if true, will only affect DB resources, and have a different return scheme
  *
  *        Examples: action=deleteImages&addresses=["docs/installScreenshots/testFolder/Test Filename.jpg","test2.png"]
  *
- *        Returns integer code:
+ *        Returns
+ *          [remote === false] integer code:
  *             -1 - failed to connect to DB (this causes local files to be deleted)
  *              0 - success
+ *             [remote === true] 1 - Resource does not exist
+ *          [remote === true] array of integer codes of the form:
+ *              {
+ *                  <address> => <any of the above codes>
+ *              }
  *      *note - DOES NOT TELL YOU if a resource does not exist locally - will simply ignore it.
  *_________________________________________________
  * incrementImages
@@ -164,7 +192,7 @@
  *_________________________________________________
  * getGalleries
  *      - Gets all image galleries available - but only meta information, not members!
- *          limit: int, default 50, max 500, min 1 - when getAll is true, you may limit the number of items you get
+ *          limit: int, default 50, max 500, min 1
  *          offset: int, default 0 - used for pagination purposes with limit
  *          createdAfter      - int, default null - Only return items created after this date.
  *          createdBefore     - int, default null - Only return items created before this date.
@@ -346,15 +374,15 @@ $standardPaginationInputs = ['limit','offset','createdAfter','createdBefore','ch
 
 switch($action){
 
-    case 'uploadImages':
+    case 'uploadMedia':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["items","address","imageQualityPercentage","gallery","overwrite"];
+        $arrExpected =["type","items","address","imageQualityPercentage","gallery","overwrite"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/uploadImages_checks.php';
-        require 'mediaAPI_fragments/uploadImages_execution.php';
+        require 'mediaAPI_fragments/uploadMedia_checks.php';
+        require 'mediaAPI_fragments/uploadMedia_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -363,8 +391,16 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'getDBMedia':
+        $arrExpected =["address","resourceType","lastChanged"];
+
+        require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/getDBMedia_checks.php';
+        require 'mediaAPI_fragments/getDBMedia_execution.php';
+        break;
+
     case 'getImages':
-        $arrExpected =["address","includeLocal","getAll"];
+        $arrExpected =["address","includeLocal","getDB","dataType"];
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getImages_checks.php';
@@ -395,7 +431,7 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["oldAddress","newAddress","copy"];
+        $arrExpected =["oldAddress","newAddress","copy","remote"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/moveImage_checks.php';
@@ -409,21 +445,25 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["addresses"];
+        $arrExpected =["addresses","remote"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/deleteImages_checks.php';
         require 'mediaAPI_fragments/deleteImages_execution.php';
 
-        echo ($result === 0)?
-            '0' : $result;
+
+        if(is_array($result))
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+        else
+            echo ($result === 0)?
+                '0' : $result;
         break;
 
     case 'incrementImages':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["addresses"];
+        $arrExpected =["addresses","remote"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/incrementImages_checks.php';
@@ -451,7 +491,7 @@ switch($action){
         break;
 
     case 'getGalleries':
-        $arrExpected =["limit","includeLocal","getAll"];
+        $arrExpected =["limit","includeLocal"];
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
@@ -570,7 +610,7 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["relativeAddress","name",];
+        $arrExpected =["relativeAddress","name"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/createFolder_checks.php';

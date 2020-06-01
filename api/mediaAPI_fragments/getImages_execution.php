@@ -7,10 +7,10 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 $requestParams = ['test'=>$test,'includeChildFolders'=>true,'includeChildFiles'=>true];
 
 //If we are getting all images, handle the pagination and filters
-if($inputs['getAll']){
+if($inputs['getDB']){
     $requestParams['limit'] = min($inputs['limit'],500);
     if($inputs['offset'] !== null)
-        $requestParams['offset'] = $inputs['limit'];
+        $requestParams['offset'] = $inputs['offset'];
     if($inputs['createdAfter'] !== null)
         $requestParams['createdAfter'] = $inputs['createdAfter'];
     if($inputs['createdBefore'] !== null)
@@ -23,8 +23,10 @@ if($inputs['getAll']){
         $requestParams['includeRegex'] = $inputs['includeRegex'];
     if($inputs['excludeRegex'] !== null)
         $requestParams['excludeRegex'] = $inputs['excludeRegex'];
-    if($inputs['includeLocal'])
-        $requestParams['ignoreLocal'] = false;
+    if($inputs['dataType'] !== null){
+        $requestParams['dataType'] = $inputs['dataType'];
+    }
+    $requestParams['ignoreLocal'] = $inputs['includeLocal']? false : true;
 }
 
 $result = $FrontEndResourceHandler->getImages(
@@ -39,25 +41,27 @@ else
     unset($result[$inputs['address']]);
 
 //Parse results
-foreach($result as $relativeAddress => $infoArray){
+foreach($result as $address => $infoArray){
 
     //Unset absolute address
-    unset($result[$relativeAddress]['address']);
+    unset($result[$address]['address']);
 
     //Ignore meta information in case of full search
-    if($relativeAddress === '@')
+    if($address === '@')
         continue;
 
     //Handle meta
-    $meta = $result[$relativeAddress]['meta'];
-    unset($result[$relativeAddress]['meta']);
+    $meta = $result[$address]['meta'];
+    unset($result[$address]['meta']);
     if(\IOFrame\Util\is_json($meta)){
         $meta = json_decode($meta,true);
         if(isset($meta['name']))
-            $result[$relativeAddress]['name'] = $meta['name'];
+            $result[$address]['name'] = $meta['name'];
         if(isset($meta['alt']))
-            $result[$relativeAddress]['alt'] = $meta['alt'];
+            $result[$address]['alt'] = $meta['alt'];
         if(isset($meta['caption']))
-            $result[$relativeAddress]['caption'] = $meta['caption'];
+            $result[$address]['caption'] = $meta['caption'];
+        if(isset($meta['size']))
+            $result[$address]['size'] = $meta['size'];
     }
 }

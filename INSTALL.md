@@ -99,6 +99,10 @@ Also, create a DB and a user with full permissions in it - remember their names.
 
 Make sure that the SQL mode 'NO_BACKSLASH_ESCAPES' is **NOT** enabled.
 
+For file uploads, go to my.ini and set the setting "max_allowed_packet" the the HIGHEST possible value of a single file
+size that you will ever upload to the DB as a blob (this is a hard limit, in addition the the IOFrame settings that manifest
+in places such as UploadHandler, and PHP's upload_max_filesize and post_max_size that was mantioned earlier).
+
 **Redis**  [OPTIONAL]  
 Go over to C:\wamp64\bin\php\php\<version\> on Windows, /etc/php/\<version\>/apache2/php.ini on Linux, open php.ini, and add extension=php_redis at the bottom of the extension=<something> list.
 Now it looks like:

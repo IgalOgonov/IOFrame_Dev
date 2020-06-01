@@ -45,7 +45,7 @@
 }
 
 .search-list .pagination button:not([class="go-to"]):hover {
-    background: #ddd !important;
+    background: #ddd;
 }
 
 
@@ -139,7 +139,9 @@
 .search-list .search-item:hover,
 .search-list .search-item.selected{
     background: rgb(161,233,246);
+    transition: background-color 0.2s ease-in-out;
 }
 .search-list .search-results > * > * {
     flex: 1;
+    margin: 0px 5px;
 }

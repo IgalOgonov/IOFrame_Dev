@@ -1,5 +1,5 @@
 <div id="settings" class="main-app">
-    <div class="loading" v-if="!initiated">
+    <div class="loading-cover" v-if="!initiated">
     </div>
 
     <h4 v-if="currentMode==='search'" class="message message-error-2">

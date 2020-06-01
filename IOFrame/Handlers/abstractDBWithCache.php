@@ -150,24 +150,25 @@ namespace IOFrame{
             else
                 $cacheTTL = $this->cacheTTL;
 
-            if(isset($params['keyDelimiter'])){
-                $keyDelimiter = $params['keyDelimiter'];
-            }
-            else{
-                if(gettype($keyCol) === 'array' && count($keyCol) > 1)
-                    $keyDelimiter = '/';
-                else
-                    $keyDelimiter = '';
-            }
-
             if(isset($params['extraKeyColumns']))
                 $extraKeyColumns = $params['extraKeyColumns'];
             else
                 $extraKeyColumns = [];
 
+            $totalColCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
+
+            if(isset($params['keyDelimiter'])){
+                $keyDelimiter = $params['keyDelimiter'];
+            }
+            else{
+                if(gettype($keyCol) === 'array' && $totalColCount > 1)
+                    $keyDelimiter = '/';
+                else
+                    $keyDelimiter = '';
+            }
+
             if(isset($params['groupByFirstNKeys']) && (is_array($keyCol) || count($extraKeyColumns) > 0)){
-                $totalCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
-                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalCount-1));
+                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalColCount-1));
             }
             else
                 $groupByFirstNKeys = 0;
@@ -185,7 +186,7 @@ namespace IOFrame{
                 if(gettype($identifier) === 'array'){
                     //Optionally fix the identifier
                     if($groupByFirstNKeys !== 0){
-                        for($i = 0; $i < $groupByFirstNKeys; $i++)
+                        for($i = 0; $i < $totalColCount - $groupByFirstNKeys; $i++)
                             array_pop($identifier);
                     }
                     $identifier = implode($keyDelimiter,$identifier);
@@ -234,8 +235,13 @@ namespace IOFrame{
                                     $colCompare[$colName] = 1;
                                 }
                                 //If columns do not match, this item is invalid
-                                if (count(array_diff_key($colCompare, $cachedResult2)) != 0)
+                                $missingColumns = count(array_diff_key($colCompare, $cachedResult2));
+                                if ($missingColumns != 0){
+                                    if($verbose)
+                                        echo 'Item '.$indexMap[$index].' failed to pass column checks, '.$missingColumns.' missing, removing from results'.EOL;
+                                    $cacheResultArrayHadError = true;
                                     continue;
+                                }
                                 //Else cut all extra columns
                                 else
                                     foreach($cachedResult2 as $colName=>$value){
@@ -263,7 +269,7 @@ namespace IOFrame{
 
                                 $resultPasses = 0;
 
-                                foreach ($columnConditions as $index => $condition) {
+                                foreach ($columnConditions as $condition) {
                                     if(isset($cachedResult2[$condition[0]]))
                                         switch($condition[2]){
                                             case '>':
@@ -390,7 +396,7 @@ namespace IOFrame{
                 foreach($targets as $target){
                     if(gettype($target) === 'array'){
                         if($groupByFirstNKeys)
-                            for($i = 0; $i < $groupByFirstNKeys; $i++)
+                            for($i = 0; $i < $totalColCount - $groupByFirstNKeys; $i++)
                                 array_pop($target);
                         $target = implode($keyDelimiter,$target);
                     }

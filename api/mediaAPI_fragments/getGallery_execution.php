@@ -9,13 +9,9 @@ $result = $FrontEndResourceHandler->getGallery(
     ['test'=>$test,'includeGalleryInfo'=>true]
 );
 
-if(isset($result['fake Gallery']))
-
 
 //Parse results
-
 $parsedResults = [];
-
 foreach($result as $resultName => $infoArray){
     if($resultName === '@'.$inputs['gallery']){
         $parsedResults['@'] = [];
@@ -45,6 +41,10 @@ foreach($result as $resultName => $infoArray){
                 $parsedResults[$resultName]['name'] = $meta['name'];
             if(isset($meta['alt']))
                 $parsedResults[$resultName]['alt'] = $meta['alt'];
+            if(isset($meta['caption']))
+                $parsedResults[$resultName]['caption'] = $meta['caption'];
+            if(isset($meta['size']))
+                $parsedResults[$resultName]['size'] = $meta['size'];
         }
     }
 }

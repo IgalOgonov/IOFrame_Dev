@@ -7,16 +7,16 @@ $IOFrameCSSRoot = 'front/ioframe/css/';
 echo 'Setting resources:'.EOL;
 var_dump($ResourceHandler->setResources(
     [
-        ['sec/aes.js'],
-        ['sec/mode-ecb.js'],
-        ['sec/mode-ctr.js'],
-        ['sec/pad-ansix923-min.js'],
-        ['sec/pad-zeropadding.js'],
-        ['utils.js'],
-        ['initPage.js'],
-        ['objects.js'],
-        ['fp.js'],
-        ['ezAlert.js']
+        ['address'=>'sec/aes.js'],
+        ['address'=>'sec/mode-ecb.js'],
+        ['address'=>'sec/mode-ctr.js'],
+        ['address'=>'sec/pad-ansix923-min.js'],
+        ['address'=>'sec/pad-zeropadding.js'],
+        ['address'=>'utils.js'],
+        ['address'=>'initPage.js'],
+        ['address'=>'objects.js'],
+        ['address'=>'fp.js'],
+        ['address'=>'ezAlert.js']
     ],
     'js',
     ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot])
@@ -26,8 +26,17 @@ echo EOL;
 echo 'Setting resources (override false):'.EOL;
 var_dump($ResourceHandler->setResources(
     [
-        ['fp.js',false,false],
-        ['newStuff.js',false,false,'test 1!@#@']
+        [
+            'address'=>'fp.js',
+            'local'=>false,
+            'minified'=>false
+        ],
+        [
+            'address'=>'newStuff.js',
+            'local'=>false,
+            'minified'=>false,
+            'text'=>'test 1!@#@'
+        ]
     ],
     'js',
     ['test'=>true,'verbose'=>true,'override'=>false,'rootFolder'=>$IOFrameJSRoot])
@@ -37,7 +46,29 @@ echo EOL;
 echo 'Setting resources (override true):'.EOL;
 var_dump($ResourceHandler->setResources(
     [
-        ['fp.js',false,false,'<script>alert("hello!")</script>']
+        [
+            'address'=>'fp.js',
+            'local'=>false,
+            'minified'=>false,
+            'text'=>'<script>alert("hello!")</script>',
+        ]
+    ],
+    'js',
+    ['test'=>true,'verbose'=>true,'override'=>true,'rootFolder'=>$IOFrameJSRoot])
+);
+echo EOL;
+
+echo 'Setting db resources:'.EOL;
+var_dump($ResourceHandler->setResources(
+    [
+        [
+            'address'=>'testDBResource',
+            'local'=>false,
+            'minified'=>false,
+            'text'=>json_encode(['title'=>'Test Resource']),
+            'blob'=>base64_encode('010100101001010 01010100101 10101'),
+            'dataType'=>'test'
+        ]
     ],
     'js',
     ['test'=>true,'verbose'=>true,'override'=>true,'rootFolder'=>$IOFrameJSRoot])
@@ -246,4 +277,16 @@ var_dump(
         ['test'=>true,'verbose'=>true,'rootFolder'=>$IOFrameJSRoot]
     )
 );
+echo EOL;
+
+echo 'Displaying a base64 image:'.EOL;
+$img = $ResourceHandler->getResources(
+    ['image'],
+    'img',
+    ['test'=>true,'verbose'=>false,'rootFolder'=>$IOFrameJSRoot]
+);
+if(isset($img['image']) && is_array($img['image']))
+    echo '<img style="float:none" src="data:'.$img['image']['Data_Type'].';base64, '.$img['image']['Blob_Content'].'" alt="Test image" />';
+else
+    echo 'Failed to get image!';
 echo EOL;

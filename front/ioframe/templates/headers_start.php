@@ -24,7 +24,7 @@ if($devMode)
 else
     echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.min.js"></script>';
 
-$JS = ['mixins/commons.js','components/userLogin.js','components/userRegistration.js','components/userLogout.js'];
+$JS = ['mixins/commons.js','mixins/componentHookFunctions.js','components/userLogin.js','components/userRegistration.js','components/userLogout.js'];
 $CSS = ['global.css','standard.css'];
 
 ?>

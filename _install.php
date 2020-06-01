@@ -641,6 +641,20 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             $assignments = [
                 ['REGISTER_USER_AUTH',\IOFrame\Util\str2SafeStr('Required to register a user when self-registration is not allowed')],
                 ['ADMIN_ACCESS_AUTH',\IOFrame\Util\str2SafeStr('Required to access administrator pages')],
+                ['AUTH_MODIFY_RANK',\IOFrame\Util\str2SafeStr('Required to modify user ranks (down to your rank at most)')],
+                ['AUTH_VIEW',\IOFrame\Util\str2SafeStr('Required to view auth actions/groups/users')],
+                ['AUTH_SET',\IOFrame\Util\str2SafeStr('Required to freely modify auth actions/groups')],
+                ['AUTH_SET_ACTIONS',\IOFrame\Util\str2SafeStr('Required to set auth actions')],
+                ['AUTH_SET_GROUPS',\IOFrame\Util\str2SafeStr('Required to set auth groups')],
+                ['AUTH_DELETE',\IOFrame\Util\str2SafeStr('Required to delete auth actions/groups')],
+                ['AUTH_DELETE_ACTIONS',\IOFrame\Util\str2SafeStr('Required to delete auth actions')],
+                ['AUTH_DELETE_GROUPS',\IOFrame\Util\str2SafeStr('Required to delete auth groups')],
+                ['AUTH_MODIFY',\IOFrame\Util\str2SafeStr('Required to delete auth actions/groups/users')],
+                ['AUTH_MODIFY_ACTIONS',\IOFrame\Util\str2SafeStr('Required to delete auth actions')],
+                ['AUTH_MODIFY_GROUPS',\IOFrame\Util\str2SafeStr('Required to delete auth groups')],
+                ['AUTH_MODIFY_USERS',\IOFrame\Util\str2SafeStr('Required to delete auth users')],
+                ['CONTACTS_GET',\IOFrame\Util\str2SafeStr('Required to freely get contacts')],
+                ['CONTACTS_MODIFY',\IOFrame\Util\str2SafeStr('Required to freely modify contacts')],
                 ['PLUGIN_GET_AVAILABLE_AUTH',\IOFrame\Util\str2SafeStr('Required to get available plugins')],
                 ['PLUGIN_GET_INFO_AUTH',\IOFrame\Util\str2SafeStr('Required to get plugin info')],
                 ['PLUGIN_GET_ORDER_AUTH',\IOFrame\Util\str2SafeStr('Required to get plugin order')],
@@ -657,6 +671,8 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['TREE_D_AUTH',\IOFrame\Util\str2SafeStr('Required to delete all trees')],
                 ['TREE_MODIFY_ALL',\IOFrame\Util\str2SafeStr('Required to modify all trees')],
                 ['BAN_USERS_AUTH',\IOFrame\Util\str2SafeStr('Required to ban users')],
+                ['SET_USERS_AUTH',\IOFrame\Util\str2SafeStr('Required to update users')],
+                ['GET_USERS_AUTH',\IOFrame\Util\str2SafeStr('Required to get users information')],
                 ['MODIFY_USER_ACTIONS_AUTH',\IOFrame\Util\str2SafeStr('Required to modify user actions')],
                 ['MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Required to modify all user auth')],
                 ['MODIFY_USER_RANK_AUTH',\IOFrame\Util\str2SafeStr('Required to modify user ranks')],
@@ -737,16 +753,16 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($localSettings,$defaultSettingsParams);
             $resourceCreation = $FrontEndResourceHandler->setResources(
                 [
-                    ['sec/aes.js'],
-                    ['sec/mode-ecb.js'],
-                    ['sec/mode-ctr.js'],
-                    ['sec/pad-ansix923-min.js'],
-                    ['sec/pad-zeropadding.js'],
-                    ['utils.js'],
-                    ['initPage.js'],
-                    ['objects.js'],
-                    ['fp.js'],
-                    ['ezAlert.js']
+                    ['address'=>'sec/aes.js'],
+                    ['address'=>'sec/mode-ecb.js'],
+                    ['address'=>'sec/mode-ctr.js'],
+                    ['address'=>'sec/pad-ansix923-min.js'],
+                    ['address'=>'sec/pad-zeropadding.js'],
+                    ['address'=>'utils.js'],
+                    ['address'=>'initPage.js'],
+                    ['address'=>'objects.js'],
+                    ['address'=>'fp.js'],
+                    ['address'=>'ezAlert.js']
                 ],
                 'js'
             );
@@ -942,7 +958,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             echo 'Installation complete!'.EOL;
             $_SESSION['INSTALLING']=false;
             //Create Install Complete file
-            echo '<form method="get" action="cp/admin">
+            echo '<form method="get" action="cp/login">
                          <input type="submit" value="Go to admin panel">
                          </form>';
 
@@ -1023,6 +1039,8 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($resourceArgs,["autoMinifyJS",1]);
             array_push($resourceArgs,["autoMinifyCSS",1]);
             array_push($resourceArgs,["imageQualityPercentage",100]);
+            array_push($resourceArgs,["allowDBMediaGet",1]);
+
 
             array_push($metaArgs,['localSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Local Node Settings'])]);
             array_push($metaArgs,['redisSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Redis Settings'])]);

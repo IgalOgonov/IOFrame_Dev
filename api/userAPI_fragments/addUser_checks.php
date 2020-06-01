@@ -41,21 +41,18 @@ else{
     //Validate Username
     if($u != null)
         if(!\IOFrame\Util\validator::validateUsername($u)){
-            $res=false;
             if($test)
                 echo 'Username illegal!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
         //Validate Password
         else if(!IOFrame\Util\validator::validatePassword($p)){
-            $res=false;
             if($test)
                 echo 'Password illegal!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
         //Validate Mail
         else if(!filter_var($m, FILTER_VALIDATE_EMAIL)){
-            $res=false;
             if($test)
                 echo 'Email illegal!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);

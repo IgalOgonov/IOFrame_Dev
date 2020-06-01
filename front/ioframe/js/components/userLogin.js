@@ -3,6 +3,10 @@ if(eventHub === undefined)
 
 Vue.component('user-login', {
     props:{
+        hasRememberMe:{
+            type: Boolean,
+            default: true
+        },
         text: {
             type: Object,
             default: function(){
@@ -24,6 +28,7 @@ Vue.component('user-login', {
         },
     },
     data: function(){return {
+        configObject: JSON.parse(JSON.stringify(document.siteConfig)),
         m:{
             val:'',
             class:''
@@ -32,9 +37,12 @@ Vue.component('user-login', {
             val:'',
             class:''
         },
-        rMe: true,
+        rMe: this.hasRememberMe,
         resp: ''
     }
+    },
+    created: function(){
+
     },
     methods:{
         log: function(){
@@ -132,7 +140,6 @@ Vue.component('user-login', {
                                     case '3':
                                         respType='warning';
                                         break;
-                                    //TODO Drop auto-login cached data if it exists
                                     default:
                                         let loginSuccess = false;
                                         if(response.length >= 32){
@@ -195,15 +202,13 @@ Vue.component('user-login', {
             }
         }
     },
-    template: '<span class="user-login">\
-    <form novalidate>\
-    \
-    \
-    <input :class="[m.class]" type="email" id="m_log" name="m" :placeholder="text.email" v-model="m.val" required>\
-        <input :class="[p.class]" type="password" id="p_log" name="p" :placeholder="text.password" v-model="p.val" required>\
-            <label> <input type="checkbox" name="rMe" v-model="rMe" checked> <span v-text="text.rememberMe"></span> </label>\
-                <button @click.prevent="log" v-text="text.loginButton"></button>\
-            \
-            </form>\
-        </span>'
+    template:
+        `<span class="user-login">
+            <form novalidate>
+                <input :class="[m.class]" type="email" id="m_log" name="m" :placeholder="text.email" v-model="m.val" required>
+                <input :class="[p.class]" type="password" id="p_log" name="p" :placeholder="text.password" v-model="p.val" required>
+                <label v-if="hasRememberMe"> <input type="checkbox" name="rMe" v-model="rMe"> <span v-text="text.rememberMe"></span> </label>
+                <button @click.prevent="log" v-text="text.loginButton"></button>
+            </form>
+        </span>`
 });

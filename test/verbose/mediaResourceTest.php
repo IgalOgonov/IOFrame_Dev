@@ -42,7 +42,12 @@ echo 'Setting image name and alt tag:'.EOL;
 var_dump(
     $FrontEndResourceHandler->setResources(
         [
-            ['docs/Euler.png',false,false,json_encode(['alt'=>'Alternative Title','name'=>'Prettier Name'])]
+            [
+                'address'=>'docs/Euler.png',
+                'local'=>false,
+                'minified'=>false,
+                'text'=>json_encode(['alt'=>'Alternative Title','name'=>'Prettier Name'])
+            ]
         ],
         'img',
         ['test'=>true,'verbose'=>true,'update'=>true,'rootFolder'=>$IOFrameIMGRoot])
@@ -53,7 +58,12 @@ echo 'Changing image name:'.EOL;
 var_dump(
     $FrontEndResourceHandler->setResources(
         [
-            ['docs/Euler.png',false,false,json_encode(['name'=>'Prettier Name'])]
+            [
+                'address'=>'docs/Euler.png',
+                'local'=>false,
+                'minified'=>false,
+                'text'=>json_encode(['name'=>'Prettier Name'])
+            ]
         ],
         'img',
         ['test'=>true,'verbose'=>true,'update'=>true,'rootFolder'=>$IOFrameIMGRoot])

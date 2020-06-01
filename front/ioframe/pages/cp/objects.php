@@ -1,42 +1,64 @@
-<?php
-/**
-Meant to manage objects throughout the system.
- */
-if(!defined('coreInit'))
-    require __DIR__ . '/../../main/coreInit.php';
-?>
-
-
 <!DOCTYPE html>
-<?php require $settings->getSetting('absPathToRoot').'front/ioframe/templates/headers.php';
+<?php
 
-/* ----- All css might be skipped and replaced with something else if you would like*/
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/global.css">';
+require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definitions.php';
 
-echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/popUpTooltip.css">';
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/bootstrap_3_3_7/css/bootstrap.min.css">';
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';
 
-if($auth->isAuthorized(0))
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';
-else
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.min.js"></script>';
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-echo '<script src="'.$dirToRoot.'front/ioframe/js/objects.js"></script>';
-echo '<script>startObjectDB({\'updateObjects\':true,\'updateObjectMap\':true,\'extraMaps\':[\'objects\']})</script>';
+array_push($CSS, 'cp.css', 'modules/objects.css', 'modules/CPMenu.css');
+array_push($JS, 'modules/CPMenu.js', 'modules/objects.js');
 
-echo '<title>Objects API</title>';
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';
+
+echo '<title>Authorization</title>';
+
+echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
+echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/objects.css']['relativeAddress'] . '"">';
+echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
+
 ?>
+
+
+<?php
+$siteConfig = array_merge($siteConfig,
+    [
+        'page'=> [
+            'id' => 'objects',
+            'title' => 'Objects'
+        ]
+    ]);
+?>
+
+<script>
+    document.siteConfig = <?php echo json_encode($siteConfig)?>;
+    if(document.siteConfig.page.title !== undefined)
+        document.title = document.siteConfig.page.title;
+</script>
+
+<?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_end.php'; ?>
 
 <body>
-<p id="errorLog"></p>
 
-<h1>Objects</h1>
-<?php
-include $settings->getSetting('absPathToRoot').'front/ioframe/templates/modules/objects.php';
-echo '<script src="'.$dirToRoot.'front/ioframe/js/modules/objects.js"></script>';
-?>
+<div class="wrapper">
+    <?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'modules/CPMenu.php';?>
+    <?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'modules/objects.php';?>
 
-<?php require $settings->getSetting('absPathToRoot').'front/ioframe/templates/footers.php';?>
+</div>
 
 </body>
+
+
+<?php
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_start.php';
+
+echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/CPMenu.js']['relativeAddress'].'"></script>';
+echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/objects.js']['relativeAddress'].'"></script>';
+
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_end.php';
+
+?>

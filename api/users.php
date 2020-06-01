@@ -4,6 +4,63 @@
  *
  *      See standard return values at defaultInputResults.php
  *_________________________________________________
+ * getUsers
+ *      Returns all users
+ *
+ *      'idAtLeast' => int, defaults to 1 - Returns users with ID equal or greater than this
+ *      'idAtMost' => int, defaults to null - if set, Returns users with ID equal or smaller than this
+ *      'rankAtLeast' => int, defaults to 1 - Returns users with rank equal or greater than this
+ *      'rankAtMost' => int, defaults to null - if set, Returns users with rank equal or smaller than this
+ *      'usernameLike' => String, default null - returns results where username  matches a regex.
+ *      'emailLike' => String, email, default null - returns results where email matches a regex.
+ *      'isActive' => bool, defaults to null - if set, Returns users which are either active or inactive (true or false).
+ *      'isBanned' => bool, defaults to null - if set, Returns users which are either banned or not banned (true or false).
+ *      'isSuspicious' => bool, defaults to null - if set, Returns users which are either suspicious or unsuspicious (true or false).
+ *      'createdBefore' => String, Unix timestamp, default null - only returns results created before this date.
+ *      'createdAfter' => String, Unix timestamp, default null - only returns results created after this date.
+ *      'orderBy'            - string, defaults to null. Possible values include 'Created_On', 'Email', 'Username',
+ *                             and 'ID' (default)
+ *      'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
+ *      'limit' => typical SQL parameter
+ *      'offset' => typical SQL parameter
+ *
+ *      @returns Array of the form:
+ *          [
+ *              <identifier *> => {
+ *                      'id'=><int, identifier again>,
+ *                      'username'=><string>,
+ *                      'email'=><string>,
+ *                      'active'=><bool, whether the account is active>,
+ *                      'rank'=><int, authentication rank>,
+ *                      'created'=><int, unix timestamp of when the user was created>,
+ *                      'bannedUntil'=><int, shows unix timestamp until when the user is banned>,
+ *                      'suspiciousUntil'=><int, shows unix timestamp until when the user is suspicious>
+ *                  }
+ *          ]
+ *
+ *
+ *       Examples: action=getUsers&idAtLeast=1&idAtMost=3&rankAtLeast=0&rankAtMost=10000&usernameLike=A&emailLike=.com&isActive=true&isBanned=false&isSuspicious=false&createdBefore=999999999999&createdAfter=0&orderBy=Email&orderType=0&limit=5&offset=0&test=true
+ *_________________________________________________
+ * updateUser
+ *      Updates a single user
+ *
+ *      'id' => int, user id
+ *      'username' => String, default null - new username
+ *      'email' => String, default null - new Email
+ *      'active' => Bool, default null - whether the user is active or not
+ *      'created' => Int, default null - Unix timestamp, user creation date.
+ *      'bannedDate' => Int, default null - Unix timestamp until which the user is banned (0 to unban the user).
+ *      'suspiciousDate' => Int, default null - Unix timestamp until which the user is suspicious (0 to make the user not suspicious).
+ *
+ *      @returns Codes:
+ *          -1 Server error
+ *           0 Success
+ *           1 Incorrect identifier type
+ *           2 Invalid identifier
+ *           3 No new assignments
+ *
+ *       Examples: action=updateUser&id=2&username=Test&email=test@test.com&active=0&created=1586370650&bannedDate=1586370650&suspiciousDate=1586370650
+ *_________________________________________________
  * addUser
  *      - Adds (registers) a user
  *        m: requested mail
@@ -116,7 +173,6 @@
  *        Examples: action=banUser&id=1&minutes=60000
  *
  * */
-const BLACKLISTED_IP = 'BLACKLISTED_IP';
 
 if(!defined('coreInit'))
     require __DIR__ . '/../main/coreInit.php';
@@ -143,6 +199,25 @@ $timingManager = new IOFrame\Util\timingManager();
 $timingManager->start();
 
 switch($action){
+    case 'getUsers':
+        $arrExpected = ['idAtLeast','idAtMost','rankAtLeast','rankAtMost','usernameLike','emailLike','isActive' ,
+            'isBanned','isSuspicious','createdBefore','createdAfter','orderBy','orderType', 'limit','offset' ];
+
+        require 'setExpectedInputs.php';
+        require 'userAPI_fragments/getUsers_checks.php';
+        require 'userAPI_fragments/getUsers_execution.php';
+
+        echo json_encode($result);
+        break;
+    case 'updateUser':
+        $arrExpected = ['id','username','email','active','created','bannedDate','suspiciousDate'];
+
+        require 'setExpectedInputs.php';
+        require 'userAPI_fragments/updateUser_checks.php';
+        require 'userAPI_fragments/updateUser_execution.php';
+
+        echo json_encode($result);
+        break;
     case 'addUser':
 
         $arrExpected =["u","m","p"];

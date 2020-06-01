@@ -1,0 +1,51 @@
+%%IF(HAS_TYPES)
+/* Types */
+#%%ELEMENT_NAME%% .types{
+    display: flex;
+}
+
+#%%ELEMENT_NAME%% .types > button {
+    padding: 5px 10px;
+    font-size: 1em;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out, border 0s;
+}
+
+#%%ELEMENT_NAME%% .types > button.selected  {
+    border-bottom: 3px black solid;
+}
+
+#%%ELEMENT_NAME%% .types > button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+#%%ELEMENT_NAME%% .types > button:not(:first-child){
+    border-left: 0;
+}
+#%%ELEMENT_NAME%% .types > button:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+#%%ELEMENT_NAME%% .types > button:not(:last-child){
+    border-right: 0;
+}
+%%
+
+@media (max-width: %%SEARCH_LIST_COMPACT_MAX_WIDTH%%px) {
+    %%IF(HAS_MODES)
+    /*Modes*/
+    #%%ELEMENT_NAME%% .modes {
+        flex-direction: column;
+    }%%
+    /*All search lists*/
+    #%%ELEMENT_NAME%% .search-list .search-titles {
+        display: none;
+    }
+    #%%ELEMENT_NAME%% .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #%%ELEMENT_NAME%% .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: rgba(0,0,0,0.1);
+    }
+}

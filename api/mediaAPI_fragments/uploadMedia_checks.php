@@ -8,6 +8,17 @@ if( !( $auth->hasAction(IMAGE_UPLOAD_AUTH) || $auth->isAuthorized(0) ) ){
     exit(AUTHENTICATION_FAILURE);
 }
 
+//Type
+if($inputs['type'] !== null){
+    if(!in_array($inputs['type'],['local','db','link'])){
+        if($test)
+            echo 'Upload type must be either "local" or "db"!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+}
+else
+    $inputs['type'] = 'local';
+
 //Items
 if($inputs['items'] !== null){
     if(!\IOFrame\Util\is_json($inputs['items'])){
@@ -30,17 +41,29 @@ foreach($inputs['items'] as $uploadName => $itemArray){
 
     if(isset($itemArray['filename'])){
 
-        if(!preg_match('/'.UPLOAD_FILENAME_REGEX.'/',$itemArray['filename'])){
-            if($test)
-                echo 'Invalid upload file name for '.$uploadName.EOL;
-            exit(INPUT_VALIDATION_FAILURE);
-        }
+        if($inputs['type'] !== 'link')
+            if(!preg_match('/'.UPLOAD_FILENAME_REGEX.'/',$itemArray['filename'])){
+                if($test)
+                    echo 'Invalid upload file name for '.$uploadName.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+        else
+            if(!filter_var($itemArray['filename'], FILTER_VALIDATE_URL)){
+                if($test)
+                    echo 'Invalid url '.$uploadName.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
 
         if( !( $auth->hasAction(IMAGE_FILENAME_AUTH) || $auth->isAuthorized(0) ) ){
             if($test)
                 echo 'Cannot upload images with specific filename!'.EOL;
             exit(AUTHENTICATION_FAILURE);
         }
+    }
+    elseif($inputs['type'] === 'link'){
+        if($test)
+            echo 'Filename must be set for each item in link mode!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
     }
 
     if(isset($itemArray['alt'])){
@@ -92,27 +115,29 @@ foreach($inputs['items'] as $uploadName => $itemArray){
     }
 }
 
+if($inputs['type'] !== 'link'){
 //Address
-if($inputs['address'] === null)
-    $inputs['address'] = '';
+    if($inputs['address'] === null)
+        $inputs['address'] = '';
 
-if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['address'])){
-    if($test)
-        echo 'Invalid address name for image upload!'.EOL;
-    exit(INPUT_VALIDATION_FAILURE);
-}
+    if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['address'])){
+        if($test)
+            echo 'Invalid address name for image upload!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
 
-if($inputs['address'] !== '' && $inputs['address'][strlen($inputs['address'])-1] !== '/')
-    $inputs['address'] .= '/';
+    if($inputs['address'] !== '' && $inputs['address'][strlen($inputs['address'])-1] !== '/')
+        $inputs['address'] .= '/';
 
 //Image quality
-if($inputs['imageQualityPercentage'] === null)
-    $inputs['imageQualityPercentage'] = $resourceSettings->getSetting('imageQualityPercentage');
+    if($inputs['imageQualityPercentage'] === null)
+        $inputs['imageQualityPercentage'] = $resourceSettings->getSetting('imageQualityPercentage');
 
-if($inputs['imageQualityPercentage']<0)
-    $inputs['imageQualityPercentage'] = 0;
-elseif($inputs['imageQualityPercentage']>100)
-    $inputs['imageQualityPercentage'] = 100;
+    if($inputs['imageQualityPercentage']<0)
+        $inputs['imageQualityPercentage'] = 0;
+    elseif($inputs['imageQualityPercentage']>100)
+        $inputs['imageQualityPercentage'] = 100;
+}
 
 //Overwrite
 if($inputs['overwrite'] === null)
@@ -137,7 +162,21 @@ if($inputs['gallery'] !== null){
     //TODO Check gallery auth and ownership
 }
 
-
+//Files
+if($inputs['type'] !== 'link' && is_array($_FILES))
+    foreach($_FILES as $name=>$fileArray){
+        $extension = @array_pop(explode('.',$fileArray['name'])); //Yes I know only variables should be passed by reference stfu
+        if(!in_array($extension,ALLOWED_EXTENSIONS_IMAGES)){
+            if($test)
+                echo 'File type of '.$name.' not allowed!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        elseif(explode('/',$fileArray['type'])[0] !== 'image'){
+            if($test)
+                echo 'Data type of '.$name.' must be image!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+    }
 
 
 

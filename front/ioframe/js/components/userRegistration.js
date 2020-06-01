@@ -3,7 +3,12 @@ if(eventHub === undefined)
 
 Vue.component('user-registration', {
     props:{
-        needsUsername:{
+        //Up to the parent to enforce that if you are REQUIRED to have a username, you also CAN have it
+       canHaveUsername:{
+            type: Boolean,
+            default: true
+        },
+        requiresUsername:{
             type: Boolean,
             default: true
         },
@@ -11,12 +16,16 @@ Vue.component('user-registration', {
             type: Object,
             default: function(){
                 return {
-                    userName:'username',
-                    userNameHelp: 'Must be 6-16 characters long, Must contain numbers and latters',
-                    password: 'password',
+                    username: this.requiresUsername? 'Username' : '[Optional] Username',
+                    userNameHelp: (
+                        this.requiresUsername?
+                        'Must be 6-16 characters long, Must contain numbers and latters' :
+                        '{OPTIONAL} Must be 6-16 characters long, Must contain numbers and latters'
+                    ),
+                    password: 'Password',
                     passwordHelp: "Must be 8-64 characters long<br> Must include latters and numbers<br>Can include special characters except '>' and '<'",
-                    repeatPassword: 'repeat password',
-                    email: 'email',
+                    repeatPassword: 'Repeat password',
+                    email: 'Email',
                     registrationButton: 'Register'
                 };
             }
@@ -61,7 +70,7 @@ Vue.component('user-registration', {
             console.log("Username:"+this.u.val+", password:"+ this.p.val+", email:"+this.m.val+", req:"+this.req);
 
             //validate username
-            if(this.needsUsername){
+            if(this.canHaveUsername && this.u.val.length > 0){
                 if( (this.u.val.length>16) ||(this.u.val.length<6) || (this.u.val.match(/\W/g)!=null) ){
                     this.u.class = "error";
                     errors++;
@@ -70,6 +79,11 @@ Vue.component('user-registration', {
                     this.u.class = "success";
 
             }
+            else if(this.requiresUsername && this.u.val.length == 0){
+                this.u.class = "error";
+                errors++;
+            }
+
             //validate password
             if( (this.p.val.length>64) ||(this.p.val.length<8) || (this.p.val.match(/(\s|<|>)/g)!=null)
                 || (this.p.val.match(/[0-9]/g) == null) || (this.p.val.match(/[a-z]|[A-Z]/g) == null) ){
@@ -101,7 +115,7 @@ Vue.component('user-registration', {
                 //Data to be sent
                 var data = new FormData();
                 data.append('action', 'addUser');
-                if(this.needsUsername)
+                if(this.canHaveUsername && this.u.val.length > 0)
                     data.append('u', this.u.val);
                 data.append('m', this.m.val);
                 data.append('p', context.p.val);
@@ -146,7 +160,7 @@ Vue.component('user-registration', {
                                 break;
                             case '1':
                                 respType='warning';
-                                if(context.needsUsername)
+                                if(context.canHaveUsername)
                                     context.u.class = "warning";
                                 break;
                             case '2':
@@ -174,20 +188,28 @@ Vue.component('user-registration', {
             };
         }
     },
-    template: '<span class="user-registration">\
-\
-    <form novalidate>\
-\
-    <input v-if="needsUsername" :class="[u.class]" type="text" id="u_reg" name="u" :placeholder="text.username" v-model="u.val" required>\
-    <a v-if="needsUsername" href="#"  id="u_reg-tooltip">?</a><br>\
-    <input :class="[p.class]" type="password" id="p_reg" name="p" :placeholder="text.password" v-model="p.val" required>\
-    <a href="#"  id="p_reg-tooltip">?</a><br>\
-    <input :class="[p2.class]" type="password" id="p2_reg" :placeholder="text.repeatPassword" v-model="p2.val" required><br>\
-    <input :class="[m.class]" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required><br>\
-    <button @click.prevent="reg" v-text="text.registrationButton"></button>\
-\
-                </form>\
-                </span>',
+    template: `<span class="user-registration">
+
+    <form novalidate>
+
+    <label>
+        <input v-if="canHaveUsername" :class="[u.class]" type="text" id="u_reg" name="u" :placeholder="text.username" v-model="u.val" required>
+        <a v-if="canHaveUsername" href="#"  id="u_reg-tooltip">?</a>
+    </label>
+
+    <label>
+        <input :class="[p.class]" type="password" id="p_reg" name="p" :placeholder="text.password" v-model="p.val" required>
+        <a href="#"  id="p_reg-tooltip">?</a>
+    </label>
+
+    <input :class="[p2.class]" type="password" id="p2_reg" :placeholder="text.repeatPassword" v-model="p2.val" required>
+
+    <input :class="[m.class]" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required>
+
+    <button @click.prevent="reg" v-text="text.registrationButton"></button>
+
+                </form>
+                </span>`,
     mounted: function(){
         document.popupHandler = new ezPopup("pop-up-tooltip");
         document.popupHandler.initPopup('u_reg-tooltip',this.text.userNameHelp,'');

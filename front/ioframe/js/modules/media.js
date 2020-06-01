@@ -21,7 +21,7 @@ var media = new Vue({
                         title:'Copy'
                     },
                     'rename':{
-                        title:'Rename (filename)'
+                        title:'Rename (Filename / Identifier)'
                     },
                     'delete':{
                         title:'Delete',
@@ -41,6 +41,29 @@ var media = new Vue({
                 },
                 title:'View Media'
             },
+            'view-db':{
+                operations:{
+                    'copy':{
+                        title:'Copy'
+                    },
+                    'rename':{
+                        title:'Rename (filename)'
+                    },
+                    'delete':{
+                        title:'Delete',
+                        button:'negative-1'
+                    },
+                    'deleteMultiple':{
+                        title:'Delete Multiple',
+                        button:'negative-1'
+                    },
+                    'cancel':{
+                        title:'Cancel',
+                        button:'cancel-1'
+                    }
+                },
+                title:'View Remote Media'
+            },
             'edit':{
                 operations:{},
                 title:'View/Edit Image'
@@ -53,32 +76,178 @@ var media = new Vue({
         currentMode: 'view',
         currentOperation: '',
         operationInput:'',
-        url: '',
-        target:'',
-        deleteTargets:[],
-        view1Elements: {},
-        view1UpToDate:false,
-        view2URL: '',
-        view2Elements: {},
-        view2Target:'',
-        view2UpToDate:false,
+        mediaURL: document.rootURI + 'api/media',
+        view1:{
+            url: '',
+            target:'',
+            deleteTargets:[],
+            elements: {},
+            upToDate:false,
+        },
+        view2:{
+            url: '',
+            target:'',
+            elements: {},
+            upToDate:false,
+        },
+        searchList:{
+            //Filters to display for the search list
+            filters:[
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'createdAfter',
+                            title:'Created After',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        },
+                        {
+                            name:'createdBefore',
+                            title:'Created Before',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        }
+                    ]
+                },
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'changedAfter',
+                            title:'Changed After',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        },
+                        {
+                            name:'changedBefore',
+                            title:'Changed Before',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        }
+                    ]
+                },
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'includeRegex',
+                            title:'Include',
+                            placeholder:'Text identifier includes',
+                            type:'String',
+                            min:0,
+                            max: 64,
+                            validator: function(value){
+                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
+                            }
+                        },
+                        {
+                            name:'excludeRegex',
+                            title:'Exclude',
+                            placeholder:'Text identifier excludes',
+                            type:'String',
+                            min:0,
+                            max: 64,
+                            validator: function(value){
+                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
+                            }
+                        },
+                    ]
+                }
+            ],
+            //Result comunts to display, and how to parse them
+            columns:[
+                {
+                    id:'image',
+                    custom:true,
+                    title:'Image',
+                    parser:function(item){
+                        let src = item.dataType? (document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&lastChanged='+item.lastChanged) : item.identifier;
+                        return '<img src="'+src+'">';
+                    }
+                },
+                {
+                    id:'name',
+                    custom:true,
+                    title:'Name',
+                    parser:function(item){
+                        return item.name? item.name : (item.dataType ? item.identifier : 'Unnamed link');
+                    }
+                },
+                {
+                    id:'lastChanged',
+                    title:'Last Changed',
+                    parser:function(timestamp){
+                        timestamp *= 1000;
+                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                    }
+                },
+                {
+                    id:'identifier',
+                    title:'Media Identifier',
+                    parser:function(identifier){
+                        return '<textarea disabled>'+identifier+'</textarea>';
+                    }
+                }
+            ],
+            page:0,
+            limit:25,
+            total: 0,
+            items: [],
+            initiated: false,
+            selected:[],
+            extraParams:{
+                getDB:1
+            },
+            extraClasses: function(item){
+                if(item.vertical)
+                    return 'vertical';
+                else if(item.small)
+                    return 'small';
+                else
+                    return false;
+            },
+            functions:{
+                'mounted': function(){
+                    //This means we re-mounted the component without searching again
+                    if(!this.initiate){
+                        eventHub.$emit('resizeImages');
+                    }
+                }
+            }
+        },
+        lastMode:'view', //This can only be 'view' or 'view-db' -
         isLoading:false,
-        verbose:true,
-        test:true
+        verbose:false,
+        test:false
     },
     created:function(){
         //Tells viewer to load initial target
         eventHub.$on('select', this.selectElement);
+        eventHub.$on('requestSelection', this.selectSearchElement);
         eventHub.$on('changeURLRequest', this.changeURLRequest);
         eventHub.$on('viewElementsUpdated', this.updateViewElements);
         eventHub.$on('updateViewElement', this.updateViewElement);
+        eventHub.$on('updateSearchListElement', this.updateSearchListElement);
         eventHub.$on('imageUploadedToServer', this.updateView);
+        eventHub.$on('searchResults',this.parseSearchResults);
+        eventHub.$on('goToPage',this.goToPage);
+        eventHub.$on('resizeImages',this.resizeImages);
+
+        //Defaults
+        if(this.configObject.media === undefined)
+            this.configObject.media = [];
+
+        if(this.configObject.media.local === undefined)
+            this.currentMode = 'view';
+        else
+            this.currentMode = this.configObject.media.local ? 'view' : 'view-db';
+
     },
     computed:{
         //We don't need the main viewer when editing or uploading
         needViewer:function(){
-            const modes = ['upload','edit'];
-            return modes.indexOf(this.currentMode) === -1;
+            return this.currentMode === 'view';
         },
         //We need the second viewer only when creating a folder, moving or copying
         needSecondViewer:function(){
@@ -89,13 +258,14 @@ var media = new Vue({
         title:function(){
             switch(this.currentMode){
                 case 'view':
+                case 'view-db':
                     return 'Media';
                     break;
                 case 'edit':
-                    return 'Editing image';
+                    return 'Editing '+(this.lastMode === 'view' ? 'local' : 'remote')+' image';
                     break;
                 case 'upload':
-                    return 'Uploading image';
+                    return 'Uploading '+(this.lastMode === 'view' ? 'local': 'remote')+' image ' ;
                     break;
                 default:
             }
@@ -117,13 +287,13 @@ var media = new Vue({
                     return 'Move to selected item?';
                     break;
                 case 'copy':
-                    return 'Choose new name:';
+                    return (this.currentMode === 'view' ? 'Choose the new filename:' : 'Choose the new identifier');
                     break;
                 case 'delete':
                     return 'Delete selected?';
                     break;
                 case 'rename':
-                    return 'Choose a new name:';
+                    return  (this.currentMode === 'view' ? 'Choose a new filename:' : 'Choose a new identifier:');
                     break;
                 case 'deleteMultiple':
                     return 'Delete selected?';
@@ -156,23 +326,36 @@ var media = new Vue({
             return Object.keys(this.modes[this.currentMode].operations).length>0;
         },
         targetIsFolder:function(){
-            return this.target!== '' && (this.target.indexOf('.') === -1);
+            return this.view1.target!== '' && (this.view1.target.indexOf('.') === -1);
         }
     },
     methods:{
         //Switches to requested mode
         updateView: function(newMode){
-            this.view1UpToDate = false;
+            this.view1.upToDate = false;
         },
         //Switches to requested mode
         switchModeTo: function(newMode){
             if(this.currentMode === newMode)
                 return;
-            if(newMode === 'edit' && this.target===''){
+
+            if(
+                newMode === 'edit' &&
+                (
+                    (this.currentMode === 'view' && this.view1.target==='') ||
+                    (this.currentMode === 'view-db' && this.searchList.selected.length !== 1)
+                )
+            ){
                 alertLog('Please select an image before you view/edit it!','info',document.querySelector('#media'));
                 return;
             };
+
+            if(['view','view-db'].indexOf(newMode) !== -1 && this.lastMode !== newMode)
+                this.lastMode = newMode;
+
             this.currentMode = newMode;
+
+            this.cancelOperation();
         },
         //Initiates an operation
         operation: function(operation){
@@ -180,7 +363,7 @@ var media = new Vue({
                 console.log('Operation',operation);
             switch (operation){
                 case 'copy':
-                    let newName = this.target;
+                    let newName = (this.currentMode === 'view' ? this.view1.target : this.searchList.items[this.searchList.selected[0]].identifier);
                     if(newName.indexOf('.') !== -1){
                         newName = newName.split('.');
                         let extension = newName.pop();
@@ -194,16 +377,15 @@ var media = new Vue({
                     this.currentOperation = operation;
                     break;
                 case 'rename':
-                    this.operationInput = this.target;
+                    this.operationInput = (this.currentMode === 'view' ? this.view1.target : this.searchList.items[this.searchList.selected[0]].identifier);
                     this.currentOperation = operation;
                     break;
                 case 'delete':
-                    this.deleteTargets.push(this.target);
-                    this.target = '';
+                    this.view1.deleteTargets.push((this.currentMode === 'view' ? this.view1.target : this.searchList.items[this.searchList.selected[0]].identifier));
+                    this.view1.target = '';
                     this.currentOperation = 'deleteMultiple';
                     break;
                 case 'cancel':
-                    this.target = '';
                     this.cancelOperation();
                     break;
                 default:
@@ -215,21 +397,26 @@ var media = new Vue({
             if(this.test)
                 console.log('Current Operation ', this.currentOperation ,'Current input ',this.operationInput);
             var data = new FormData();
-            var apiURL = document.pathToRoot+"api/media";
+            var apiURL = this.mediaURL;
             var test = this.test;
             var verbose = this.verbose;
             var currentOperation = this.currentOperation;
             var thisElement = this.$el;
+
+            let source;
+            let destination;
+
             switch (currentOperation){
+                //Can only be done locally
                 case 'move':
-                    let oldURL = this.url;
+                    let oldURL = this.view1.url;
                     if(oldURL[oldURL.length-1]!=='/' && oldURL!=='')
                         oldURL += '/';
-                    let newURL = this.view2URL;
+                    let newURL = this.view2.url;
                     if(newURL[newURL.length-1]!=='/' && newURL!=='')
                         newURL += '/';
-                    let source = oldURL+this.target;
-                    let destination =  newURL+this.target;
+                    source = oldURL+this.view1.target;
+                    destination =  newURL+this.view1.target;
                     if(source === destination)
                         alertLog('Cannot move to the same folder!','warning',document.querySelector('#media'));
                     else{
@@ -243,64 +430,68 @@ var media = new Vue({
 
                     break;
                 case 'copy':
-                    if(this.view1Elements[this.operationInput] !== undefined)
-                        alertLog(this.operationInput,' already exists, cannot copy!','warning',document.querySelector('#media'));
-                    else{
-                        data.append('action', 'moveImage');
-                        let oldURL = this.url;
+                case 'rename':
+                    if(this.currentMode === 'view' && this.view1.elements[this.operationInput] !== undefined){
+                        alertLog(this.operationInput,' already exists, cannot '+currentOperation+'!','warning',document.querySelector('#media'));
+                        this.cancelOperation();
+                        return;
+                    }
+                    data.append('action', 'moveImage');
+
+                    if(this.currentMode === 'view'){
+                        let oldURL = this.view1.url;
                         if(oldURL[oldURL.length-1]!=='/' && oldURL!=='')
                             oldURL += '/';
                         let newURL = oldURL;
-                        let source = oldURL+this.target;
-                        let destination =  newURL+this.operationInput;
-                        data.append('oldAddress', source);
-                        data.append('newAddress', destination);
-                        data.append('copy', true);
-                        if(this.verbose)
-                            console.log('Copying ',source,' to ',destination);
+                        source = oldURL+this.view1.target;
+                        destination =  newURL+this.operationInput;
                     }
-                    break;
-                case 'rename':
-                    if(this.view1Elements[this.operationInput] !== undefined)
-                        alertLog(this.operationInput,' already exists, cannot rename!','warning',document.querySelector('#media'));
                     else{
-                        data.append('action', 'moveImage');
-                        let oldURL = this.url;
-                        if(oldURL !== '' && oldURL!=='')
-                            oldURL += '/';
-                        let newURL = oldURL;
-                        let source = oldURL+this.target;
-                        let destination =  newURL+this.operationInput;
-                        data.append('oldAddress', source);
-                        data.append('newAddress', destination);
-                        data.append('copy', false);
-                        if(this.verbose)
-                            console.log('Moving (renaming) ',source,' to ',destination);
+                        source = this.searchList.items[this.searchList.selected[0]].identifier;
+                        destination =  this.operationInput;
                     }
+
+                    data.append('oldAddress', source);
+                    data.append('newAddress', destination);
+                    data.append('copy', currentOperation === 'copy');
+                    data.append('remote', this.currentMode === 'view-db');
+                    if(this.verbose)
+                        console.log(currentOperation+' ',source,' to ',destination);
                     break;
                 case 'deleteMultiple':
                     var deletionTargets = [];
-                    var url = this.url;
-                    if(url!== '')
-                        url +='/';
-                    this.deleteTargets.forEach(function(item,index){
-                        deletionTargets.push(url+item);
-                    });
+
+                    if(this.currentMode === 'view'){
+                        var url = this.view1.url;
+                        if(url!== '')
+                            url +='/';
+                        this.view1.deleteTargets.forEach(function(item,index){
+                            deletionTargets.push(url+item);
+                        });
+                    }
+                    else{
+                        let context = this;
+                        this.searchList.selected.forEach(function(index){
+                            deletionTargets.push(context.searchList.items[index].identifier);
+                        });
+                    }
+
                     if(deletionTargets.length>0){
                         data.append('action', 'deleteImages');
                         data.append('addresses', JSON.stringify(deletionTargets));
                     }
+                    data.append('remote', this.currentMode === 'view-db');
                     if(this.verbose)
                         console.log('Deleting ',deletionTargets);
                     break;
                 case 'create':
-                    if(this.view1Elements[this.operationInput] !== undefined)
+                    if(this.view1.elements[this.operationInput] !== undefined)
                         console.log(this.operationInput,' already exists, cannot create folder!');
                     else{
                         data.append('action', 'createFolder');
-                        var url = this.url;
+                        var url = this.view1.url;
                         if(url!== '')
-                            data.append('relativeAddress', this.url);
+                            data.append('relativeAddress', this.view1.url);
                         data.append('name', this.operationInput);
                         if(this.verbose)
                             console.log('Creating ', this.operationInput);
@@ -308,6 +499,7 @@ var media = new Vue({
                     break;
                 default:
             };
+
             //Handle the rest of the request if it should be sent
             if(data.get('action')){
                 this.isLoading = true;
@@ -353,28 +545,110 @@ var media = new Vue({
                 console.log('Canceling operation');
             this.currentOperation = '';
             this.operationInput = '';
-            Vue.set(this,'deleteTargets',[]);
+            switch(this.currentMode){
+                case 'view':
+                    this.view1.target = '';
+                    Vue.set(this.view1,'deleteTargets',[]);
+                    break;
+                case 'view-db':
+                    this.searchList.selected = [];
+                    break;
+            }
         },
         shouldDisplayOperation: function(index){
-            if(this.target === '' && index !== 'deleteMultiple' && index !== 'create')
-                return false;
-            else if(this.target !== '' && (index === 'deleteMultiple' || index === 'create') )
-                return false;
-            else if(this.target === '' && (index === 'cancel') )
-                return false;
+            if(this.currentMode === 'view'){
+                if(
+                    this.view1.target === '' &&
+                    index !== 'deleteMultiple' &&
+                    index !== 'create'
+                )
+                    return false;
+                else if(
+                    this.view1.target !== '' &&
+                    (index === 'deleteMultiple' || index === 'create')
+                )
+                    return false;
+                else if(
+                    this.view1.target === '' &&
+                    (index === 'cancel')
+                )
+                    return false;
+            }
+            else{
+                if(index === 'create' || index === 'move')
+                    return false;
+                else if(
+                    this.searchList.selected.length === 0
+                )
+                    return false;
+                else if(
+                    this.searchList.selected.length === 1 &&
+                    index === 'deleteMultiple'
+                )
+                    return false;
+                else if(
+                    (this.searchList.selected.length > 1 || this.searchList.items[this.searchList.selected[0]] && !this.searchList.items[this.searchList.selected[0]].dataType) &&
+                    ( index === 'copy' )
+                )
+                    return false;
+                else if(
+                    this.searchList.selected.length > 1 &&
+                    (index !== 'deleteMultiple' && index !== 'cancel')
+                )
+                    return false;
+            }
 
             return true;
         },
         shouldDisplayMode: function(index){
-            if(index==='edit' && (this.target==='' || this.targetIsFolder) )
-                return false;
-            if(index==='upload' && this.target!=='' && !this.targetIsFolder)
-                return false;
+
+            switch (index){
+                case 'edit':
+                    if(
+                        this.currentMode === 'upload' ||
+                        ( this.currentMode === 'view' && (this.view1.target==='' || this.view1.targetIsFolder) ) ||
+                        (this.currentMode === 'view-db' && this.searchList.selected.length !== 1)
+                    )
+                        return false;
+                    break;
+                case 'upload':
+                    if(
+                        this.currentMode === 'edit' ||
+                        ( this.currentMode === 'view' && (this.view1.target!=='') ) ||
+                        (this.currentMode === 'view-db' && this.searchList.selected.length < 0)
+                    )
+                        return false;
+                    break;
+            }
 
             return true;
         },
+        //Selects an element in the search list
+        selectSearchElement: function(request){
+            if(!request.from || request.from !== 'search')
+                return;
+
+            let index = request.content;
+
+            //Something new selected
+            if(this.searchList.selected.indexOf(index) === -1){
+                this.searchList.selected.push(index);
+            }
+            //only one item selected and we are clicking it again
+            else if(this.searchList.selected.length === 1){
+                this.switchModeTo('edit');
+            }
+            //Any other case
+            else{
+                this.searchList.selected.splice(this.searchList.selected.indexOf(index),1);
+            }
+
+            if(this.currentOperation && !this.shouldDisplayOperation(this.currentOperation))
+                this.cancelOperation();
+        },
         //Selects an element, if the mode is right
         selectElement: function(request){
+
             if(!request.from || request.from === 'media')
                 return;
 
@@ -384,59 +658,57 @@ var media = new Vue({
             let isFolder = request.content.folder;
             let shouldSelect = true;
             let newTarget = request.key.split('/').pop();
-
             if(this.currentOperation === 'deleteMultiple'){
-                let oldIndex = this.deleteTargets.indexOf(newTarget);
+                let oldIndex = this.view1.deleteTargets.indexOf(newTarget);
                 if(oldIndex === -1)
-                    this.deleteTargets.push(newTarget);
+                    this.view1.deleteTargets.push(newTarget);
                 else
-                    this.deleteTargets.slice(oldIndex);
+                    this.view1.deleteTargets.slice(oldIndex);
             }
             else{
                 if(request.from === 'viewer1'){
 
-                    this.cancelOperation();
-
-                    let oldTarget = this.target;
+                    let oldTarget = this.view1.target;
 
                     if(isFolder){
                         if(oldTarget !== newTarget)
-                            this.target = newTarget;
+                            this.view1.target = newTarget;
                         else{
                             const targetFolder = newTarget;
-                            let newURL = this.url;
+                            let newURL = this.view1.url;
                             if(newURL != '')
                                 newURL += '/';
+                            console.log('here '+newURL+targetFolder);
                             this.changeURL('viewer1',newURL+targetFolder);
                         }
                     }
                     else{
-                        if(this.target !== newTarget)
-                            this.target = newTarget;
+                        if(this.view1.target !== newTarget)
+                            this.view1.target = newTarget;
                         else
                             this.switchModeTo('edit')
                     }
                 }
                 else if(request.from === 'viewer2'){
 
-                    let oldTarget = this.view2Target;
+                    let oldTarget = this.view2.target;
 
                     if(isFolder){
                         if(oldTarget !== newTarget)
-                            this.view2Target = newTarget;
+                            this.view2.target = newTarget;
                         else{
                             const targetFolder = newTarget;
-                            let newURL = this.view2URL;
+                            let newURL = this.view2.url;
                             if(newURL != '')
                                 newURL += '/';
                             this.changeURL('viewer2',newURL+targetFolder);
                         }
                     }
                     else{
-                        if(this.view2Target !== request.key)
-                            this.view2Target = request.key;
+                        if(this.view2.target !== request.key)
+                            this.view2.target = request.key;
                         else
-                            this.view2Target = '';
+                            this.view2.target = '';
                     }
                 }
             }
@@ -449,17 +721,19 @@ var media = new Vue({
             this.changeURL(request.from,request.content)
         },
         changeURL: function(viewer, newURL){
+            if(this.verbose)
+                console.log('Changing '+viewer+' url to '+newURL);
             //For now, handle only single selection, not deletion
             if(viewer === 'viewer1'){
                 this.cancelOperation();
-                this.url = newURL;
-                this.target = '';
-                this.view1UpToDate = false;
+                this.view1.url = newURL;
+                this.view1.target = '';
+                this.view1.upToDate = false;
             }
             else if(viewer === 'viewer2'){
-                this.view2URL = newURL;
-                this.view2Target = '';
-                this.view2UpToDate = false;
+                this.view2.url = newURL;
+                this.view2.target = '';
+                this.view2.upToDate = false;
             }
         },
         //Updates the current view with what we got from a viewer
@@ -474,18 +748,34 @@ var media = new Vue({
             //If we got a valid view, update the app
             if(typeof request.content === 'object'){
                 if(request.from === 'viewer1'){
-                    this.view1Elements = request.content;
-                    this.view1UpToDate = true;
+                    this.view1.elements = request.content;
+                    this.view1.upToDate = true;
                 }
                 else if(request.from === 'viewer2'){
-                    this.view2Elements = request.content;
-                    this.view2UpToDate = true;
+                    this.view2.elements = request.content;
+                    this.view2.upToDate = true;
                 }
             }
             //Handle errors
             else{
                 if(this.test)
                     console.log('Error code: '+request.content);
+            }
+        },
+        //Updates a single element currently selected in the searchlist (yes I know it's the same as updateViewElement, might combine them later)
+        updateSearchListElement: function(request){
+
+            if(!request.from || request.from === 'media')
+                return;
+
+            if(this.test)
+                console.log('Received', request);
+
+            //If we got a valid view, update the app
+            let element = request.content;
+            let target = this.searchList.items[this.searchList.selected];
+            for(let key in element){
+                target[key] = element[key];
             }
         },
         //Updates a single element of the current view
@@ -499,19 +789,98 @@ var media = new Vue({
 
             //If we got a valid view, update the app
             let element = request.content;
-            let targetKey = (this.url==='')? this.target : this.url+'/'+this.target;
-            for(key in element){
-                this.view1Elements[targetKey][key] = element[key];
+            let targetKey = (this.view1.url==='')? this.view1.target : this.view1.url+'/'+this.view1.target;
+            for(let key in element){
+                this.view1.elements[targetKey][key] = element[key];
             }
-            this.view1UpToDate = false;
+            this.view1.upToDate = false;
         },
         //Handles responses of the API based on the operation
         handleResponse: function(response, currentOperation){
             console.log(response,currentOperation);
             this.isLoading = false;
-            this.changeURL('viewer1',this.url);
+            if(this.currentMode === 'view')
+                this.changeURL('viewer1',this.view1.url);
+            else{
+                this.cancelOperation();
+                this.searchList.initiated = false;
+            }
+        },
+        //Parses search results returned from a search list
+        parseSearchResults: function(response){
+            if(this.verbose)
+                console.log('Received response',response);
+
+            if(!response.from || response.from !== 'search')
+                return;
+
+            //Either way, the galleries should be considered initiated
+            this.searchList.items = [];
+            this.searchList.initiated =  true;
+
+            //In this case the response was an error code, or the page no longer exists
+            if(response.content['@'] === undefined)
+                return;
+
+            this.searchList.total = (response.content['@']['#'] - 0) ;
+            delete response.content['@'];
+
+            for(let k in response.content){
+                response.content[k].identifier = k;
+                this.searchList.items.push(response.content[k]);
+            }
+
+            this.searchList.functions.updated = function(){
+                eventHub.$emit('resizeImages');
+            };
+        },
+        //Goes to a different page
+        goToPage: function(response){
+            if(this.verbose)
+                console.log('Recieved response',response);
+
+            if(!response.from || response.from !== 'search')
+                return;
+
+            this.searchList.page = response.content;
+
+            this.searchList.initiated = false;
+
+            this.searchList.selected = -1;
+        },
+        //Resizes searchlist images
+        resizeImages: function () {
+            if(this.verbose)
+                console.log('resizing images!');
+            let searchItems = this.$el.querySelectorAll('#media .search-list .search-item');
+            let context = this;
+            let verbose = this.verbose;
+            for( let index in this.searchList.items ){
+                let element = searchItems[index];
+                let image = element.querySelector('img');
+                image.onload = function () {
+                    let naturalWidth = image.naturalWidth;
+                    let naturalHeight = image.naturalHeight;
+                    if(naturalWidth < 320){
+                        Vue.set(context.searchList.items[index],'small',true);
+                        if(verbose)
+                            console.log('setting image '+index+' ass small');
+                    }
+                    else if(naturalHeight > naturalWidth){
+                        Vue.set(context.searchList.items[index],'vertical',true);
+                        if(verbose)
+                            console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
+                    }
+                };
+                if(image.complete)
+                    image.onload();
+            };
+
+            delete this.searchList.functions.updated;
         }
     },
     mounted: function(){
+    },
+    watch:{
     }
 });

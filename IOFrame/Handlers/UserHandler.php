@@ -3,6 +3,8 @@ namespace IOFrame\Handlers{
     use IOFrame;
     use Monolog\Logger;
     use Monolog\Handler\IOFrameHandler;
+    use PHPMailer\PHPMailer\Exception;
+
     define('UserHandler',true);
     if(!defined('abstractDBWithCache'))
         require 'abstractDBWithCache.php';
@@ -1281,6 +1283,266 @@ namespace IOFrame\Handlers{
             }
 
             return $res;
+
+        }
+
+        /** Returns all users
+         *
+         * @param array $params
+         *          'idAtLeast' => int, defaults to 1 - Returns users with ID equal or greater than this
+         *          'idAtMost' => int, defaults to null - if set, Returns users with ID equal or smaller than this
+         *          'rankAtLeast' => int, defaults to 1 - Returns users with rank equal or greater than this
+         *          'rankAtMost' => int, defaults to null - if set, Returns users with rank equal or smaller than this
+         *          'usernameLike' => String, default null - returns results where username  matches a regex.
+         *          'emailLike' => String, email, default null - returns results where email matches a regex.
+         *          'isActive' => bool, defaults to null - if set, Returns users which are either active or inactive (true or false).
+         *          'isBanned' => bool, defaults to null - if set, Returns users which are either banned or not banned (true or false).
+         *          'isSuspicious' => bool, defaults to null - if set, Returns users which are either suspicious or unsuspicious (true or false).
+         *          'createdBefore' => String, Unix timestamp, default null - only returns results created before this date.
+         *          'createdAfter' => String, Unix timestamp, default null - only returns results created after this date.
+         *          'orderBy'            - string, defaults to null. Possible values include 'Created_On', 'Email', 'Username',
+         *                                 and 'ID' (default)
+         *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
+         *          'limit' => typical SQL parameter
+         *          'offset' => typical SQL parameter
+         *
+         * @returns Array of the form:
+         *          [
+         *              <identifier*> => Array|Code
+         *          ] where:
+         *              The array is the DB columns array
+         *              And a special meta member with the key '@' holds the child '#', which's value is the number of results without a limit.
+         */
+        function getUsers(array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            $idAtLeast = isset($params['idAtLeast'])? $params['idAtLeast'] : 0;
+            $idAtMost = isset($params['idAtMost'])? $params['idAtMost'] : null;
+            $rankAtLeast = isset($params['rankAtLeast'])? $params['rankAtLeast'] : 0;
+            $rankAtMost = isset($params['rankAtMost'])? $params['rankAtMost'] : null;
+            $usernameLike = isset($params['usernameLike'])? $params['usernameLike'] : null;
+            $emailLike = isset($params['emailLike'])? $params['emailLike'] : null;
+            $isActive = isset($params['isActive'])? $params['isActive'] : null;
+            $isBanned = isset($params['isBanned'])? $params['isBanned'] : null;
+            $isSuspicious = isset($params['isSuspicious'])? $params['isSuspicious'] : null;
+            $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
+            $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
+
+            $prefix = $this->SQLHandler->getSQLPrefix();
+            $usersColPrefix = $prefix.'USERS.';
+            $usersExtraColPrefix = $prefix.'USERS_EXTRA.';
+
+            if(isset($params['orderBy'])){
+                switch($params['orderBy']){
+                    case 'Created_On':
+                        $params['orderBy'] = $usersExtraColPrefix.$params['orderBy'];
+                        break;
+                    case 'Email':
+                    case 'Username':
+                    case 'ID':
+                        $params['orderBy'] = $usersColPrefix.$params['orderBy'];
+                        break;
+                    default:
+                        $params['orderBy'] = null;
+                }
+            };
+
+            $retrieveParams = $params;
+            $conditions = [];
+
+            //Create all the conditions for the db
+            if($idAtLeast){
+                array_push($conditions,[$usersColPrefix.'ID',$idAtLeast,'>=']);
+            }
+            if($idAtMost){
+                array_push($conditions,[$usersColPrefix.'ID',$idAtMost,'<=']);
+            }
+            if($rankAtLeast){
+                array_push($conditions,[$usersColPrefix.'Auth_Rank',$rankAtLeast,'>=']);
+            }
+            if($rankAtMost){
+                array_push($conditions,[$usersColPrefix.'Auth_Rank',$rankAtMost,'<=']);
+            }
+
+            if($usernameLike!== null){
+                array_push($conditions,[$usersColPrefix.'Username',[$usernameLike,'STRING'],'RLIKE']);
+            }
+
+            if($emailLike!== null){
+                array_push($conditions,[$usersColPrefix.'Email',[$emailLike,'STRING'],'RLIKE']);
+            }
+
+            if($isActive!== null){
+                array_push($conditions,[$usersColPrefix.'Active',($isActive? 1 : 0),'=']);
+            }
+
+            if($isBanned!== null){
+                array_push($conditions,
+                    $isBanned?
+                        [
+                            [[$usersExtraColPrefix.'Banned_Until','ISNULL'],'NOT'],
+                            [$usersExtraColPrefix.'Banned_Until',time(),'>='],
+                            'AND'
+                        ]
+                        :
+                        [
+                            [$usersExtraColPrefix.'Banned_Until','ISNULL'],
+                            [$usersExtraColPrefix.'Banned_Until',time(),'<'],
+                            'OR'
+                        ]
+                );
+            }
+            if($isSuspicious!== null){
+                array_push($conditions,
+                    $isSuspicious?
+                        [
+                            [[$usersExtraColPrefix.'Suspicious_Until','ISNULL'],'NOT'],
+                            [$usersExtraColPrefix.'Suspicious_Until',time(),'>='],
+                            'AND'
+                        ]
+                        :
+                        [
+                            [$usersExtraColPrefix.'Suspicious_Until','ISNULL'],
+                            [$usersExtraColPrefix.'Suspicious_Until',time(),'<'],
+                            'OR'
+                        ]
+                );
+            }
+
+            if($createdAfter!== null){
+                array_push($conditions,[$usersExtraColPrefix.'Created_On',date('YmdHis', $createdAfter),'>=']);
+            }
+
+            if($createdBefore!== null){
+                array_push($conditions,[$usersExtraColPrefix.'Created_On',date('YmdHis', $createdBefore),'<=']);
+            }
+
+            if(count($conditions) > 0){
+                array_push($conditions,'AND');
+            }
+
+            $results = [];
+
+            $tableQuery = $prefix.'USERS INNER JOIN '.$prefix.'USERS_EXTRA ON '.$prefix.'USERS.ID = '.$prefix.'USERS_EXTRA.ID';
+
+            $res = $this->SQLHandler->selectFromTable(
+                $tableQuery,
+                $conditions,
+                [],
+                $retrieveParams
+            );
+            $count = $this->SQLHandler->selectFromTable(
+                $tableQuery,
+                $conditions,
+                ['COUNT(*)'],
+                array_merge($retrieveParams,['limit'=>0])
+            );
+            if(is_array($res)){
+                $resCount = $res ? count($res[0]) : 0;
+                foreach($res as $resultArray){
+                    for($i = 0; $i<$resCount/2; $i++)
+                        unset($resultArray[$i]);
+                    $results[$resultArray['ID']] = $resultArray;
+                }
+                $results['@'] = array('#' => $count[0][0]);
+                return $results;
+            }
+            //Only returns this if the DB call failed
+            return [];
+
+        }
+
+        /** Updates a user
+         *
+         * @param int|string $identifier - either user email or user ID, depending on $identifierType. Defaults to ID
+         *
+         * @param array $inputs
+         *          'username' => String, default null - new username
+         *          'email' => String, default null - new Email
+         *          'active' => Bool, default null - whether the user is active or not
+         *          'created' => Int, default null - Unix timestamp, user creation date.
+         *          'bannedDate' => Int, default null - Unix timestamp until which the user is banned (0 to unban the user).
+         *          'suspiciousDate' => Int, default null - Unix timestamp until which the user is suspicious (0 to make the user not suspicious).
+         *
+         * @param string $identifierType - 'ID' or 'Email', sets the identifier type
+         *
+         * @param array $params
+         *
+         * @returns Int codes:
+         *          -1 Server error
+         *           0 Success
+         *           1 Incorrect identifier type
+         *           2 Invalid identifier
+         *           3 No new assignments
+         */
+        function updateUser($identifier, array $inputs, string $identifierType = 'ID', array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            //Inputs
+            $username = isset($inputs['username'])? $inputs['username'] : null;
+            $email = isset($inputs['email'])? $inputs['email'] : null;
+            $active = isset($inputs['active'])? $inputs['active'] : null;
+            $created = isset($inputs['created'])? $inputs['created'] : null;
+            $bannedDate = isset($inputs['bannedDate'])? $inputs['bannedDate'] : null;
+            $suspiciousDate = isset($inputs['suspiciousDate'])? $inputs['suspiciousDate'] : null;
+
+            $prefix = $this->SQLHandler->getSQLPrefix();
+            $usersColPrefix = $prefix.'USERS.';
+            $usersExtraColPrefix = $prefix.'USERS_EXTRA.';
+            $tableQuery = $prefix.'USERS INNER JOIN '.$prefix.'USERS_EXTRA ON '.$prefix.'USERS.ID = '.$prefix.'USERS_EXTRA.ID';
+            $conditions = [];
+            $assignments = [];
+
+            //Create all the conditions for the db
+            if($identifierType == 'ID'){
+                if(!in_array(gettype($identifier),['string','integer']) || !$identifier)
+                    return 2;
+                array_push($conditions,[$usersColPrefix.'ID',$identifier,'=']);
+            }
+            elseif($identifierType == 'Email'){
+                if(gettype($identifier)!='string' || !$identifier)
+                    return 2;
+                array_push($conditions,[$usersColPrefix.'Email',[$identifier,'STRING'],'=']);
+            }
+            else{
+                return 1;
+            }
+
+            //Assignments
+            if($username !== null){
+                array_push($assignments,$usersColPrefix.'Username = "'.$username.'"');
+            }
+            if($email !== null){
+                array_push($assignments,$usersColPrefix.'Email = "'.$email.'"');
+            }
+            if($active !== null){
+                array_push($assignments,$usersColPrefix.'Active = "'.($active ? '1' : '0').'"');
+            }
+            if($created !== null){
+                array_push($assignments,$usersExtraColPrefix.'Created_On = "'.date('YmdHis', $created).'"');
+            }
+            if($bannedDate !== null){
+                array_push($assignments,$usersExtraColPrefix.'Banned_Until = "'.$bannedDate.'"');
+            }
+            if($suspiciousDate !== null){
+                array_push($assignments,$usersExtraColPrefix.'Suspicious_Until = "'.$suspiciousDate.'"');
+            }
+
+            if($assignments == []){
+                return 3;
+            }
+
+
+            $res = $this->SQLHandler->updateTable(
+                $tableQuery,
+                $assignments,
+                $conditions,
+                $params
+            );
+
+            return $res? 0 : -1;
 
         }
 

@@ -97,25 +97,31 @@ namespace IOFrame\Util{
         }
 
         //Clean up remaining IF blocks
-        $indexArray = [];
-        $pattern = '/\%\%IF\([A-Z0-9_]+\)/';
-        preg_match($pattern, $template, $indexArray, PREG_OFFSET_CAPTURE);
-        $removedCharacters = 0;
+        $search = true;
+        while($search){
+            $indexArray = [];
+            $pattern = '/\%\%IF\([A-Z0-9_]+\)/';
+            preg_match($pattern, $template, $indexArray, PREG_OFFSET_CAPTURE);
+            $removedCharacters = 0;
 
-        foreach($indexArray as $arr){
-            $cond = $arr[0];
-            $offset = $arr[1]-$removedCharacters;
-            $endIf = strpos($template,'%%',$offset+2);
-            if($endIf === false)
-                throw new \Exception('The template contains an unclosed IF block!');
+            if(count($indexArray) > 0)
+                foreach($indexArray as $arr){
+                    $cond = $arr[0];
+                    $offset = $arr[1]-$removedCharacters;
+                    $endIf = strpos($template,'%%',$offset+2);
+                    if($endIf === false)
+                        throw new \Exception('The template contains an unclosed IF block!');
 
-            if($verbose)
-                echo 'Deleting condition '.$cond.'starting at offset '.($offset).' and ending at '.($endIf).EOL.EOL;
+                    if($verbose)
+                        echo 'Deleting condition '.$cond.'starting at offset '.($offset).' and ending at '.($endIf).EOL.EOL;
 
-            $template = substr($template,0,$offset).
-                substr($template,$endIf+2);
+                    $template = substr($template,0,$offset).
+                        substr($template,$endIf+2);
 
-            $removedCharacters += $endIf + 2 - $offset;
+                    $removedCharacters += $endIf + 2 - $offset;
+                }
+            else
+                $search = false;
         }
 
         return $template;

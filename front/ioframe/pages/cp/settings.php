@@ -5,6 +5,8 @@ require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definiti
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';
 
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
+
 array_push($CSS, 'cp.css', 'components/searchList.css', 'components/settings/settingsEditor.css', 'modules/settings.css', 'modules/CPMenu.css', 'modules/settings.css');
 array_push($JS, 'mixins/sourceURL.js', 'mixins/eventHubManager.js', 'components/searchList.js', 'components/settings/settingsEditor.js', 'modules/CPMenu.js', 'modules/settings.js');
 
@@ -18,7 +20,6 @@ echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResour
 echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/settings/settingsEditor.css']['relativeAddress'] . '"">';
 echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/settings.css']['relativeAddress'] . '"">';
 echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/settings.css']['relativeAddress'] . '"">';
 
 ?>
 

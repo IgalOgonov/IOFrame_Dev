@@ -1,0 +1,86 @@
+/*Actions*/
+.auth-users-editor .actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.auth-users-editor .actions .action{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: max-content;
+    min-width: 200px;
+    margin: 5px 10px;
+    padding: 5px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.auth-users-editor .actions .action.remove {
+    background-color: rgb(255, 230, 235);
+}
+.auth-users-editor .actions .action.add {
+    background-color: rgb(106 255 170);
+}
+.auth-users-editor .actions .action > * {
+    width: 100%;
+    text-align: center;
+}
+.auth-users-editor .actions .action .title{
+    font-weight: 800;
+}
+
+/*Groups*/
+.auth-users-editor .groups {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.auth-users-editor .groups .group{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 300px;
+    margin: 5px 10px;
+    padding: 5px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.auth-users-editor .groups .group.remove {
+    background-color: rgb(255, 230, 235);
+}
+.auth-users-editor .groups .group.add {
+    background-color: rgb(106 255 170);
+}
+.auth-users-editor .groups .group > * {
+    width: 100%;
+    text-align: center;
+}
+.auth-users-editor .groups .group .group-info > * > *:first-child{
+    text-decoration: underline;
+}
+.auth-users-editor .groups .group .group-info > * > *:last-child{
+    font-weight: 800;
+}
+/*Actions of groups*/
+.auth-users-editor .groups .actions{
+    justify-content: center;
+}
+.auth-users-editor .groups .actions .action{
+    background-color: rgb(204,240,253);
+}
+.auth-users-editor .groups h4{
+    text-decoration: underline;
+}
+
+/*Buttons*/
+.auth-users-editor .control-buttons {
+    margin: 10px;
+}
+.auth-users-editor .control-buttons button {
+    padding: 15px 50px;
+    font-weight: 800;
+    margin: 5px;
+    font-size: 1.25em;
+}

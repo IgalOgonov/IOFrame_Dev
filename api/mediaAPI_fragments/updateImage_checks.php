@@ -5,7 +5,10 @@ if(!defined('validator'))
 //Address
 if($inputs['address'] !== null){
 
-    if(!\IOFrame\Util\validator::validateRelativeFilePath($inputs['address'])){
+    $valid = \IOFrame\Util\validator::validateRelativeFilePath($inputs['address']);
+    $valid = $valid || filter_var($inputs['address'],FILTER_VALIDATE_URL);
+
+    if(!$valid){
         if($test)
             echo 'Invalid address!'.EOL;
         exit(INPUT_VALIDATION_FAILURE);

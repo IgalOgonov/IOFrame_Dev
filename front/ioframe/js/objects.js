@@ -263,7 +263,6 @@ function assignNewObjects(map, timenow, obj){
  * */
 function updateMappedObjects(maps,db){
     return new Promise(function(resolve, reject) {
-        //console.log('Here! p:',maps);                //TODO REMOVE
 
         var timenow = new Date().getTime();
         timenow = Math.floor(timenow/1000);
@@ -295,7 +294,6 @@ function updateMappedObjects(maps,db){
         //Fetch the objects
         var objects = {};
         objectsIDs.forEach(function(item){
-            //console.log(item);               //TODO DELETE
             var request = objectStore.get(item);
 
             request.onsuccess = function(event) {
@@ -323,7 +321,6 @@ function updateMappedObjects(maps,db){
                         objects['@']={};
                     objects['@'][item] = 0;
                 }
-                //console.log(objects);               //TODO DELETE
             };
         });
 
@@ -340,7 +337,6 @@ function updateMappedObjects(maps,db){
                     //Request itself
                     var xhr = new XMLHttpRequest();
                     xhr.open('GET', url+'?'+action);
-                    //console.log(url+'?'+action);               //TODO DELETE
                     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8;');
                     xhr.send(null);
                     xhr.onreadystatechange = function () {
@@ -350,13 +346,10 @@ function updateMappedObjects(maps,db){
                             if (xhr.status === OK){
                                 let response = xhr.responseText;
                                 let resp = {};
-                                //console.log(response);               //TODO DELETE
                                 if(IsJsonString(response))
                                     resp = JSON.parse(response);
                                 else
                                     console.log('Unexpected response:',response);
-
-                                //console.log(resp);               //TODO DELETE
 
                                 //Get the lists of errors and group map
                                 let errorList = resp['Errors'];
@@ -371,9 +364,6 @@ function updateMappedObjects(maps,db){
                                         objectList[key] = resp[key];
                                     }
                                 }
-                                //console.log(objectList);               //TODO DELETE
-                                //console.log(errorList);               //TODO DELETE
-                                //console.log(groupMap);               //TODO DELETE
 
 
                                 //Open DB transaction to delete outdated objects and add new ones
@@ -391,14 +381,11 @@ function updateMappedObjects(maps,db){
                                     }
                                     if(deleteOutdated !== undefined)
                                         deleteOutdated.onsuccess = function(event) {
-                                            //console.log('Deleted object from db! ');               //TODO DELETE ALL THIS
-                                            //console.log(event);               //TODO DELETE ALL THIS
                                         };
                                 }
 
                                 //Add new objects
                                 var objectStore2 = transaction2.objectStore("objects");
-                                //console.log(objectList);                  //TODO DELETE
                                 for (let key in objectList) {
                                     if (objectList.hasOwnProperty(key)) {
                                         var objectStoreRequest = objectStore2.put({id:key, content:objectList[key], group:groupMap[key],
@@ -409,9 +396,6 @@ function updateMappedObjects(maps,db){
                                 transaction2.oncomplete = function(event){
                                     //Send info on which objects were updated
                                     let updates = {};
-                                    //console.log(objectList);               //TODO DELETE
-                                    //console.log(errorList);               //TODO DELETE
-                                    // console.log(groupMap);               //TODO DELETE
 
                                     for (let key in errorList) {
                                         if (errorList.hasOwnProperty(key)) {

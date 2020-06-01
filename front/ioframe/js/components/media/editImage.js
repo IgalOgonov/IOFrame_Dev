@@ -2,7 +2,7 @@ if(eventHub === undefined)
     var eventHub = new Vue();
 
 Vue.component('media-editor', {
-    mixins:[sourceURL],
+    mixins:[IOFrameCommons,sourceURL],
     props: {
         //Identifier
         identifier: {
@@ -29,6 +29,11 @@ Vue.component('media-editor', {
         url: {
             type: String,
             default: ''
+        },
+        //Type
+        type: {
+            type: String,
+            default: 'local' //other possibility is 'remote'
         },
         //Current target, if any
         target: {
@@ -67,8 +72,8 @@ Vue.component('media-editor', {
                     <textarea name="description" class="description property" v-model:value="newImageInfo.caption" placeholder="Image has no description"></textarea>\
                 </div>\
                 <div class="properties">\
-                    <label for="size" v-text="\'Size\'"></label>\
-                    <div name="size"" class="size property"  v-text="getImageSize"></div>\
+                    <label v-if="type===\'local\'" for="size" v-text="\'Size\'"></label>\
+                    <div v-if="type===\'local\'" name="size"" class="size property"  v-text="getImageSize"></div>\
                     <label for="dimensions" v-text="\'Dimensions (W x H)\'"></label>\
                     <div name="dimensions" class="dimensions property"  v-text="w + \' x \' + h"></div>\
                     <label for="address" v-text="\'Address\'"></label>\
@@ -108,13 +113,20 @@ Vue.component('media-editor', {
             //Data to be sent
             var data = new FormData();
             data.append('action', 'updateImage');
-            var address =  (this.url === '')? this.url : this.url+'/';
-            address += this.target;
+            let address;
+            if(this.type === 'local'){
+                address =  (this.url === '')? this.url : this.url+'/';
+                address += this.target;
+            }
+            else
+                address = this.image.identifier;
             data.append('address', address);
             data.append('deleteEmpty', true);
             data.append('name', this.newImageInfo.name);
             data.append('alt', this.newImageInfo.alt);
             data.append('caption', this.newImageInfo.caption);
+            if(this.type !== 'local')
+                data.append('remote', true);
             if(this.test)
                 data.append('req', 'test');
 
@@ -123,8 +135,8 @@ Vue.component('media-editor', {
             var verbose = this.verbose;
             var identifier = this.identifier;
             var thisElement = this.$el;
-            var newImageInfo = this.newImageInfo;
             var test = this.test;
+            let context = this;
             //Request itself
             updateCSRFToken().then(
                 function(token){
@@ -147,16 +159,12 @@ Vue.component('media-editor', {
                             if(verbose)
                                 console.log('Request data',response);
 
-                            if(response == 0 || test){
-                                const request = {
-                                    from:identifier,
-                                    content:newImageInfo
-                                };
-                                if(verbose)
-                                    console.log('Emitting updateViewElement', request);
-                                eventHub.$emit('updateViewElement', request);
-                            }
-                            //TODO Handle other responses
+                            const request = {
+                                from:identifier,
+                                content:response
+                            };
+
+                            eventHub.$emit('imageUpdateResponse', request);
                         })
                         .catch(function (error) {
                             alertLog('View initiation failed! '+error,'error',thisElement);
@@ -206,8 +214,13 @@ Vue.component('media-editor', {
             //Data to be sent
             var data = new FormData();
             data.append('action', 'getImageGalleries');
-            var address =  (this.url === '')? this.url : this.url+'/';
-            address += this.target;
+            let address;
+            if(this.type === 'local'){
+                address =  (this.url === '')? this.url : this.url+'/';
+                address += this.target;
+            }
+            else
+                address = this.image.identifier;
             data.append('address', address);
 
             //Api url
@@ -270,23 +283,48 @@ Vue.component('media-editor', {
                 this.w = request.w;
                 this.h = request.h;
             }
+        },
+        //Handles responses
+        imageUpdateResponse: function(request){
+            if(!request.from || request.from !== this.identifier)
+                return;
+
+            let response = JSON.parse(JSON.stringify(request.content));
+
+            if(response == 0){
+                if(this.verbose)
+                    console.log(this.type+' image updated!', response);
+                request.content = JSON.parse(JSON.stringify(this.newImageInfo));
+                eventHub.$emit((this.type === 'local'?'updateViewElement':'updateSearchListElement'), request);
+            }
+            else if(response == -1){
+                alertLog(this.type+' image not updated, server error occurred.','error',this.$el);
+            }
+            else if(response == 1){
+                alertLog(this.type+' image not updated, image no longer exists.','error',this.$el);
+            }
+            else{
+                alertLog(this.type+' image not updated, unknown error: '+response,'error',this.$el);
+            }
         }
+
+
     },
     computed:{
         imageURL: function(){
-            let result = this.sourceURL() + 'img/';
-            result += (this.url === '')? this.url : this.url+'/';
-            result += this.target;
+            let result;
+            if(this.type === 'local'){
+                result = this.sourceURL() + 'img/';
+                result += (this.url === '')? this.url : this.url+'/';
+                result += this.target;
+            }
+            else{
+                if(!this.image.dataType)
+                    result = this.image.identifier;
+                else
+                    result = document.rootURI+'api/media?action=getDBMedia&address='+this.image.identifier+'&lastChanged='+this.image.lastChanged;
+            }
             return result;
-        },
-        getImageName: function(){
-
-        },
-        getImageALT: function(){
-
-        },
-        getImageDesc: function(){
-
         },
         getImageSize: function(){
             //Render a "pretty" size
@@ -328,11 +366,17 @@ Vue.component('media-editor', {
             return  prettySize + ' (' + approx + ')';
         },
         getImageAddress: function(){
-            let url = 'Media Folder';
-            if(this.url!=='')
-                url += '/'+this.url;
-            url += '/'+this.target;
-            return url;
+            if(this.type === 'local'){
+                let url = 'Media Folder';
+                if(this.url!=='')
+                    url += '/'+this.url;
+                url += '/'+this.target;
+                return url;
+            }
+            if(!this.image.dataType)
+                return this.image.identifier;
+            else
+                return 'Database';
         },
         imageChanged: function(){
             return this.nameChanged || this.altChanged || this.captionChanged;
@@ -357,6 +401,7 @@ Vue.component('media-editor', {
         eventHub.$on('changed',this.checkIfImagePropertiessChanged);
         eventHub.$on('updateImageDimensions',this.updateImageDimensions);
         eventHub.$on('initiateGalleries',this.initiateGalleries);
+        eventHub.$on('imageUpdateResponse',this.imageUpdateResponse);
     },
     mounted: function(){
         if(this.verbose)

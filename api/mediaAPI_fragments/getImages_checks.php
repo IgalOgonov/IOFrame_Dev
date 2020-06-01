@@ -3,7 +3,6 @@ if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
 if($inputs['address'] !== null){
-    //TODO Check individual image auth
     if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['address'])){
         if($test)
             echo 'Invalid address!'.EOL;
@@ -13,6 +12,8 @@ if($inputs['address'] !== null){
     //Trim the address
     if($inputs['address'][strlen($inputs['address'])-1] === '/')
         $inputs['address'] = substr($inputs['address'],0,-1);
+
+    //TODO Check individual image auth
 
     $inputs['addresses'] = [$inputs['address']];
 }
@@ -26,7 +27,7 @@ else{
     $inputs['address'] = '';
 
     //If we are not getting all media, just get the root folder
-    if(!$inputs['getAll']){
+    if(!$inputs['getDB']){
         //This API not return ALL the images, but just the ones at the root folder.
         $inputs['addresses'] = [''];
     }
@@ -48,9 +49,18 @@ else{
 
         //Offset
         if($inputs['offset'] !== null){
-            if(!filter_var($inputs['offset'],FILTER_VALIDATE_INT) && $inputs['limit']!==0){
+            if(!filter_var($inputs['offset'],FILTER_VALIDATE_INT) && $inputs['offset']!==0){
                 if($test)
                     echo 'offset must be an integer!'.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+        }
+
+        //dataType
+        if($inputs['dataType'] !== null){
+            if(!(preg_match('/'.DATA_TYPE_REGEX.'/',$inputs['dataType']) || $inputs['dataType'] === '@')){
+                if($test)
+                    echo 'Invalid dataType, must match '.DATA_TYPE_REGEX.' or be "@"'.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
         }

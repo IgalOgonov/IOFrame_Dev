@@ -37,7 +37,8 @@
 	"template":"pages/base.txt",
 	"variables":{
 		"HAS_WRAPPER":true,
-		"EXAMPLE_CONSOLE_LOG":"This is an example!"
+		"EXAMPLE_CONSOLE_LOG":"This is an example!",
+		"IS_CONTROL_PANEL":true
 	},
 	"items":{
 		"js":[

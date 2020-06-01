@@ -8,6 +8,56 @@
     font-weight: 800;
 }
 
+/* Search List */
+
+#media .search-list .search-results{
+   flex-direction: row;
+    flex-wrap: wrap;
+}
+#media .search-list .search-titles {
+    display: none;
+}
+#media .search-list .search-item {
+    flex-direction: column;
+    max-width: 360px;
+    min-width: 360px;
+    margin: 5px;
+}
+#media .search-list .search-item span:not(.image) .search-item-title {
+    display: inherit !important;
+    padding: 0px 3px;
+    background: rgba(0,0,0,0.1);
+}
+#media .search-list .search-results > * > * {
+    flex:0;
+}
+#media .search-list .search-results > .search-item > .image span {
+    height: 250px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 5px 0px;
+}
+#media .search-list .search-results > .search-item.vertical > .image span {
+    flex-direction: row;
+}
+#media .search-list .search-results > .search-item.small > .image span {
+    width: max-content;
+    margin: 5px auto;
+}
+#media .search-list .search-results > .search-item > .image span img {
+    max-width: 100%;
+    max-height: 100%;
+}
+#media .search-list .search-results > .search-item > .identifier textarea {
+    width: 100%;
+    margin: 5px 0px;
+    padding: 5px;
+    border: 1px rgb(163, 171, 207) solid;
+    background: rgb(204,240,253);
+}
+
 /* Component specific CSS*/
 
 /*Component itself*/
@@ -46,8 +96,8 @@
     flex: 1;
     min-width: 300px;
 }
-.image-uploader .properties > *,
-.image-editor .properties > *{
+.image-uploader .properties > *:not(img),
+.image-editor .properties > *:not(img){
     font-size: 1.25em;
     border-radius: 2px;
     min-width: 70%;
@@ -92,6 +142,12 @@
     align-self: center;
 }
 
+/*type*/
+.image-uploader .remote-type{
+    padding: 5px;
+    margin: 5px 0px;
+}
+
 /*Gelleries*/
 .image-editor .galleries-container,
 .image-uploader .galleries-container {
@@ -132,4 +188,22 @@
 .image-editor .gallery:nth-child(2n+1),
 .image-uploader .gallery:nth-child(2n+1) {
     background: rgb(224,244,255);
+}
+
+
+/** Responsiveness **/
+@media (max-width: 1000px) {
+    #media .search-list .search-results {
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    #media .search-list .search-item {
+        max-width: 305px;
+        min-width: 305px;
+
+    }
 }

@@ -1059,7 +1059,7 @@ namespace IOFrame\Handlers{
                     $this->relationTableName,
                     $this->relationCacheName,
                     $columns,
-                    array_merge($retrieveParams,['groupByFirstNKeys'=>1,'extraKeyColumns'=>['User_ID']])
+                    array_merge($retrieveParams,['groupByFirstNKeys'=>2,'extraKeyColumns'=>['User_ID']])
                 );
 
                 return $results;

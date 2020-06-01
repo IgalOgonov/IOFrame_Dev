@@ -131,6 +131,8 @@ namespace IOFrame\Handlers{
 
             $ignoreLocal =  isset($params['ignoreLocal'])? $params['ignoreLocal'] : false;
 
+            $params['ignoreBlob'] =  isset($params['ignoreBlob'])? $params['ignoreBlob'] : true;
+
             if(isset($params['forceMinify']) && ($type === 'js' || $type === 'css'))
                 $forceMinify = $params['forceMinify'];
             else
@@ -159,18 +161,11 @@ namespace IOFrame\Handlers{
             $existing = [];
             //In case we need to minify all resources under one name, this is it.
             $resourcesToMinify = [];
+
             foreach($resources as $address=>$resource){
                 //The address '@' is reserved for meta information, in case of a full search
                 if($address === '@'){
-                    $resourcesToReturn[$address] = [
-                        'address' => $resource['Address'],
-                        'relativeAddress' => '',
-                        'folder' => false,
-                        'meta' =>  $resource['Text_Content'],
-                        'lastChanged' => $resource['Last_Changed'],
-                        'version' => $resource['Version'],
-                        'size' => 0
-                    ];
+                    $resourcesToReturn[$address] = $resource;
                     continue;
                 }
 
@@ -221,7 +216,7 @@ namespace IOFrame\Handlers{
                     $existing[$address] = 1;
                     //Add the resource if requested
                     if($updateDBIfExists){
-                        array_push($resourcesToAdd,[$address]);
+                        array_push($resourcesToAdd,['address'=>$address]);
                     }
                 }
 
@@ -262,15 +257,32 @@ namespace IOFrame\Handlers{
 
                 //If the resource isn't local, just return it as is.
                 if(!$resource['Resource_Local']){
-                    $resourcesToReturn[$address] = [
-                        'address' => $resource['Address'],
-                        'relativeAddress' => '',
-                        'folder' => false,
-                        'meta' =>  $resource['Text_Content'],
-                        'lastChanged' => $resource['Last_Changed'],
-                        'version' => $resource['Version'],
-                        'size' => 0
-                    ];
+                    //Links will not have a data type, while actuall resources will
+                    $resourcesToReturn[$address] = $resource['Data_Type']?
+                        [
+                            'address' => $resource['Address'],
+                            'dataType' => $resource['Data_Type'],
+                            'relativeAddress' => '',
+                            'folder' => false,
+                            'meta' =>  $resource['Text_Content'],
+                            'lastChanged' => $resource['Last_Changed'],
+                            'version' => $resource['Version'],
+                            'type' => $resource['Data_Type'],
+                            'local' => false,
+                            'size' => 0
+                        ]
+                        :
+                        [
+                            'address' => $resource['Address'],
+                            'dataType' => null,
+                            'relativeAddress' => '',
+                            'folder' => false,
+                            'meta' =>  $resource['Text_Content'],
+                            'lastChanged' => $resource['Last_Changed'],
+                            'version' => $resource['Version'],
+                            'local' => false,
+                            'size' => 0
+                        ];
                     if($verbose)
                         echo 'Returning remote resource '.$address.' as is!'.EOL;
                     continue;
@@ -317,11 +329,13 @@ namespace IOFrame\Handlers{
 
                     $resourcesToReturn[$address] = [
                         'address' => $fullAddress,
+                        'dataType' => null,
                         'relativeAddress' => substr($fullAddress,strlen($rootFolder)),
                         'folder' => $isDir,
                         'meta' =>  $resource['Text_Content'],
                         'lastChanged' => $changeTime,
                         'version' => $resource['Version'],
+                        'local' => true,
                         'size' => ($isDir)? 0 : @filesize($fullAddress)
                     ];
                 }
@@ -340,11 +354,13 @@ namespace IOFrame\Handlers{
 
                     $resourcesToReturn[$minifyName] = [
                         'address' => $fullAddress,
+                        'dataType' => null,
                         'relativeAddress' => substr($fullAddress,strlen($rootFolder)),
                         'folder' => false,
                         'meta' =>  null,
                         'lastChanged' => $changeTime,
                         'version' => 1,
+                        'local' => true,
                         'size' => @filesize($fullAddress)
                     ];
 
@@ -439,7 +455,7 @@ namespace IOFrame\Handlers{
                 //Add to DB if requested
                 if(is_file($rootFolder.$src) || is_dir($rootFolder.$src)){
                     if($updateDBIfExists && !is_array($existing[$src]) ){
-                        array_push($needToAdd,[$src]);
+                        array_push($needToAdd,['address'=>$src]);
                     }
                     $needToMove[$src] = $dest;
                 }

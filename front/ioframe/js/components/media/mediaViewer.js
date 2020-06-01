@@ -126,7 +126,7 @@ Vue.component('media-viewer', {
                 <figure\
                 class="media-object-container" \
                 v-for="(item, key) in elementsToDisplay"\
-                :media-identifier="item.relativeAddress"\
+                :media-identifier="item.local? item.relativeAddress : item.identifier"\
                 :class="{mediaFolder:item.folder, selected:shouldBeSelected(key), draggedOver:isDraggedOver(key)}"\
                 :item-identifier="key"\
                 @click="requestSelection(key)"\
@@ -137,7 +137,7 @@ Vue.component('media-viewer', {
                     <div class="thumbnail-container">\
                         <img \
                             v-if="!item.folder" \
-                            :src="absoluteMediaURL(item.relativeAddress)"\
+                            :src="item.local? absoluteMediaURL(item.relativeAddress) : (item.dataType? calculateDBImageLink(item) : item.identifier)"\
                             :draggable="draggable"\
                             ondragstart="eventHub.$emit(\'dragStart\',event)"\
                             ondragenter="eventHub.$emit(\'dragEnter\',event)"\
@@ -157,7 +157,7 @@ Vue.component('media-viewer', {
                         >\
                     </div>\
                      <figcaption v-if="item.name && showNames">{{item.name}}</figcaption>\
-                     <figcaption v-if="!item.name && showNames">{{createDisplayName(item.relativeAddress)}}</figcaption>\
+                     <figcaption v-if="!item.name && showNames">{{item.local? createDisplayName(item.relativeAddress) : item.identifier}}</figcaption>\
                 </figure>\
             </div>\
          </div>\
@@ -338,6 +338,12 @@ Vue.component('media-viewer', {
         },
         readableSize: function(bytes){
             return getReadableSize(bytes);
+        },
+        calculateDBImageLink: function(item){
+            let url = document.rootURI+'api/media?action=getDBMedia&address='+item.identifier;
+            if(item.lastChanged)
+                url = url+'&lastChanged='+item.lastChanged.toString();
+            return url;
         },
         requestSelection: function(key){
             this.imagesNeedCropping = false;

@@ -4,7 +4,9 @@ if(eventHub === undefined)
 Vue.component('search-list', {
     mixins:[
         eventHubManager,
-        sourceURL
+        sourceURL,
+        IOFrameCommons,
+        componentHookFunctions
     ],
     props: {
         //Test Mode
@@ -160,6 +162,10 @@ Vue.component('search-list', {
             type: Boolean,
             default: true
         },
+        //Currently selected item/items
+        selected: {
+            default: -1
+        },
         //Test Mode
         test: {
             type: Boolean,
@@ -175,11 +181,6 @@ Vue.component('search-list', {
             type: Boolean,
             default: true
         },
-        //Currently selected item
-        selected: {
-            type: Number,
-            default: -1
-        }
     },
     data: function(){
         return {
@@ -196,7 +197,7 @@ Vue.component('search-list', {
                 <button @click="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="\'Search\'" ></div></button>\
             </div>\
             \
-            <div class="pagination" v-if="pagesArray.length > 1 && items.length > 9">\
+            <div class="pagination" v-if="pagesArray.length > 1">\
                 <span class="buttons-container">\
                     <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click="goToPage(0)"></button>\
                     <button v-if="page > 0" @click="goToPage(-1)" v-text="\'<\'">  </button>\
@@ -230,7 +231,7 @@ Vue.component('search-list', {
                 :class="calculateItemClasses(index)"></div>\
             </div>\
             \
-            <div class="pagination" v-if="pagesArray.length > 1">\
+            <div class="pagination" v-if="pagesArray.length > 1 && items.length > 9">\
                 <span class="buttons-container">\
                     <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click="goToPage(0)"></button>\
                     <button v-if="page > 0" @click="goToPage(-1)" v-text="\'<\'">  </button>\
@@ -263,7 +264,16 @@ Vue.component('search-list', {
         requestSelection: function(index){
             if(this.verbose)
                 console.log('Requesting selection for '+index);
-            eventHub.$emit('requestSelection',index);
+
+            let request = this.identifier ?
+                {
+                    from: this.identifier,
+                    content: index
+                }
+                :
+                index;
+
+            eventHub.$emit('requestSelection',request);
         },
 
         //Goes to a page. index -1 returns you to the previous page.
@@ -282,10 +292,13 @@ Vue.component('search-list', {
             if(this.page === newPage)
                 return;
 
-            let request = {
+            let request =  this.identifier ?
+                {
                 from: this.identifier,
                 content: newPage
-            };
+                }
+                :
+                newPage;
 
             if(this.verbose)
                 console.log('Emitting goToPage',request);
@@ -416,7 +429,6 @@ Vue.component('search-list', {
             //infinite recursion. Don't do that!
             if(filters.length === 0)
                 filters = this.filters;
-
             for(let k in filters){
                 const filter = filters[k];
                 //Recursively validate a group of filters
@@ -450,7 +462,7 @@ Vue.component('search-list', {
                     variables[filter.name] = value;
                 }
                 else{
-                    //TODO List support
+                    //TODO LIST SUPPORT
                 }
 
                 //Parse the value
@@ -483,7 +495,8 @@ Vue.component('search-list', {
             let filterArray = this.getFilterVars();
 
             if(this.verbose)
-                console.log('Querying API at '+this.apiUrl+' with parameters ', JSON.stringify(filterArray),' limit '+this.limit+', offset '+this.limit*(this.page));
+                console.log('Querying API at '+this.apiUrl+' with parameters ', filterArray,'extra parameters ',
+                    this.extraParams,' limit '+this.limit+', offset '+this.limit*(this.page));
 
             //Data to be sent
             var data = new FormData();
@@ -504,62 +517,15 @@ Vue.component('search-list', {
                 data.append(key, this.extraParams[key]);
             }
 
-            //Api url
-            let apiUrl = this.apiUrl;
-            var test = this.test;
-            var verbose = this.verbose;
-            var thisElement = this.$el;
-            var identifier = this.identifier;
-            var context = this;
-            //Request itself
-            // Even though CSRF tokens are generally needed to protect actions, not data requests, some requests may
-            // have small side effects like caching, or be protected with CSRF tokens to mitigate DDOS.
-            updateCSRFToken().then(
-                function(token){
-                    data.append('CSRF_token', token);
-                    fetch(
-                        apiUrl,
-                        {
-                            method: 'post',
-                            body: data,
-                            mode: 'cors'
-                        }
-                    )
-                        .then(function (json) {
-                            return json.text();
-                        })
-                        .then(function (data) {
-                            if(verbose)
-                                console.log('Request succeeded!');
-                            let response;
-                            //A valid response would be a JSON
-                            if(IsJsonString(data)){
-                                response = JSON.parse(data);
-                                if(response.length === 0)
-                                    response = {};
-                            }
-                            //Any non-json response is invalid
-                            else
-                                response = data;
-                            if(verbose)
-                                console.log('Request data',response);
-                            const request = {
-                                from:identifier,
-                                content:response
-                            };
-                            if(verbose)
-                                console.log('Emitting searchResults', request);
-                            eventHub.$emit('searchResults', request);
-                            context.initiating = false;
-                        })
-                        .catch(function (error) {
-                            alertLog('View initiation failed! '+error,'error',thisElement);
-                            context.initiating = false;
-                        });
-                },
-                function(reject){
-                    alertLog('CSRF token expired. Please refresh the page to submit the form.','error',thisElement);
-                    context.initiating = false;
+            this.apiRequest(
+                data,
+                this.apiUrl,
+                'searchResults',
+                {
+                    'verbose': this.verbose,
+                    'parseJSON':true,
+                    'identifier':this.identifier,
+                    'urlPrefix':''
                 }
             );
         },
@@ -664,9 +630,9 @@ Vue.component('search-list', {
                 if(filterProperties.title)
                     result +='<label for="'+filterProperties.name+'"> <h2>'+filterProperties.title+'</h2>';
 
-                result +='<select name="'+filterProperties.name+'>';
+                result +='<select name="'+filterProperties.name+'"> ';
                     for(let k in filterProperties.list){
-                        result +='<option value="'+filterProperties.list[k].value+'>';
+                        result +='<option value="'+filterProperties.list[k].value+'">';
                         result +=filterProperties.list[k].title;
                         result +='</option>';
                     }
@@ -686,7 +652,11 @@ Vue.component('search-list', {
         calculateItemClasses: function(index){
             let item = this.items[index];
             let classes = ['search-item'];
-            if(this.selected===index)
+
+            if(
+                (typeof this.selected !== 'object' && this.selected===index) ||
+                (typeof this.selected === 'object' && this.selected !== null && this.selected.indexOf(index) !== -1)
+            )
                 classes.push('selected');
             //Calculate extra classes if needed
             if(this.extraClasses){
@@ -767,6 +737,12 @@ Vue.component('search-list', {
             };
 
             return result;
+        },
+        //What to do when we get search results
+        gotSearchResults: function(response){
+            if(!response.from || response.from !== this.identifier)
+                return;
+            this.initiating = false;
         }
     },
     computed:{
@@ -821,6 +797,8 @@ Vue.component('search-list', {
             console.log('Search list ',this.identifier,' created');
         this.registerHub(eventHub);
         this.registerEvent('refreshSearchResults', this.search);
+        this.registerEvent('searchResults', this.gotSearchResults);
+
     },
     beforeMount:function(){
         if(this.verbose)

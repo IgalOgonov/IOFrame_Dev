@@ -638,6 +638,7 @@ namespace IOFrame{
                                                               Sequence_Number INT UNSIGNED,
                                                               Blacklist_For INT UNSIGNED,
                                                               Add_TTL INT UNSIGNED,
+                                                              Meta TEXT DEFAULT NULL,
                                                               CONSTRAINT not_empty CHECK (NOT (ISNULL(Add_TTL) AND ISNULL(Blacklist_For)) ),
                                                               PRIMARY KEY (Event_Category,Event_Type,Sequence_Number)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
@@ -953,6 +954,7 @@ namespace IOFrame{
              * Last_Changed -   Varchar(14), UNIX timestamp of when the resource was last changed (just in the DB).
              * Text_Content -   Space for general text content.
              * Blob_Content -   Space for general blob content.
+             * Data_Type    -   In case of binary content, this is used to save the type (e.g "application/pdf")
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."RESOURCES (
                                                               Resource_Type varchar(64),
@@ -963,7 +965,8 @@ namespace IOFrame{
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Changed varchar(14) NOT NULL DEFAULT 0,
                                                               Text_Content TEXT,
-                                                              Blob_Content BLOB,
+                                                              Blob_Content LONGBLOB,
+                                                              Data_Type varchar(512) DEFAULT NULL,
                                                                PRIMARY KEY(Resource_Type, Address)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);

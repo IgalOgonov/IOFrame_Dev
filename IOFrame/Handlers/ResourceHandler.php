@@ -28,9 +28,37 @@ namespace IOFrame\Handlers{
         protected $FileHandler = null;
 
         /**
+         * @var array Extra columns to get/set from/to the DB (for normal resources)
+         */
+        protected $extraColumns = [];
+
+        /**
+         * @var array An associative array for each extra column defining how it can be set on setResource
+         *            For each column, if a matching input isn't set (or is null), it cannot be set.
+         */
+        protected $extraInputs = [
+            /**Each extra input is null, or an associative array of the form
+             * '<column name>' => [
+             *      'input' => <string, name of expected input>,
+             *      'default' => <mixed, default null - default thing to be inserted into the DB on creation>,
+             * ]
+             */
+        ];
+
+        /**
+         * @var string The table name for the single resources db
+         */
+        protected $resourceTableName = 'RESOURCES';
+
+        /**
          * @var string The cache name for single resources.
          */
         protected $resourceCacheName = 'ioframe_resource_';
+
+        /**
+         * @var string The table name for the single resources db
+         */
+        protected $resourceCollectionTableName = 'RESOURCE_COLLECTIONS';
 
         /**
          * @var string The cache name for resource collection.
@@ -51,6 +79,18 @@ namespace IOFrame\Handlers{
         function __construct(SettingsHandler $settings, array $params = []){
 
             parent::__construct($settings,$params);
+
+            if(isset($params['resourceTableName']))
+                $this->resourceTableName = $params['resourceTableName'];
+
+            if(isset($params['resourceCollectionTableName']))
+                $this->resourceCollectionTableName = $params['resourceCollectionTableName'];
+
+            if(isset($params['extraColumns']))
+                $this->extraColumns = $params['extraColumns'];
+
+            if(isset($params['extraInputs']))
+                $this->extraColumns = $params['extraInputs'];
 
             if(isset($params['siteSettings']))
                 $this->siteSettings = $params['siteSettings'];
@@ -85,6 +125,9 @@ namespace IOFrame\Handlers{
          *                                to be excluded from the result.
          *          'ignoreLocal'       - bool, default false - will not return local files.
          *          'onlyLocal'         - bool, default false - will only return local files.
+         *          'dataTypeNotNull'   - bool, default null - will only return files with data type not null if true, null if false.
+         *                                More specific results can be achieved with dataType.
+         *          'dataType'          - string, default null - will only return files of a specific data type. '@' for null.
          *          'safeStr'           - bool, default true. Whether to convert Meta to a safe string
          *          'extraDBFilters'    - array, default [] - Do you want even more complex filters than the ones provided?
          *                                This array will be merged with $extraDBConditions before the query, and passed
@@ -93,7 +136,8 @@ namespace IOFrame\Handlers{
          *          'extraCacheFilters' - array, default [] - Same as extraDBFilters but merged with $extraCacheConditions
          *                                and passed to getFromCacheOrDB() as 'columnConditions'.
          *          ------ Using the parameters bellow disables caching ------
-         *          'orderBy'            - string, defaults to null. Possible values include 'Created' 'Last_Changed',
+         *          'ignoreBlob'        - bool, default false - if true, will not return the blob column.
+         *          'orderBy'           - string, defaults to null. Possible values include 'Created' 'Last_Changed',
          *                                'Local' and 'Address'(default)
          *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
          *          'limit'             - string, SQL LIMIT, defaults to system default
@@ -124,6 +168,9 @@ namespace IOFrame\Handlers{
             $excludeRegex = isset($params['excludeRegex'])? $params['excludeRegex'] : null;
             $ignoreLocal = isset($params['ignoreLocal'])? $params['ignoreLocal'] : null;
             $onlyLocal = isset($params['onlyLocal'])? $params['onlyLocal'] : null;
+            $dataTypeNotNull = isset($params['dataTypeNotNull'])? $params['dataTypeNotNull'] : null;
+            $dataType = isset($params['dataType'])? $params['dataType'] : null;
+            $ignoreBlob = isset($params['ignoreBlob'])? $params['ignoreBlob'] : false;
             $orderBy = isset($params['orderBy'])? $params['orderBy'] : null;
             $orderType = isset($params['orderType'])? $params['orderType'] : null;
             $limit = isset($params['limit'])? $params['limit'] : null;
@@ -142,6 +189,11 @@ namespace IOFrame\Handlers{
                 $retrieveParams['limit'] =  $limit? $limit : null;
                 $retrieveParams['offset'] =  $offset? $offset : null;
             }
+
+            $columns = array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Changed',
+                'Text_Content','Data_Type'],$this->extraColumns);
+            if(!$ignoreBlob)
+                $columns = array_merge($columns,['Blob_Content']);
 
             //Create all the conditions for the db/cache
             array_push($extraCacheConditions,['Resource_Type',$type,'=']);
@@ -192,6 +244,19 @@ namespace IOFrame\Handlers{
                 array_push($extraDBConditions,$cond);
             }
 
+            if($dataTypeNotNull !== null){
+                $cond = $dataTypeNotNull ? [['Data_Type','ISNULL'],'NOT'] : ['Data_Type','ISNULL'];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
+            if($dataType !== null){
+                $dataType = $dataType === '@'? null: $dataType;
+                $cond = ['Data_Type',$dataType,'='];
+                array_push($extraCacheConditions,$cond);
+                array_push($extraDBConditions,$cond);
+            }
+
             $extraDBConditions = array_merge($extraDBConditions,$extraDBFilters);
             $extraCacheConditions = array_merge($extraCacheConditions,$extraCacheFilters);
 
@@ -207,13 +272,13 @@ namespace IOFrame\Handlers{
             if($addresses == []){
                 $results = [];
                 $res = $this->SQLHandler->selectFromTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                     $extraDBConditions,
-                    [],
+                    $columns,
                     $retrieveParams
                 );
                 $count = $this->SQLHandler->selectFromTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                     $extraDBConditions,
                     ['COUNT(*)'],
                     array_merge($retrieveParams,['limit'=>0])
@@ -236,12 +301,11 @@ namespace IOFrame\Handlers{
                 $results = $this->getFromCacheOrDB(
                     $addresses,
                     'Address',
-                    'RESOURCES',
+                    $this->resourceTableName,
                     $type.'_'.$this->resourceCacheName,
-                    [],
+                    $columns,
                     $retrieveParams
                 );
-
                 if($safeStr)
                     foreach($results as $address =>$result){
                         if($results[$address]['Text_Content'] !== null)
@@ -256,12 +320,15 @@ namespace IOFrame\Handlers{
 
         /** Sets a resource. Will create each non-existing address, or overwrite an existing one.
          * For each of the parameters bellow except for address, set NULL to ignore.
-         * @param string $address In local mode, a folder relative to the default media folder.
+         * @param array $inputs of the form:
+         *          'address' - string, In local mode, a folder relative to the default media folder, otherwise just the identifier.
+         *          'local' - bool, Default true - whether the resource is local
+         *          'minified' - bool, default false - whether the resource is minified
+         *          'text' - string, Default null - text content to set
+         *          'blob' - string, Default null - binary content to set
+         *          'dataType' - string, Default null - binary data type (if set)
+         *          FOR EACH $this->extraInputs, you can add an input. It will always be assumed of a simple type (not), and not required (has a default)
          * @param string $type Resource type
-         * @param bool $local Default true - whether the reasource is local
-         * @param bool $minified Default false - whether the reasource is minified
-         * @param string $text Default '' - text content to set
-         * @param string $blob Default '' - binary content to set
          * @param array $params of the form:
          *          'override' - bool, default true - will overwrite existing resources.
          *          'existing' - Array, potential existing addresses if we already got them earlier.
@@ -273,8 +340,8 @@ namespace IOFrame\Handlers{
          *          1 - Resource does not exist and required fields not provided
          *          2 - Resource exists and override is false
          */
-        function setResource( string $address, string $type, bool $local = true, bool $minified = false, string $text = '', string $blob = '', array $params = []){
-            return $this->setResources([$address,$local,$minified,$text,$blob],$type,$params)[$address];
+        function setResource( array $inputs, string $type, array $params = []){
+            return $this->setResources($inputs,$type,$params)[$inputs['address']];
         }
 
         /** Sets a set of resource. Will create each non-existing address, or overwrite an existing one.
@@ -303,19 +370,32 @@ namespace IOFrame\Handlers{
             $resourcesToSet = [];
             $currentTime = (string)time();
 
-            foreach($inputs as $index=>$input){
-                array_push($addresses,$input[0]);
-                $results[$input[0]] = -1;
-                $indexMap[$input[0]] = $index;
-                $addressMap[$index] = $input[0];
+            foreach($inputs as $index=>$inputArr){
+                array_push($addresses,$inputArr['address']);
+                $results[$inputArr['address']] = -1;
+                $indexMap[$inputArr['address']] = $index;
+                $addressMap[$index] = $inputArr['address'];
+            }
+
+            //Figure out which extra columns to set, and what is their input
+            $extraColumns = [];
+            $extraInputs = [];
+            foreach($this->extraColumns as $index => $extraColumn){
+                if($this->extraInputs[$extraColumn]){
+                    array_push($extraColumns,$extraColumn);
+                    array_push($extraInputs,[
+                        'input'=>$this->extraInputs[$extraColumn]['input'],
+                        'default'=>isset($this->extraInputs[$extraColumn]['default'])?$this->extraInputs[$extraColumn]['default']:null
+                    ]);
+                }
             }
 
             if(isset($params['existing']))
                 $existing = $params['existing'];
             else
-                $existing = $this->getResources($addresses, $type, array_merge($params,['updateCache'=>false]));
+                $existing = $this->getResources($addresses, $type, array_merge($params,['updateCache'=>false,'ignoreBlob'=>false]));
 
-            foreach($inputs as $index=>$input){
+            foreach($inputs as $index=>$inputArr){
                 //In this case the address does not exist or couldn't connect to db
                 if(!is_array($existing[$addressMap[$index]])){
                     //If we could not connect to the DB, just return because it means we wont be able to connect next
@@ -324,95 +404,119 @@ namespace IOFrame\Handlers{
                     else{
                         //If we are only updating, continue
                         if($update){
-                            $results[$input[0]] = 1;
+                            $results[$inputArr['address']] = 1;
                             continue;
                         }
                         //If the address does not exist, make sure all needed fields are provided
                         //Set local to true if not provided
-                        if(!isset($inputs[$index][1]) || $inputs[$index][1] === null)
-                            $inputs[$index][1] = true;
+                        if(!isset($inputs[$index]['local']) || $inputs[$index]['local'] === null)
+                            $inputs[$index]['local'] = true;
                         //Set minified to false if not provided
-                        if(!isset($inputs[$index][2]) || $inputs[$index][2] === null)
-                            $inputs[$index][2] = false;
+                        if(!isset($inputs[$index]['minified']) || $inputs[$index]['minified'] === null)
+                            $inputs[$index]['minified'] = false;
                         //text
-                        if(!isset($inputs[$index][3]))
-                            $inputs[$index][3] = null;
+                        if(!isset($inputs[$index]['text']))
+                            $inputs[$index]['text'] = null;
                         elseif($safeStr)
-                            $inputs[$index][3] = IOFrame\Util\str2SafeStr($inputs[$index][3]);
+                            $inputs[$index]['text'] = IOFrame\Util\str2SafeStr($inputs[$index]['text']);
                         //blob
-                        if(!isset($inputs[$index][4]))
-                            $inputs[$index][4] = null;
+                        if(!isset($inputs[$index]['blob']))
+                            $inputs[$index]['blob'] = null;
+                        //data type
+                        if(!isset($inputs[$index]['dataType']))
+                            $inputs[$index]['dataType'] = null;
 
-                        //Add the resource to the array to set
-                        array_push($resourcesToSet,[
+                        $arrayToSet = [
                             [$type,'STRING'],
-                            [$inputs[$index][0],'STRING'],
-                            $inputs[$index][1],
-                            $inputs[$index][2],
+                            [$inputs[$index]['address'],'STRING'],
+                            $inputs[$index]['local'],
+                            $inputs[$index]['minified'],
                             1,
                             [$currentTime,'STRING'],
                             [$currentTime,'STRING'],
-                            [$inputs[$index][3],'STRING'],
-                            [$inputs[$index][4],'STRING'],
-                        ]);
+                            [$inputs[$index]['text'],'STRING'],
+                            [$inputs[$index]['blob'],'STRING'],
+                            [$inputs[$index]['dataType'],'STRING'],
+                        ];
+
+                        foreach($extraInputs as $extraInputArr){
+                            if(!isset($inputs[$index][$extraInputArr['input']]))
+                                $inputs[$index][$extraInputArr['input']] = $extraInputArr['default'];
+                            array_push($arrayToSet,[$inputs[$index][$extraInputArr['input']],'STRING']);
+                        }
+
+                        //Add the resource to the array to set
+                        array_push($resourcesToSet,$arrayToSet);
                     }
                 }
                 //This is the case where the item existed
                 else{
                     //If we are not allowed to override existing resources, go on
                     if(!$override && !$update){
-                        $results[$input[0]] = 2;
+                        $results[$inputArr['address']] = 2;
                         continue;
                     }
                     //Push an existing address in to be removed from the cache
-                    array_push($existingAddresses,$type.'_'.$this->resourceCacheName.$input[0]);
+                    array_push($existingAddresses,$type.'_'.$this->resourceCacheName.$inputArr['address']);
                     //Complete every field that is NULL with the existing resource
                     //local
-                    if(!isset($inputs[$index][1]) || $inputs[$index][1] === null)
-                        $inputs[$index][1] = $existing[$addressMap[$index]]['Resource_Local'];
+                    if(!isset($inputs[$index]['local']) || $inputs[$index]['local'] === null)
+                        $inputs[$index]['local'] = $existing[$addressMap[$index]]['Resource_Local'];
                     //minified
-                    if(!isset($inputs[$index][2]) || $inputs[$index][2] === null)
-                        $inputs[$index][2] = $existing[$addressMap[$index]]['Minified_Version'];
+                    if(!isset($inputs[$index]['minified']) || $inputs[$index]['minified'] === null)
+                        $inputs[$index]['minified'] = $existing[$addressMap[$index]]['Minified_Version'];
                     //text
-                    if(!isset($inputs[$index][3]) || $inputs[$index][3] === null)
-                        $inputs[$index][3] = $existing[$addressMap[$index]]['Text_Content'];
+                    if(!isset($inputs[$index]['text']) || $inputs[$index]['text'] === null)
+                        $inputs[$index]['text'] = $existing[$addressMap[$index]]['Text_Content'];
                     else{
                         //This is where we merge the arrays as JSON if they are both valid json
                         if( $mergeMeta &&
-                            IOFrame\Util\is_json($inputs[$index][3]) &&
+                            IOFrame\Util\is_json($inputs[$index]['text']) &&
                             IOFrame\Util\is_json($existing[$addressMap[$index]]['Text_Content'])
                         ){
-                            $inputJSON = json_decode($inputs[$index][3],true);
+                            $inputJSON = json_decode($inputs[$index]['text'],true);
                             $existingJSON = json_decode($existing[$addressMap[$index]]['Text_Content'],true);
                             if($inputJSON == null)
                                 $inputJSON = [];
                             if($existingJSON == null)
                                 $existingJSON = [];
-                            $inputs[$index][3] =
+                            $inputs[$index]['text'] =
                                 json_encode(IOFrame\Util\array_merge_recursive_distinct($existingJSON,$inputJSON,['deleteOnNull'=>true]));
-                            if($inputs[$index][3] == '[]')
-                                $inputs[$index][3] = null;
+                            if($inputs[$index]['text'] == '[]')
+                                $inputs[$index]['text'] = null;
                         }
                         //Here we convert back to safeString
-                        if($safeStr && $inputs[$index][3] !== null)
-                            $inputs[$index][3] = IOFrame\Util\str2SafeStr($inputs[$index][3]);
+                        if($safeStr && $inputs[$index]['text'] !== null)
+                            $inputs[$index]['text'] = IOFrame\Util\str2SafeStr($inputs[$index]['text']);
                     }
                     //blob
-                    if(!isset($inputs[$index][4]) || $inputs[$index][4] === null)
-                        $inputs[$index][4] = $existing[$addressMap[$index]]['Blob_Content'];
+                    if(!isset($inputs[$index]['blob']) || $inputs[$index]['blob'] === null)
+                        $inputs[$index]['blob'] = $existing[$addressMap[$index]]['Blob_Content'];
+                    //data type
+                    if(!isset($inputs[$index]['dataType']) || $inputs[$index]['dataType'] === null)
+                        $inputs[$index]['dataType'] = $existing[$addressMap[$index]]['Data_Type'];
 
-                    //Add the resource to the array to set
-                    array_push($resourcesToSet,[
+                    $arrayToSet = [
                         [$type,'STRING'],
-                        [$inputs[$index][0],'STRING'],
-                        $inputs[$index][1],
-                        $inputs[$index][2],
+                        [$inputs[$index]['address'],'STRING'],
+                        $inputs[$index]['local'],
+                        $inputs[$index]['minified'],
                         $existing[$addressMap[$index]]['Version'],
                         [$existing[$addressMap[$index]]['Created'],'STRING'],
                         [$currentTime,'STRING'],
-                        [$inputs[$index][3],'STRING'],
-                        [$inputs[$index][4],'STRING'],
-                    ]);
+                        [$inputs[$index]['text'],'STRING'],
+                        [$inputs[$index]['blob'],'STRING'],
+                        [$inputs[$index]['dataType'],'STRING'],
+                    ];
+
+                    foreach($extraInputs as $extraIndex => $extraInputArr){
+                        if(!isset($inputs[$index][$extraInputArr['input']]) || $inputs[$index][$extraInputArr['input']] === null)
+                            $inputs[$index][$extraInputArr['input']] = $existing[$addressMap[$index]][$extraColumns[$extraIndex]];
+                        array_push($arrayToSet,[$inputs[$index][$extraInputArr['input']],'STRING']);
+                    }
+
+                    //Add the resource to the array to set
+                    array_push($resourcesToSet,$arrayToSet);
                 }
             }
 
@@ -420,8 +524,9 @@ namespace IOFrame\Handlers{
             if($resourcesToSet==[])
                 return $results;
             $res = $this->SQLHandler->insertIntoTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCES',
-                ['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Changed','Text_Content','Blob_Content'],
+                $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
+                array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Changed',
+                    'Text_Content','Blob_Content','Data_Type'],$extraColumns),
                 $resourcesToSet,
                 array_merge($params,['onDuplicateKey'=>true])
             );
@@ -506,7 +611,7 @@ namespace IOFrame\Handlers{
                 }
                 //Just insert the new values into the table
                 $res = $this->SQLHandler->insertIntoTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                     $oldColumns,
                     [$newValues],
                     $params
@@ -514,7 +619,7 @@ namespace IOFrame\Handlers{
             }
             else
                 $res = $this->SQLHandler->updateTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                     ['Address = "'.$newAddress.'"'],
                     [
                         [
@@ -553,7 +658,7 @@ namespace IOFrame\Handlers{
          *
          */
         function deleteResource(string $address, string $type, array $params){
-            return $this->deleteResources([$address],$type,$params);
+            return $this->deleteResources([$address],$type,$params)[$address];
         }
 
         /** Deletes resources.
@@ -607,7 +712,7 @@ namespace IOFrame\Handlers{
             }
 
             $res = $this->SQLHandler->deleteFromTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                 [
                     [
                         'Address',
@@ -681,7 +786,7 @@ namespace IOFrame\Handlers{
             }
 
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCES',
+                $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
                 ['Version = Version + 1'],
                 [
                     [
@@ -869,14 +974,14 @@ namespace IOFrame\Handlers{
                 }
 
                 $res = $this->SQLHandler->selectFromTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                     $dbConditions,
                     [],
                     $retrieveParams
                 );
 
                 $count = $this->SQLHandler->selectFromTable(
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                    $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                     $dbConditions,
                     ['COUNT(*)'],
                     array_merge($retrieveParams,['limit'=>0])
@@ -912,7 +1017,7 @@ namespace IOFrame\Handlers{
             $collectionInfo = $this->getFromCacheOrDB(
                 $names,
                 'Collection_Name',
-                'RESOURCE_COLLECTIONS',
+                $this->resourceCollectionTableName,
                 $type.'_'.$this->resourceCollectionCacheName,
                 [],
                 array_merge(
@@ -972,9 +1077,9 @@ namespace IOFrame\Handlers{
             //If there are still unordered collections we need to get, get them.
             if($names !== []){
                 //For unordered collections, you have to get the members from the DB. You can do it all at once.
-                $collectionTable = $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS';
+                $collectionTable = $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName;
                 $collectionsResourcesTable = $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS_MEMBERS';
-                $resourcesTable = $this->SQLHandler->getSQLPrefix().'RESOURCES';
+                $resourcesTable = $this->SQLHandler->getSQLPrefix().$this->resourceTableName;
                 $columns = [
                     $resourcesTable.'.Address',
                     $resourcesTable.'.Resource_Type',
@@ -1197,7 +1302,7 @@ namespace IOFrame\Handlers{
             );
 
             $res = $this->SQLHandler->insertIntoTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 ['Collection_Name','Resource_Type','Created','Last_Changed','Meta'],
                 $toSet,
                 array_merge($params, ['onDuplicateKey'=>true])
@@ -1245,7 +1350,7 @@ namespace IOFrame\Handlers{
                 array_push($dbNames,[$name,'STRING']);
 
             $res = $this->SQLHandler->deleteFromTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     [
                         'Collection_Name',
@@ -1379,7 +1484,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                 ],
@@ -1416,7 +1521,7 @@ namespace IOFrame\Handlers{
                 //If we are here, we pushed the resources to the collection. Now we may need to push them to order..
                 if($pushToOrder){
                     $orderParams = $this->defaultSettingsParams;
-                    $orderParams['tableName'] = 'RESOURCE_COLLECTIONS';
+                    $orderParams['tableName'] = $this->resourceCollectionTableName;
                     $orderParams['columnNames'] = [['Resource_Type','Collection_Name'],'Collection_Order'];
                     $orderParams['columnIdentifier'] = [$type,$collection];
                     $order = ($existingCollection['@']['Collection_Order'] != null)?
@@ -1501,7 +1606,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                 ],
@@ -1554,7 +1659,7 @@ namespace IOFrame\Handlers{
                 //If we are here, we pushed the resources to the collection. Now we may need to push them to order..
                 if($removeFromOrder){
                     $orderParams = $this->defaultSettingsParams;
-                    $orderParams['tableName'] = 'RESOURCE_COLLECTIONS';
+                    $orderParams['tableName'] = $this->resourceCollectionTableName;
                     $orderParams['columnNames'] = [['Resource_Type','Collection_Name'],'Collection_Order'];
                     $orderParams['columnIdentifier'] = [$type,$collection];
                     $order = ($existingCollection['@']['Collection_Order'] != null)?
@@ -1618,7 +1723,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                 ],
@@ -1641,7 +1746,7 @@ namespace IOFrame\Handlers{
             //If we failed to set Last_Changed, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
-                $orderParams['tableName'] = 'RESOURCE_COLLECTIONS';
+                $orderParams['tableName'] = $this->resourceCollectionTableName;
                 $orderParams['columnNames'] = [['Resource_Type','Collection_Name'],'Collection_Order'];
                 $orderParams['columnIdentifier'] = [$type,$collection];
                 $order = ($existingCollection['@']['Collection_Order'] != null)?
@@ -1710,7 +1815,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                 ],
@@ -1733,7 +1838,7 @@ namespace IOFrame\Handlers{
             //If we failed to set Last_Changed, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
-                $orderParams['tableName'] = 'RESOURCE_COLLECTIONS';
+                $orderParams['tableName'] = $this->resourceCollectionTableName;
                 $orderParams['columnNames'] = [['Resource_Type','Collection_Name'],'Collection_Order'];
                 $orderParams['columnIdentifier'] = [$type,$collection];
                 $order = ($existingCollection['@']['Collection_Order'] != null)?
@@ -1807,7 +1912,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                 ],
@@ -1830,7 +1935,7 @@ namespace IOFrame\Handlers{
             //If we failed to set Last_Changed, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
-                $orderParams['tableName'] = 'RESOURCE_COLLECTIONS';
+                $orderParams['tableName'] = $this->resourceCollectionTableName;
                 $orderParams['columnNames'] = [['Resource_Type','Collection_Name'],'Collection_Order'];
                 $orderParams['columnIdentifier'] = [$type,$collection];
                 $order = '';
@@ -1892,7 +1997,7 @@ namespace IOFrame\Handlers{
 
             //First, update Last Changed of the collection
             $res = $this->SQLHandler->updateTable(
-                $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS',
+                $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Collection_Order = NULL',

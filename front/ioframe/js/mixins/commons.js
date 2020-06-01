@@ -18,15 +18,17 @@ const IOFrameCommons = {
          *                                  }
          *                             extraEvents: object, extra events to emit - the key is the name of the
          *                                          event, the value is bool - whether to include API response
+         *                             urlPrefix: string, defaults to document.rootURI - prefix of the URL.
          *                            }
          *
          * */
         apiRequest: function(data,apiName,eventName,params = {}){
-            let apiURL = document.rootURI + apiName;
             let verbose = params.verbose || false;
             let parseJSON = params.parseJSON || false;
             let identifier = params.identifier || false;
             let extraEvents = params.extraEvents || false;
+            let urlPrefix = params.urlPrefix === undefined ? document.rootURI : params.urlPrefix;
+            let apiURL = urlPrefix + apiName;
             updateCSRFToken().then(
                 function(token){
                     data.append('CSRF_token', token);

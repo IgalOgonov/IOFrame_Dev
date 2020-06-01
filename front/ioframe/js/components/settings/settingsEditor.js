@@ -105,7 +105,6 @@ Vue.component('settings-editor', {
 
             //Data to be sent
             var data = new FormData();
-            //TODO Add all that's needed here
             data.append('action', 'getSettings');
             data.append('target', this.id);
 

@@ -93,21 +93,52 @@ body > .wrapper {
     margin: 5px;
 }
 
-/* General search-list transition*/
+/* Search List*/
+/*search item*/
 .main-app .search-list .search-item{
     transition: all 0.5s, max-width 0s;
+}
+/*pagination*/
+.main-app .search-list .pagination{
+    display: flex;
+    flex-wrap: wrap;
+}
+.main-app .search-list .pagination button{
+    box-shadow: none;
+    color: rgb(10 10 10);
+    border: 1px transparent solid;
+}
+.main-app .search-list .pagination button.selected,
+.main-app .search-list .pagination button:not([class="go-to"]):hover{
+    box-shadow: none;
+    background: rgb(236, 251, 255);
+}
+.main-app .search-list .pagination button.selected,
+.main-app .search-list .pagination button[class="go-to"]{
+    border: 1px rgb(163, 171, 207) solid;
+}
+.main-app .search-list .pagination button[class="go-to"]{
+    background-color: rgb(218, 221, 239);
+}
+.main-app .search-list .pagination button[class="go-to"]:hover{
+    background-color: rgb(163, 171, 207);
+}
+
+.main-app .search-list .pagination .go-to-page input,
+.main-app .search-list .pagination .total-pages span:nth-child(2){
+    background-color: rgb(218, 221, 239);
 }
 
 /*Titles*/
 .title{
     font-size: 1em;
-    font-weight: 400;
+    font-weight: 800;
 }
 
 
 @media (max-width: 1000px) {
     .main-app {
-        min-width: calc(100vw - 50px);
+        min-width: calc(100vw - 75px);
     }
 }
 

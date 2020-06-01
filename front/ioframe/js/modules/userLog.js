@@ -49,7 +49,6 @@ var userLog = new Vue({
                     responseBody = 'User login failed - login type not allowed  (why you using this API?!)';
                     responseType='warning';
                     break;
-                //TODO Drop auto-login cached data if it exists
                 default:
             }
             alertLog(responseBody, responseType);

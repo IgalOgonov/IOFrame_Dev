@@ -49,12 +49,12 @@
 
     <div v-if="needViewer">
         <div is="media-viewer"
-             :url="url"
-             :target="target"
-             :multiple-targets="deleteTargets"
+             :url="view1.url"
+             :target="view1.target"
+             :multiple-targets="view1.deleteTargets"
              :select-multiple="currentOperation==='deleteMultiple'"
-             :display-elements="view1Elements"
-             :initiate="!view1UpToDate"
+             :display-elements="view1.elements"
+             :initiate="!view1.upToDate"
              :verbose="verbose"
              :test="test"
              identifier="viewer1"
@@ -62,10 +62,10 @@
 
         <h2 v-if="secondTitle!==''" v-text="secondTitle"></h2>
         <div is="media-viewer"
-             :url="view2URL"
-             :target="view2Target"
-             :display-elements="view2Elements"
-             :initiate="!view2UpToDate"
+             :url="view2.url"
+             :target="view2.target"
+             :display-elements="view2.elements"
+             :initiate="!view2.upToDate"
              :test="test"
              :verbose="verbose"
              :only-folders="true"
@@ -75,9 +75,32 @@
         </div>
     </div>
 
+    <div v-if="currentMode==='view-db'">
+        <div  is="search-list"
+              :_functions="searchList.functions"
+              :api-url="mediaURL"
+              :extra-params="searchList.extraParams"
+              :extra-classes="searchList.extraClasses"
+              api-action="getImages"
+              :page="searchList.page"
+              :limit="searchList.limit"
+              :total="searchList.total"
+              :items="searchList.items"
+              :initiate="!searchList.initiated"
+              :columns="searchList.columns"
+              :filters="searchList.filters"
+              :selected="searchList.selected"
+              :test="test"
+              :verbose="verbose"
+              identifier="search"
+            >
+        </div>
+    </div>
+
     <div  v-if="currentMode==='upload'"
           is="media-uploader"
-          :url="url"
+          :type="lastMode === 'view'? 'local' : 'remote'"
+          :url="view1.url"
           :test="test"
           :verbose="verbose"
           identifier="uploader"
@@ -86,9 +109,10 @@
 
     <div is="media-editor"
          v-if="currentMode==='edit'"
-         :url="url"
-         :target="target"
-         :image="view1Elements[(url==='')? target : url+'/'+target]"
+         :type="lastMode === 'view'? 'local' : 'remote'"
+         :url="view1.url"
+         :target="lastMode==='view' ? view1.target : searchList.items[searchList.selected[0]].identifier"
+         :image="lastMode==='view' ? view1.elements[(view1.url==='')? view1.target : view1.url+'/'+view1.target] : searchList.items[searchList.selected[0]]"
          :verbose="verbose"
          :test="test"
          identifier="editor">

@@ -1,0 +1,39 @@
+#login-register.main-app[mode="login"],
+#login-register.main-app[mode="register"]{
+    max-width: calc(100vw);
+}
+
+#login-register.main-app{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/*Login/Register*/
+#login-register.main-app form{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin: 5px 0px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+#login-register.main-app form input {
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+/*Buttons in general*/
+#login-register.main-app button {
+    padding: 5px 10px;
+    background: rgb(236, 251, 255);
+    color: rgb(54 145 160);
+    border: 1px rgb(161,233,246) solid;
+}
+#login-register.main-app button:hover {
+    background: rgb(224,244,255);
+    color: rgb(105 196 211);
+    border: 1px rgb(161,233,246) solid;
+}

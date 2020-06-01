@@ -328,6 +328,8 @@ var galleries = new Vue({
             this.page = response.content;
 
             this.galleriesInitiated = false;
+            
+            this.selected = -1;
         },
         //Resets editor
         resetEditor: function(newMode){
@@ -523,6 +525,12 @@ var galleries = new Vue({
         selectElement: function(request){
             if(this.verbose)
                 console.log('Selecting item ',request);
+
+            if(!request.from || request.from !== 'search')
+                return;
+
+            request = request.content;
+
             if(this.currentMode === 'search'){
                 this.resetEditor();
                 if(this.selected === request){

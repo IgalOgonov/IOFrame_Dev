@@ -19,7 +19,7 @@
 
     //The plugin list component, which is responsible for everything
     var objectManager = new Vue({
-        el: '#objectManager',
+        el: '#object-manager',
         data: {
             inputs: {
 
@@ -30,6 +30,29 @@
                 'req':'test'
             },
             currentAction: 'c',
+            types: {
+                'c':{
+                    title:'Create'
+                },
+                'r':{
+                    title:'Read'
+                },
+                'u':{
+                    title:'Update'
+                },
+                'd':{
+                    title:'Delete'
+                },
+                'rg':{
+                    title:'Read Group'
+                },
+                'ga':{
+                    title:'Get Page Assignments'
+                },
+                'a':{
+                    title:'Modify Page Assignments'
+                }
+            },
             c: {
                 obj:'',
                 minV:-1,
@@ -264,7 +287,7 @@
                             if (xhr.readyState === DONE) {
                                 if (xhr.status === OK){
                                     let response = xhr.responseText;
-                                    if(JSON.parse(response))
+                                    if(IsJsonString(response))
                                         console.log(JSON.parse(response));
                                     else
                                         console.log(response);

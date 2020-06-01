@@ -1,0 +1,34 @@
+
+
+/*search list*/
+#users .search-list .search-titles > span.identifier,
+#users .search-list .search-item > span.identifier{
+    flex: 0.25;
+}
+#users .search-list .search-titles > span.rank,
+#users .search-list .search-titles > span.active,
+#users .search-list .search-titles > span.bannedUntil,
+#users .search-list .search-titles > span.suspiciousUntil,
+#users .search-list .search-item > span.rank,
+#users .search-list .search-item > span.active,
+#users .search-list .search-item > span.bannedUntil,
+#users .search-list .search-item > span.suspiciousUntil{
+    flex: 0.5;
+}
+
+@media (max-width: 1000px) {
+    
+    /*All search lists*/
+    #users .search-list .search-titles {
+        display: none;
+    }
+    #users .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #users .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: rgba(0,0,0,0.1);
+    }
+}

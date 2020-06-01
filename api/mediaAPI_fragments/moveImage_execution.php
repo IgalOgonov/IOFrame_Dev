@@ -8,8 +8,15 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 
 $copy = $inputs['copy'];
 
-$result =   $FrontEndResourceHandler->moveImage(
-    $inputs['oldAddress'],
-    $inputs['newAddress'],
-    ['test'=>$test, 'copy'=>$copy]
-);
+$result = $inputs['remote'] ?
+    $FrontEndResourceHandler->renameResource(
+        $inputs['oldAddress'],
+        $inputs['newAddress'],
+        'img',
+        ['test'=>$test, 'copy'=>$copy]
+    ):
+    $FrontEndResourceHandler->moveImage(
+        $inputs['oldAddress'],
+        $inputs['newAddress'],
+        ['test'=>$test, 'copy'=>$copy]
+    );

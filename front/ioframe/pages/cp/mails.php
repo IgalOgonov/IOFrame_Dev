@@ -5,6 +5,8 @@ require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definiti
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_start.php';
 
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
+
 array_push($JS,'modules/CPMenu.js','modules/mails.js');
 
 array_push($CSS,'cp.css','modules/CPMenu.css','modules/mails.css');

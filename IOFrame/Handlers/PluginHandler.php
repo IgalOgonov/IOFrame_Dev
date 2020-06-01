@@ -905,8 +905,7 @@ namespace IOFrame\Handlers{
                 if( ($info[$name] != 'active')){
                     if($verbose)
                         echo 'Cannot push a plugin into order that is not active!'.EOL;
-                    if(!$test)
-                        return 4;
+                    return 4;
                 }
             }
 

@@ -26,7 +26,11 @@ if(count($inputs['addresses'])<1){
 
 foreach($inputs['addresses'] as $index => $address){
     //TODO Add address specific auth check
-    if(!\IOFrame\Util\validator::validateRelativeFilePath($address)){
+
+    $valid = \IOFrame\Util\validator::validateRelativeFilePath($address);
+    $valid = $valid || filter_var($address,FILTER_VALIDATE_URL);
+
+    if(!$valid){
         if($test)
             echo 'Invalid address at index '.$index.EOL;
         exit(INPUT_VALIDATION_FAILURE);

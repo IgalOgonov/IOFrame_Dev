@@ -6,7 +6,7 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 
 $result = $FrontEndResourceHandler->setResources(
     [
-        [$inputs['address'],null,null,$meta]
+        ['address'=>$inputs['address'],'text'=>$meta]
     ],
     'img',
     ['test'=>$test,'update'=>true]

@@ -1,0 +1,49 @@
+/*Info*/
+.%%COMPONENT_NAME%% .info{
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+.%%COMPONENT_NAME%% .info > div{
+    margin: 5px;
+}
+
+.%%COMPONENT_NAME%% .info .value{
+    padding: 2px 5px;
+    background-color: rgba(0,0,0 ,0.1);
+}
+
+.%%COMPONENT_NAME%% .info .title{
+    font-size: 1em;
+    font-weight: 800;
+}
+
+/*Form*/
+.%%COMPONENT_NAME%% form{
+    padding: 5px;
+    transition: 0.2s ease-in-out;
+}
+.%%COMPONENT_NAME%% form >div{
+    padding: 5px 20px 5px 10px;
+    margin: 5px 0px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+    max-width: max-content;
+}
+.%%COMPONENT_NAME%% form >div.changed{
+    background-color: rgba(204,240,253 ,0.5);
+}
+.%%COMPONENT_NAME%% form > div button.item-param{
+    padding: 2px 7px;
+}
+
+/*Control buttons*/
+.%%COMPONENT_NAME%% .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.%%COMPONENT_NAME%% .control-buttons button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}

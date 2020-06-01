@@ -68,7 +68,7 @@ var settings = new Vue({
             operationInput: '',
             //Whether we are currently loading
             initiated: false,
-            verbose:true,
+            verbose:false,
             test:false
         }
     },
@@ -145,6 +145,12 @@ var settings = new Vue({
             return true;
         },
         selectElement: function(request){
+
+            if(!request.from || request.from !== 'search')
+                return;
+
+            request = request.content;
+
             if(this.verbose)
                 console.log('Selecting item ',request);
 

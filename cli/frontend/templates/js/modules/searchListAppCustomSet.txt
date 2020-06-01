@@ -3,7 +3,7 @@ if(eventHub === undefined)
 
 var %%VARIABLE_NAME%% = new Vue({
     el: '#%%ELEMENT_NAME%%',
-    name: '#%%VUE_NAME%%',
+    name: '%%VUE_NAME%%',
     mixins:[%%MIXINS%%],
     data(){
         return {
@@ -19,15 +19,15 @@ var %%VARIABLE_NAME%% = new Vue({
                             title:'Cancel'
                         }
                     },
-                    title:'View ' //TODO Add
+                    title:'View %%VUE_NAME%%'
                 },
                 edit:{
                     operations:{},
-                    title:'Edit ' //TODO Add
+                    title:'Edit %%VUE_NAME%%'
                 },
                 create:{
                     operations:{},
-                    title:'Create ' //TODO Add
+                    title:'Create %%VUE_NAME%%'
                 }
             },
             //Filters to display for the search list //TODO Expend common filters
@@ -72,7 +72,7 @@ var %%VARIABLE_NAME%% = new Vue({
                         {
                             name:'includeRegex',
                             title:'Include',
-                            placeholder:'Text Product name includes',
+                            placeholder:'Text the name includes',
                             type:'String',
                             min:0,
                             max: 64,
@@ -83,7 +83,7 @@ var %%VARIABLE_NAME%% = new Vue({
                         {
                             name:'excludeRegex',
                             title:'Exclude',
-                            placeholder:'Text Product name excludes',
+                            placeholder:'Text the name excludes',
                             type:'String',
                             min:0,
                             max: 64,
@@ -98,7 +98,7 @@ var %%VARIABLE_NAME%% = new Vue({
             columns:[
                 {
                     id:'identifier',
-                    title:'' //TODO Add
+                    title:'%%VUE_NAME%%'
                 },
                 {
                     id:'created',
@@ -118,7 +118,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 }
             ],
             //SearchList API (and probably the only relevant API) URL TODO Edit
-            url:'',
+            url: document.pathToRoot+ '%%API_URL%%',
             //Current page  //TODO Remove if no search list
             page:0,
             //Go to page  //TODO Remove if no search list
@@ -146,23 +146,36 @@ var %%VARIABLE_NAME%% = new Vue({
     created:function(){
         this.registerHub(eventHub);
         this.registerEvent('requestSelection', this.selectElement);
-        this.registerEvent('searchResults', this.parseSearchResults); //TODO Add relevant events
+        this.registerEvent('searchResults', this.parseSearchResults);
+        this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
     },
     computed:{
         //Main title TODO
         title:function(){
             switch(this.currentMode){
                 case 'search':
-                    return '';
+                    return '%%SEARCH_TITLE%%';
                     break;
                 case 'edit':
-                    return '';
+                    return '%%EDIT_TITLE%%';
                     break;
                 case 'create':
-                    return '';
+                    return '%%CREATE_TITLE%%';
                     break;
                 default:
             }
+        },
+        //Text for current operation TODO
+        currentOperationPlaceholder:function(){
+            if(this.currentOperationHasInput){
+                switch(this.currentOperation){
+                    case 'temp':
+                        return 'temp';
+                    default:
+                        return '';
+                }
+            }
+            return '';
         },
         //Text for current operation TODO
         currentOperationText:function(){
@@ -189,10 +202,18 @@ var %%VARIABLE_NAME%% = new Vue({
     watch:{
     },
     methods:{
-        //Parses search results returned from a search list
+        //Searches again (meant to be invoked after relevant changes) TODO Remove if no searchlist
+        searchAgain: function(){
+            this.items = [];
+            this.total = 0;
+            this.page = 0;
+            this.selected = -1;
+            this.initiated = false;
+        },
+        //Parses search results returned from a search list TODO Remove if no searchlist
         parseSearchResults: function(response){
             if(this.verbose)
-                console.log('Recieved response',response);
+                console.log('Received response',response);
 
             if(!response.from || response.from !== 'search')
                 return;
@@ -213,6 +234,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 this.items.push(response.content[k]);
             }
         },
+        //Goes to relevant page  TODO Remove if no searchlist
         goToPage: function(page){
             if(!this.initiating && page.from == 'search'){
                 let newPage;
@@ -232,17 +254,18 @@ var %%VARIABLE_NAME%% = new Vue({
                 this.page = newPage;
 
                 this.initiated = false;
+
+                this.selected = -1;
             }
         },
-        shouldDisplayMode: function(index){
-            if(index==='edit' && (this.selected === -1) )
-                return false;
-            if(index==='create' && (this.selected !== -1))
-                return false;
-
-            return true;
-        },
+        //Element selection from search list  TODO Remove if no searchlist
         selectElement: function(request){
+
+            if(!request.from || request.from !== 'search')
+                return;
+
+            request = request.content;
+
             if(this.verbose)
                 console.log('Selecting item ',request);
 
@@ -254,6 +277,14 @@ var %%VARIABLE_NAME%% = new Vue({
                     this.selected = request;
                 }
             }
+        },
+        shouldDisplayMode: function(index){
+            if(index==='edit' && (this.selected === -1) )
+                return false;
+            if(index==='create' && (this.selected !== -1))
+                return false;
+
+            return true;
         },
         //Switches to requested mode
         switchModeTo: function(newMode){
@@ -292,7 +323,7 @@ var %%VARIABLE_NAME%% = new Vue({
             if(this.currentMode === 'search'){
                 switch (currentOperation){
                     case 'delete':
-                        data.append('action',''); //TODO Add what's needed
+                        data.append('action','%%DELETE_ACTION_NAME%%'); //TODO Add what's needed
                         break;
                     default:
                         break;
@@ -304,8 +335,8 @@ var %%VARIABLE_NAME%% = new Vue({
                 //TODO Add what's needed
                  this.apiRequest(
                      data,
-                      '',
-                      '',
+                      '%%API_URL%%',
+                      '%%API_EVENT_NAME%%',
                       {
                          verbose: this.verbose,
                          parseJSON: true

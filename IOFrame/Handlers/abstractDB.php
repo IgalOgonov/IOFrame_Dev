@@ -148,6 +148,8 @@ namespace IOFrame{
             else
                 $extraKeyColumns = [];
 
+            $totalColCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
+
             if(isset($params['keyColumnPrefixes']))
                 $keyColumnPrefixes = $params['keyColumnPrefixes'];
             else
@@ -164,8 +166,7 @@ namespace IOFrame{
             }
 
             if(isset($params['groupByFirstNKeys']) && (is_array($keyCol) || count($extraKeyColumns) > 0)){
-                $totalCount = count($extraKeyColumns) + (is_array($keyCol) ? count($keyCol) : 1);
-                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalCount-1));
+                $groupByFirstNKeys = max(0,min($params['groupByFirstNKeys'],$totalColCount-1));
             }
             else
                 $groupByFirstNKeys = 0;
@@ -285,7 +286,7 @@ namespace IOFrame{
                         //Calculate the identifier
                         $identifier = explode($keyDelimiter,$identifier);
                         $tempIdentifier = '';
-                        for($j = 0; $j < $groupByFirstNKeys; $j++){
+                        for($j = 0; $j < $totalColCount - $groupByFirstNKeys; $j++){
                             if($j == 0)
                                 $tempIdentifier = array_pop($identifier);
                             else

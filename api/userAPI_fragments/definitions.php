@@ -1,13 +1,15 @@
 <?php
 
 /* AUTH */
-//Allow a user to ban other users
+CONST GET_USERS_AUTH = 'GET_USERS_AUTH';
+CONST SET_USERS_AUTH = 'SET_USERS_AUTH';
 CONST BAN_USERS_AUTH = 'BAN_USERS_AUTH';
 
 /* Input */
 //Maximum tree content length
-CONST TREE_MAX_CONTENT_LENGTH = 10000;
-
+CONST USER_RANK_REGEX = 10000;
+CONST REGEX_REGEX = '^[\w\.\-\_ ]{1,128}$';
+CONST USER_ORDER_COLUMNS = ['Created_On', 'Email', 'Username','ID'];
 
 
 

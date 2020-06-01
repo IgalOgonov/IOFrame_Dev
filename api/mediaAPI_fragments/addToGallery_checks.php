@@ -2,6 +2,11 @@
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
+if(!$inputs['remote'])
+    $inputs['remote'] = false;
+else
+    $inputs['remote'] = true;
+
 //Check auth
 if( !( $auth->hasAction(GALLERY_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
     if($test)
@@ -25,8 +30,12 @@ if(count($inputs['addresses'])<1){
 }
 
 foreach($inputs['addresses'] as $index => $address){
+
+    $valid = \IOFrame\Util\validator::validateRelativeFilePath($address);
+    $valid = $valid || filter_var($address,FILTER_VALIDATE_URL);
+
     //TODO Add address specific auth check
-    if(!\IOFrame\Util\validator::validateRelativeFilePath($address)){
+    if(!\IOFrame\Util\validator::validateRelativeFilePath($valid)){
         if($test)
             echo 'Invalid address at index '.$index.EOL;
         exit(INPUT_VALIDATION_FAILURE);

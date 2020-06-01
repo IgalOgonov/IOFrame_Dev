@@ -1,0 +1,87 @@
+/*Actions*/
+.auth-groups-editor .actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.auth-groups-editor .actions .action{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: max-content;
+    min-width: 200px;
+    margin: 5px 10px;
+    padding: 5px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.auth-groups-editor .actions .action.remove {
+    background-color: rgb(255, 230, 235);
+}
+.auth-groups-editor .actions .action.add {
+    background-color: rgb(106 255 170);
+}
+.auth-groups-editor .actions .action > * {
+    width: 100%;
+    text-align: center;
+}
+.auth-groups-editor .actions .action.title{
+    font-weight: 800;
+}
+/*New Items*/
+.auth-groups-editor .items {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.auth-groups-editor .items .item{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: 200px;
+    min-width: 200px;
+    margin: 5px 10px;
+    padding: 5px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.auth-groups-editor .items .item > * {
+    width: 100%;
+    text-align: center;
+}
+.auth-groups-editor .items .item .title > :first-child{
+    font-weight: 800;
+}
+
+/*New*/
+.auth-groups-editor .new {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: 5px 10px;
+    padding: 5px;
+    background: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+}
+.auth-groups-editor .new input,
+.auth-groups-editor .new textarea{
+    background:rgb(250,252,255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+    margin: 2px 0px;
+    padding: 5px;
+}
+
+/*Buttons*/
+.auth-groups-editor .control-buttons {
+    margin: 10px;
+}
+.auth-groups-editor .control-buttons button {
+    padding: 15px 50px;
+    font-weight: 800;
+    margin: 5px;
+    font-size: 1.25em;
+}

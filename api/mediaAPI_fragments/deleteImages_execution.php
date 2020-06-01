@@ -5,7 +5,13 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result =   $FrontEndResourceHandler->deleteImages(
-    $inputs['addresses'],
-    ['test'=>$test]
-);
+$result = $inputs['remote'] ?
+    $FrontEndResourceHandler->deleteResources(
+        $inputs['addresses'],
+        'img',
+        ['test' => $test]
+    ) :
+    $FrontEndResourceHandler->deleteImages(
+        $inputs['addresses'],
+        ['test' => $test]
+    );

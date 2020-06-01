@@ -4,7 +4,9 @@
 %%TEMPLATE_DEFINITIONS%%
 
 %%TEMPLATE_HEADERS_START%%
-
+%%IF(IS_CONTROL_PANEL)
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
+%%
 %%TEMPLATE_RESOURCE_ARRAYS%%
 
 %%TEMPLATE_GET_RESOURCES%%

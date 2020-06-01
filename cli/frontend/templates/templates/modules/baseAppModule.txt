@@ -1,8 +1,19 @@
 <div id="%%ELEMENT_NAME%%" class="main-app">
-    <div class="loading" v-if="!initiated">
+    <div class="loading-cover" v-if="!initiated">
     </div>
 
     <h1 v-if="title!==''" v-text="title"></h1>
+    %%IF(HAS_TYPES)
+    <div class="types">
+        <button
+            v-for="(item,index) in types"
+            v-text="item.title"
+            @click="switchTypeTo(index)"
+            :class="[{selected:(currentType===index)},(item.button? item.button : ' positive-3')]"
+            class="type"
+            >
+        </button>
+    </div>%%
 
     <div class="modes">
         <button
@@ -10,8 +21,7 @@
             v-if="shouldDisplayMode(index)"
             v-text="item.title"
             @click="switchModeTo(index)"
-            :class="{selected:(currentMode===index)}"
-            class="positive-3"
+            :class="[{selected:(currentMode===index)},(item.button? item.button : ' positive-3')]"
         >
         </button>
     </div>
@@ -31,10 +41,11 @@
     </div>
 
     <div class="operations" v-if="currentModeHasOperations && currentOperation !==''">
-        <label :for="currentOperation" v-text="currentOperationText" v-if="currentOperation === 'create'"></label>
+        <label :for="currentOperation" v-text="currentOperationText" v-if="currentOperationText"></label>
         <input
-            v-if="currentOperationHasInput && currentOperation === 'create'"
+            v-if="currentOperationHasInput"
             :name="currentOperation"
+            :placeholder="currentOperationPlaceholder"
             v-model:value="operationInput"
             type="text"
         >
@@ -51,7 +62,7 @@
     <div is="search-list"
          v-if="currentMode==='search'"
          :api-url="url"
-         api-action=""
+         api-action="%%API_GET_ACTION%%"
          :extra-params="extraParams"
          :page="page"
          :limit="limit"
@@ -70,7 +81,8 @@
          v-if="currentMode==='edit'"
          mode="update"
          identifier="editor"
-         :id=""
+         %%IF(PASS_ID):id="%%IDENTIFIER_PARAM%%"%%
+         %%IF(PASS_ITEM):item="items[selected]"%%
          :test="test"
          :verbose="verbose"
         ></div>

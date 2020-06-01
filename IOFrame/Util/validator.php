@@ -44,11 +44,7 @@ class validator
      * @return bool
      * */
     public static function validateUsername(string $username){
-        if( strlen($username)>16 || strlen($username)<6 || preg_match_all('/\W/',$username)>0 ||
-            preg_match_all('/undefined/',$username)==1 ){
-            return false;
-        }
-        return true;
+        return preg_match('/^[a-zA-Z][a-zA-Z0-9]{5,15}/',$username);
     }
 
     /** @var string $dirPath Directory URL - without the file!

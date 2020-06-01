@@ -1,0 +1,59 @@
+/*types*/
+.contacts-editor .types{
+    margin: 15px 0px;
+}
+
+.contacts-editor .types .type{
+    padding: 5px 10px;
+    background-color: rgb(236, 251, 255);
+    color: rgb(10 10 10);
+    border: 1px rgb(163, 171, 207) solid;
+    margin: 0px 5px;
+}
+
+/*Info*/
+.contacts-editor .info{
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+.contacts-editor .info > div{
+    margin: 5px;
+}
+
+.contacts-editor .info .value{
+    padding: 2px 5px;
+    background-color: rgba(0,0,0 ,0.1);
+}
+
+.contacts-editor .info .title{
+    font-size: 1em;
+    font-weight: 800;
+}
+
+/*Form*/
+.contacts-editor form{
+    padding: 5px;
+    transition: 0.2s ease-in-out;
+}
+.contacts-editor form >div{
+    padding: 5px 20px 5px 10px;
+    margin: 5px 0px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+    max-width: max-content;
+}
+.contacts-editor form >div.changed{
+    background-color: rgba(204,240,253 ,0.5);
+}
+
+/*Control buttons*/
+.contacts-editor .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.contacts-editor .control-buttons button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}
