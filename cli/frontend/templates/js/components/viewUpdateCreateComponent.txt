@@ -48,52 +48,60 @@ Vue.component('%%COMPONENT_NAME%%', {
                 paramMap: false
             },
             //Map of parameters, and vaios properties of each.
-            paramConfig:{
-               /*
-                'paramName':{
-                     //bool, whether to ignore this param completely on get, defaults to false
+            paramMap:{
+                /*
+                 'paramName':{
+                 //bool, whether to ignore this param completely on get, defaults to false
+                 ignore: false,
+                 //string, title to display, defaults to parameter name
+                 title: 'paramName',
+                 //bool, whether it can be edited, default true
+                 edit: true,
+                 //string, type (if editable). Valid types are "text"(default), "textArea", "boolean", "date", "number" and "email"
+                 type: "text",
+                 //bool, whether the item should be displayed (if it's not editable), default true
+                 display: true,
+                 //bool, whether to consider the item changed even if it wasn't
+                 considerChanged: false,
+                 //What to do on item update
+                 onUpdate: {
+                     //bool, default false - do no send this key on update
                      ignore: false,
-                     //string, title to display, defaults to parameter name
-                     title: 'paramName',
-                     //bool, whether it can be edited, default true
-                     edit: true,
-                     //string, type (if editable). Valid types are "text"(default), "textArea", "boolean", "date", "number" and "email"
-                     type: "text",
-                     //bool, whether the item should be displayed (if it's not editable), default true
-                     display: true,
-                     //What to do on item update
-                     onUpdate: {
-                        //bool, default false - do no send this key on update
-                         ignore: false,
-                         //function, if this item is sent, parse the value with this function before sending
-                         parse: function(value){
-                            return value;
-                         },
-                         //Validates value and either suceeds or returns false
-                         validate: function(value){
-                            return true;
-                         },
-                         //The name to send. Defaults to <paramName>
-                         setName: 'paramName'
-                         //Custom message on validation failure (if null, default message is "<paramName> failed validation")
-                        validateFailureMessage: 'Parameter '+paramName+' failed validation!',
-                     },
-                     //function, parsing function on item get
-                     parseOnGet: function(value){
+                     //function, if this item is sent, parse the value with this function before sending
+                     parse: function(value){
                          return value;
                      },
-                     //function, parsing function on item only when displaying
-                     parseOnDisplay: function(value){
+                     //Validates value and either suceeds or returns false
+                     validate: function(value){
+                         return true;
+                     }
+                 },
+                 //The name to send. Defaults to <paramName>
+                 setName: 'paramName'
+                 //Custom message on validation failure (if null, default message is "<paramName> failed validation")
+                 validateFailureMessage: 'Parameter '+paramName+' failed validation!',
+                 },
+                 //function, parsing function on item get
+                 parseOnGet: function(value){
                      return value;
-                     },
-                     //function, parsing function on item change (if it can be edited)
-                     parseOnChange: function(value){
-                         return value;
-                     },
-                     //bool, displays item (after parsing) as HTML. Only if the item is displayed and not editable. Defaults to false
-                     displayHTML: false
-                    }
-                * */
+                 },
+                 //function, parsing function on item only when displaying
+                 parseOnDisplay: function(value){
+                     return value;
+                 },
+                 //function, parsing function on item change (if it can be edited)
+                 parseOnChange: function(value){
+                     return value;
+                 },
+                 //bool, displays item (after parsing) as HTML. Only if the item is displayed and not editable. Defaults to false
+                 displayHTML: false
+                 //object, if the type is "boolean" this allows you to modify the button
+                 button: {
+                    positive: 'Yes',
+                    negative: 'No'
+                 }
+                 }
+                 * */
             },
             //Whether the item is up to date
             upToDate: this.mode == 'create',
@@ -104,14 +112,13 @@ Vue.component('%%COMPONENT_NAME%%', {
         }
     },
     created:function(){
-          //Register eventhub
-          this.registerHub(eventHub);
-          //Register events
-          this.registerEvent('setResponse' ,this.handleItemSet);
-
-          if(this.mode==='update')
-            %%IF(PASS_ID)this.getItemInfo();%%
-            %%IF(PASS_ITEM)this.setMainItem(this.item); %%
+      //Register eventhub
+      this.registerHub(eventHub);
+      //Register events
+      this.registerEvent('setResponse' ,this.handleItemSet);
+      %%IF(PASS_ID)if(this.mode==='update')
+          this.getItemInfo();%%
+      %%IF(PASS_ITEM)this.setMainItem(this.item); %%
     },
     mounted:function(){
     },
@@ -124,7 +131,7 @@ Vue.component('%%COMPONENT_NAME%%', {
             if(this.recompute.changed)
                 ;//Do nothing
             for(let i in this.mainItem){
-                if(this.mainItem[i].original !== undefined && this.mainItem[i].original != this.mainItem[i].current)
+                if(this.mainItem[i].original !== undefined && (this.mainItem[i].original != this.mainItem[i].current || this.paramMap[i].considerChanged))
                     return true;
             }
             return false;
@@ -151,6 +158,7 @@ Vue.component('%%COMPONENT_NAME%%', {
                 this.paramMap[i].edit = this.paramMap[i].edit !== undefined ? this.paramMap[i].edit: true;
                 this.paramMap[i].type = this.paramMap[i].type !== undefined ? this.paramMap[i].type : "text";
                 this.paramMap[i].display = this.paramMap[i].display !== undefined ?  this.paramMap[i].display: true;
+                this.paramMap[i].considerChanged = this.paramMap[i].considerChanged !== undefined ?  this.paramMap[i].considerChanged: false;
 
                 if(!this.paramMap[i].onUpdate)
                     this.paramMap[i].onUpdate = {};
@@ -175,6 +183,11 @@ Vue.component('%%COMPONENT_NAME%%', {
                 };
                 this.paramMap[i].displayHTML = this.paramMap[i].displayHTML !== undefined ? this.paramMap[i].displayHTML : false;
 
+                if(!this.paramMap[i].button)
+                    this.paramMap[i].button = {};
+                this.paramMap[i].button.positive = this.paramMap[i].button.positive !== undefined ? this.paramMap[i].button.positive : 'Yes';
+                this.paramMap[i].button.negative = this.paramMap[i].button.negative !== undefined ? this.paramMap[i].button.negative : 'No';
+
 
                 if(!this.paramMap[i].ignore)
                     this.mainItem[i] =
@@ -183,8 +196,8 @@ Vue.component('%%COMPONENT_NAME%%', {
                             original:this.paramMap[i].parseOnGet(item[i]),
                             current:this.paramMap[i].parseOnGet(item[i])
                         }
-                        :
-                        this.paramMap[i].parseOnGet(item[i]);
+                            :
+                            this.paramMap[i].parseOnGet(item[i]);
             }
         },
         %%IF(PASS_ID)//Gets the info of the main item
@@ -244,7 +257,7 @@ Vue.component('%%COMPONENT_NAME%%', {
                 let param = this.paramMap[paramName];
                 let item = this.mainItem[paramName];
 
-                if(param.ignore || param.onUpdate.ignore || (item.current !== undefined && item.current === item.original))
+                if(param.ignore || param.onUpdate.ignore || (item.current !== undefined && item.current === item.original && !param.considerChanged))
                     continue;
                 else if(item.current === undefined){
                     data.append(param.onUpdate.setName, item);
@@ -401,7 +414,7 @@ Vue.component('%%COMPONENT_NAME%%', {
                 <div
                 v-for="(item, key) in mainItem"
                 v-if="paramMap[key].edit"
-                :class="{changed:item.current !== item.original}"
+                :class="{changed:(item.current !== item.original || paramMap[key].considerChanged)}"
                 >
 
                     <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
@@ -417,7 +430,7 @@ Vue.component('%%COMPONENT_NAME%%', {
                     v-else-if="paramMap[key].type === 'boolean'"
                     class="item-param"
                     :class="{'positive-1':item.current,'cancel-1':!item.current}"
-                    v-text="item.current?'Yes':'No'"
+                    v-text="item.current?(paramMap[key].button.positive? paramMap[key].button.positive : 'Yes'):(paramMap[key].button.negative? paramMap[key].button.negative : 'No')"
                      @click.prevent="item.current = paramMap[key].parseOnChange(!item.current);recompute.changed = ! recompute.changed"
                      ></button>
 
@@ -432,7 +445,7 @@ Vue.component('%%COMPONENT_NAME%%', {
             </form>
 
             <div class="control-buttons" v-if="changed">
-                <button  v-text="'Update'" @click.prevent="setItem()" class="positive-1"></button>
+                <button  v-text="this.mode === 'create' ? 'Create' :'Update'" @click.prevent="setItem()" class="positive-1"></button>
                 <button v-text="'Reset'" @click.prevent="resetInputs()" class="cancel-1"></button>
             </div>
 

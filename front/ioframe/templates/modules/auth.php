@@ -1,5 +1,5 @@
 <div id="auth" class="main-app">
-    <div class="loading-cover" v-if="!initiated">
+    <div class="loading-cover" v-if="!initiated && currentMode==='search'">
     </div>
 
     <div class="types">

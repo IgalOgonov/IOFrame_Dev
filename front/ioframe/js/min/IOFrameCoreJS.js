@@ -53,7 +53,7 @@ function getReadableSize(bytes){let magnitude=0;while(bytes>1000&&magnitude<5){b
 let suffix;switch(magnitude){case 1:suffix='KB';break;case 2:suffix='MB';break;case 3:suffix='GB';break;case 4:suffix='TB';break;default:suffix='B'}
 return Math.round(bytes)+suffix}
 function getCurrentDate(){const offset=document.serverTimeDelta*1000;const currentTime=Date.now()+offset;return new Date(+currentTime)}
-function dateToTimestamp(date){date=date.split("-");var newDate=date[0]+","+date[1]+","+date[2];return new Date(newDate).getTime()}
+function dateToTimestamp(date){date=date.split("-");var newDate=date[0]+","+date[1]+","+date[2];let temp=new Date(newDate);return temp.getTime()-temp.getTimezoneOffset()*1000*60}
 function timestampToDate(timestamp){let date=new Date(+timestamp);let realDate=date.getFullYear()+'-';let month=date.getMonth()+1;if(month<10)
 month='0'+month;realDate+=month+'-';date=date.getDate();if(date<10)
 date='0'+date;realDate+=date;return realDate};function initPage(pathToRoot,callbacks={}){if(callbacks.sessionInfoUpdated===undefined)

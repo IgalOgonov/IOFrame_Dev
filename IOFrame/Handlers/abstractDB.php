@@ -90,6 +90,7 @@ namespace IOFrame{
          *              'orderType'=> Same as SQLHandler
          *              'prependPrefix' => bool, default true - whether to prepend the SLQ prefix to $tableName
          *              'extraConditions'   => Extra conditions one may pass,
+         *              'extraConditionsAnd'=> bool, default true - if true will join extraConditions with 'AND', otherwise with 'OR'
          *              'extraKeyColumns'   => Array of additional columns that are considered key columns.
          *              'keyColumnPrefixes' => Array of prefixes to prepend to the key columns when building the query.
          *              'keyDelimiter' => Sometimes, the key columns are multiple, and you wish to get results by them.
@@ -120,6 +121,11 @@ namespace IOFrame{
          *                                      4 => [<DB array of order/user 4/1>,<DB array of order/user 4/2>, ...]
          *                                     ]
          *                                     rather than 20 different results identified by 4/1, 4/2 ...
+         *              'fillMissingKeysWithNull' => bool, default false - if true, will fill the keys missing from $keys
+         *                                       (that should be there based on $keyCol count) with nulls.
+         *                                       later, the key columns of every returned row will be checked for nulls, and
+         *                                       columns with null wont be added to the key (so, for example, if
+         *                                       $keyCol are ['a','b'], and a row has $row['a']==1, $row['b']==null - the key will be '1' instead of '1/null' or '1/')
          * @returns mixed
          * a result in the form [<keyName> => <Associated array for row>]
          *  or
@@ -130,8 +136,10 @@ namespace IOFrame{
             $prependPrefix = isset($params['prependPrefix'])? $params['prependPrefix'] : true;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $fillMissingKeysWithNull = isset($params['fillMissingKeysWithNull'])? $params['fillMissingKeysWithNull'] : false;
 
             $extraConditions = isset($params['extraConditions'])? $params['extraConditions'] : [];
+            $extraConditionsAnd = isset($params['extraConditionsAnd'])? $params['extraConditionsAnd'] : true;
 
             if(isset($params['limit']))
                 $limit = min((int)$params['limit'],$this->defaultQueryLimit);
@@ -187,7 +195,7 @@ namespace IOFrame{
             if(gettype($keyCol) === 'string')
                 $keyCol = [$keyCol];
 
-            //Separate key columns and columnts to retrieve by
+            //Separate key columns and columns to retrieve by
             $retrieveByCol = $keyCol;
 
             //Add each key column
@@ -211,11 +219,28 @@ namespace IOFrame{
 
                 //Parse the key if we have a delimiter
                 foreach($keys as $i=>$key){
+
                     if(gettype($key) === 'array')
                         $key = implode($keyDelimiter,$key);
                     else
                         $keys[$i] = [$keys[$i]];
+
                     $tempRes[$key] = 1;
+
+                    //Fill with nulls if needed
+                    if($fillMissingKeysWithNull && (count($keys[$i]) < count($keyCol)) ){
+                        if($verbose)
+                            echo 'Filling key '.json_encode($keys[$i]).' with '.(count($keyCol) - count($keys[$i])).' nulls!'.EOL;
+                        while(count($keys[$i]) < count($keyCol))
+                            array_push($keys[$i],null);
+                    }
+                    //Or ignore an invalid key
+                    elseif(count($keys[$i]) < count($keyCol) ){
+                        if($verbose)
+                            echo 'Key '.json_encode($keys[$i]).' is invalid!'.EOL;
+                        unset($keys[$i]);
+                        continue;
+                    }
                 }
 
                 //Add all of the keys to the conditions
@@ -245,7 +270,7 @@ namespace IOFrame{
                     $conds =  [
                         $conds,
                         $extraConditions,
-                        'AND'
+                        ($extraConditionsAnd ? 'AND' : 'OR')
                     ];
                 else
                     $conds = $extraConditions;
@@ -267,6 +292,9 @@ namespace IOFrame{
                     //Calculate the identifier
                     $identifier = [];
                     foreach($keyCol as $colID){
+                        //If we were filling with nulls, we might have a valid row with null in a potential key column
+                        if($fillMissingKeysWithNull && $res[$i][$colID] === null)
+                            continue;
                         array_push($identifier,$res[$i][$colID]);
                     }
                     $identifier = implode($keyDelimiter,$identifier);
@@ -274,6 +302,9 @@ namespace IOFrame{
                     //Here we have no extra columns, or multiple ones
                     if(count($extraKeyColumns) > 0){
                         foreach($extraKeyColumns as $extraKeyColumn){
+                            //If we were filling with nulls, we might have a valid row with null in a potential key column
+                            if($fillMissingKeysWithNull && $res[$i][$extraKeyColumn] === null)
+                                continue;
                             $identifier .= $keyDelimiter.$res[$i][$extraKeyColumn];
                         }
                     }
@@ -306,8 +337,12 @@ namespace IOFrame{
                     foreach($keys as $i=>$keyArray){
                         $dbFormattedKeys = $keyArray[0];
                         $keys = [];
-                        foreach($dbFormattedKeys as $pair)
+                        foreach($dbFormattedKeys as $pair){
+                            //If we were filling with nulls, we might have a valid row with null in a potential key column
+                            if($fillMissingKeysWithNull && $pair[0] === null)
+                                continue;
                             array_push($keys,$pair[0]);
+                        }
                         $keyToUnset = implode($keyDelimiter,$keys);
                         unset($tempRes[$keyToUnset]);
                     }

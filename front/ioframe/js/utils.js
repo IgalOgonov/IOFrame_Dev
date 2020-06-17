@@ -426,7 +426,9 @@ function getCurrentDate(){
 function dateToTimestamp(date){
     date= date.split("-");
     var newDate =date[0]+","+date[1]+","+date[2];
-    return new Date(newDate).getTime();
+    let temp = new Date(newDate);
+    //Time minus timezone offset (minutes => ms))
+    return temp.getTime() - temp.getTimezoneOffset()*1000*60;
 }
 
 /* Given the unix timestamp, returns the (shitty) standard DD-MM-YYYY */

@@ -385,7 +385,7 @@ switch($action){
         require 'mediaAPI_fragments/uploadMedia_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -407,7 +407,7 @@ switch($action){
         require 'mediaAPI_fragments/getImages_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -453,7 +453,7 @@ switch($action){
 
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -484,7 +484,7 @@ switch($action){
         require 'mediaAPI_fragments/getImageGalleries_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -499,7 +499,7 @@ switch($action){
         require 'mediaAPI_fragments/getGalleries_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -513,7 +513,7 @@ switch($action){
         require 'mediaAPI_fragments/getGallery_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -558,7 +558,7 @@ switch($action){
         require 'mediaAPI_fragments/addToGallery_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;

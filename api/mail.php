@@ -139,7 +139,7 @@ switch($action){
         require 'mailAPI_fragments/getTemplates_checks.php';
         require 'mailAPI_fragments/getTemplates_execution.php';
 
-        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         break;
 
     case 'createTemplate':
@@ -155,7 +155,7 @@ switch($action){
         require 'mailAPI_fragments/setTemplate_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -172,7 +172,7 @@ switch($action){
         require 'mailAPI_fragments/deleteTemplates_checks.php';
         require 'mailAPI_fragments/deleteTemplates_execution.php';
 
-        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
+        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         break;
 
     default:

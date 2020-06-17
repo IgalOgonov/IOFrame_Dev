@@ -57,10 +57,13 @@ var CPMenu = new Vue({
         this.selected = this.configObject.page.id;
 
         //Logo
-        this.logo = {
-            imgURL: document.rootURI + 'front/ioframe/img/icons/logo.png',
-            url: document.rootURI
-        };
+        if(this.configObject.cp.logo === undefined)
+            this.configObject.cp.logo = {};
+        if(this.configObject.cp.logo.imgURL === undefined)
+            this.configObject.cp.logo.imgURL = document.rootURI + 'front/ioframe/img/icons/logo.png';
+        if(this.configObject.cp.logo.url === undefined)
+            this.configObject.cp.logo.url = document.rootURI;
+        this.logo = this.configObject.cp.logo;
 
         //Menu
         let defaultMenu = [
@@ -119,18 +122,22 @@ var CPMenu = new Vue({
                 position: 9,
             },
             {
-                id: 'security',
-                title: 'Security',
-                url: 'security',
-                disabled:true,
+                id: 'securityEvents',
+                title: '(Security) Events',
+                url: 'securityEvents',
                 position: 10,
+            },
+            {
+                id: 'securityIP',
+                title: '(Security) IP',
+                url: 'securityIP',
+                position: 11,
             },
             {
                 id: 'tokens',
                 title: 'Tokens',
                 url: 'tokens',
-                disabled:true,
-                position: 11,
+                position: 12,
             },
             {
                 id: 'login',

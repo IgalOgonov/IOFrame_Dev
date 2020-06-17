@@ -626,6 +626,7 @@ namespace IOFrame{
              *                      for events 0-4 and a different one for events 5+ in the same sequence.
              * Blacklist_For      - How long (in seconds) to blacklist an IP / mark a user as suspicious for.
              * Add_TTL            - How many seconds to add to the Sequence_Expires of this sequence.
+             * Meta               - Meta/Extra information about this specific sequence
              *
              * Note that there has to be a rule of the form:
              *      Event_Category | Event_Type | Sequence_Number | Blacklist_For | Add_TTL
@@ -634,7 +635,7 @@ namespace IOFrame{
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."EVENTS_RULEBOOK (
                                                               Event_Category INT(32),
-                                                              Event_Type BIGINT UNSIGNED,
+                                                              Event_Type INT(32),
                                                               Sequence_Number INT UNSIGNED,
                                                               Blacklist_For INT UNSIGNED,
                                                               Add_TTL INT UNSIGNED,
@@ -648,6 +649,29 @@ namespace IOFrame{
             }
             catch(\Exception $e){
                 echo "EVENTS_RULEBOOK table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+
+            // INITIALIZE EVENTS_META
+            /* This table is for meta information regarding event categories and types.
+             *
+             * Event_Category    - event category
+             * Event_Type        - If null, this row is meta information regarding a category, if not - regarding a specific event.
+             * Meta              - Meta/Extra information about this specific item.
+             */
+            $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."EVENTS_META (
+                                                              Event_Category INT(32),
+                                                              Event_Type INT(32) DEFAULT -1,
+                                                              Meta TEXT DEFAULT NULL,
+                                                              PRIMARY KEY (Event_Category,Event_Type)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
+            try{
+                $makeTB->execute();
+                echo "EVENTS_META table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "EVENTS_META table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
 

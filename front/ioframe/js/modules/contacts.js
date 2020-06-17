@@ -270,7 +270,17 @@ var contacts = new Vue({
                     title:'Date Created',
                     parser:function(timestamp){
                         timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                        let date = timestampToDate(timestamp).split('-').reverse().join('-');
+                        let hours = Math.floor(timestamp%(1000 * 60 * 60 * 24)/(1000 * 60 * 60));
+                        let minutes = Math.floor(timestamp%(1000 * 60 * 60)/(1000 * 60));
+                        let seconds = Math.floor(timestamp%(1000 * 60)/(1000));
+                        if(hours < 10)
+                            hours = '0'+hours;
+                        if(minutes < 10)
+                            minutes = '0'+minutes;
+                        if(seconds < 10)
+                            seconds = '0'+seconds;
+                        return date + ', ' + hours+ ':'+ minutes+ ':'+seconds;
                     }
                 },
                 {
@@ -278,7 +288,17 @@ var contacts = new Vue({
                     title:'Last Changed',
                     parser:function(timestamp){
                         timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                        let date = timestampToDate(timestamp).split('-').reverse().join('-');
+                        let hours = Math.floor(timestamp%(1000 * 60 * 60 * 24)/(1000 * 60 * 60));
+                        let minutes = Math.floor(timestamp%(1000 * 60 * 60)/(1000 * 60));
+                        let seconds = Math.floor(timestamp%(1000 * 60)/(1000));
+                        if(hours < 10)
+                            hours = '0'+hours;
+                        if(minutes < 10)
+                            minutes = '0'+minutes;
+                        if(seconds < 10)
+                            seconds = '0'+seconds;
+                        return date + ', ' + hours+ ':'+ minutes+ ':'+seconds;
                     }
                 }
             );

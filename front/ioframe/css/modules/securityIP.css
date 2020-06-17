@@ -1,0 +1,58 @@
+#security-ip{
+    max-width: 1000px;
+}
+
+/* Types */
+#security-ip .types{
+    display: flex;
+}
+
+#security-ip .types > button {
+    padding: 5px 10px;
+    font-size: 1em;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out, border 0s;
+}
+
+#security-ip .types > button.selected  {
+    border-bottom: 3px black solid;
+}
+
+#security-ip .types > button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+#security-ip .types > button:not(:first-child){
+    border-left: 0;
+}
+#security-ip .types > button:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+#security-ip .types > button:not(:last-child){
+    border-right: 0;
+}
+
+/*Searchlist*/
+#security-ip .search-list .filters > .filter-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+#security-ip .search-list .filters > .filter-group > * {
+    margin: 0px 5px;
+}
+
+@media (max-width: 800px) {
+    
+    /*All search lists*/
+    #security-ip .search-list .search-titles {
+        display: none;
+    }
+    #security-ip .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #security-ip .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: rgba(0,0,0,0.1);
+    }
+}

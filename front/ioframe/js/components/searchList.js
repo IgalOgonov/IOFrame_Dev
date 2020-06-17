@@ -152,6 +152,15 @@ Vue.component('search-list', {
                 return []
             }
         },
+        /* Function that takes ALL of the filters - an array of objects of the form {paramName:paramValue}
+         *  and potentially parses it.
+         * */
+        parseFilters: {
+            type: Function,
+            default: function(filters){
+                return filters;
+            },
+        },
         /* Extra classes for an item. May be a string (a specific class for each item), a array of strings (similar), or
            a function (which parses the item, and returns a AN ARRAY OF STRINGS - even if it's one string) */
         extraClasses: {
@@ -436,7 +445,11 @@ Vue.component('search-list', {
                     Object.assign(variables, this.getFilterVars(filter.group));
                 }
                 else if(filter.type !== 'List'){
-                    const localFilter = this.$el.querySelector('.filters *[name="'+filter.name+'"]');
+                    let localFilter = this.$el.querySelector('.filters *[name="'+filter.name+'"]');
+                    //Basic check
+                    if(localFilter === null)
+                        continue;
+
                     let value = localFilter.value;
 
                     //Basic check
@@ -459,6 +472,11 @@ Vue.component('search-list', {
                         }
                     }
 
+                    //Fix "true" and "false"
+                    if(value === 'true')
+                        value = true;
+                    if(value === 'false')
+                        value = false;
                     variables[filter.name] = value;
                 }
                 else{
@@ -493,6 +511,8 @@ Vue.component('search-list', {
 
             //Parsing
             let filterArray = this.getFilterVars();
+
+            filterArray = this.parseFilters(filterArray);
 
             if(this.verbose)
                 console.log('Querying API at '+this.apiUrl+' with parameters ', filterArray,'extra parameters ',

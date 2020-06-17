@@ -1,5 +1,5 @@
 <div id="contacts" class="main-app">
-    <div class="loading-cover" v-if="!initiated">
+    <div class="loading-cover" v-if="!initiated && currentMode==='search'">
     </div>
 
     <h1 v-if="title!==''" v-text="title"></h1>

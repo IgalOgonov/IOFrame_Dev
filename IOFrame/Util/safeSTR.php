@@ -42,7 +42,9 @@ namespace IOFrame\Util{
      * @param string $str Normal string
      * @returns string safeString
      */
-    function safeStr2Str(string $str){
+    function safeStr2Str($str){
+        if($str === null)
+            return $str;
         $curVal = '';
         $tempVal = '';
         $repeat = '1';

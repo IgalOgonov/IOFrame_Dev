@@ -403,8 +403,8 @@ namespace IOFrame\Handlers{
                     ['COUNT(*)'],
                     array_merge($retrieveParams,['limit'=>0])
                 );
-                if(is_array($res) && (count($res) > 0) ){
-                    $resCount = count($res[0]);
+                if(is_array($res)){
+                    $resCount = isset($res[0]) ? count($res[0]) : 0;
                     foreach($res as $resultArray){
                         for($i = 0; $i<$resCount/2; $i++)
                             unset($resultArray[$i]);
@@ -1014,8 +1014,8 @@ namespace IOFrame\Handlers{
                     );
                 }
 
-                if(is_array($res) && count($res) > 0){
-                    $resCount = count($res[0]);
+                if(is_array($res)){
+                    $resCount = isset($res[0]) ? count($res[0]) : 0;
                     foreach($res as $resultArray){
                         for($i = 0; $i<$resCount/2; $i++)
                             unset($resultArray[$i]);
@@ -1026,7 +1026,7 @@ namespace IOFrame\Handlers{
                     }
 
                     //Get extra order information
-                    if($returnOrders){
+                    if($returnOrders && count($res) > 0){
                         $existingOrders = [];
                         foreach($results as $ID=> $resArray){
                             if($ID !== '@')

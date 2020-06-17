@@ -324,9 +324,11 @@ namespace IOFrame\Handlers{
          *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'orderBy' An array of column names to order by
          *                      'orderType' 1 descending, 0 ascending
-         *                      'limit' If not null/0, will limit number of deleted rows.
+         *                      'limit' If not null/0, will limit number of selected rows.
+         *                      'offset' SQL offset
          *                      'returnRows' If true, will return the number of affected rows on success.
          *                      'justTheQuery' If true, will only return the query and not execute it.
+         *                      'tables' An array of table names one may use - generally useful if deleting from multiple tables at once
          * @params bool $test indicates test mode
          * @returns int
          *      -2 server error
@@ -349,10 +351,14 @@ namespace IOFrame\Handlers{
                 $orderType = $params['orderType'] : $orderType = 0;
             isset($params['limit'])?
                 $limit = $params['limit'] : $limit = null;
+            isset($params['offset'])?
+                $offset = $params['offset'] : $offset = null;
             isset($params['returnRows'])?
                 $returnRows = $params['returnRows'] : $returnRows = false;
             isset($params['justTheQuery'])?
                 $justTheQuery = $params['justTheQuery'] : $justTheQuery = false;
+            isset($params['tables'])?
+                $tables = $params['tables'] : $tables = [];
 
             //orderType
             if($orderType == 0)
@@ -361,7 +367,7 @@ namespace IOFrame\Handlers{
                 $orderType = 'DESC';
 
             //Prepare the query to be executed
-            $query = 'DELETE FROM '.$tableName;
+            $query = 'DELETE'.(count($tables) === 0? ' ' : ' '.implode(',',$tables).' ').'FROM '.$tableName;
 
             //If we have conditions
             if($cond != []){
@@ -387,9 +393,13 @@ namespace IOFrame\Handlers{
                 $query =  substr($query,0,-2);
                 $query .=' '.$orderType;
             }
+
             //If we have a limit
             if($limit != null){
-                $query .= ' LIMIT '.$limit;
+                $query .= ' LIMIT ';
+                if($offset)
+                    $query .=$offset.',';
+                $query .= $limit;
             }
 
             //Escape backslashes

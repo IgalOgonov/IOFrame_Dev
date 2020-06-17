@@ -1,0 +1,49 @@
+/*Info*/
+.tokens-editor .info{
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+.tokens-editor .info > div{
+    margin: 5px;
+}
+
+.tokens-editor .info .value{
+    padding: 2px 5px;
+    background-color: rgba(0,0,0 ,0.1);
+}
+
+.tokens-editor .info .title{
+    font-size: 1em;
+    font-weight: 800;
+}
+
+/*Form*/
+.tokens-editor form{
+    padding: 5px;
+    transition: 0.2s ease-in-out;
+}
+.tokens-editor form >div{
+    padding: 5px 20px 5px 10px;
+    margin: 5px 0px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+    max-width: max-content;
+}
+.tokens-editor form >div.changed{
+    background-color: rgba(204,240,253 ,0.5);
+}
+.tokens-editor form > div button.item-param{
+    padding: 2px 7px;
+}
+
+/*Control buttons*/
+.tokens-editor .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.tokens-editor .control-buttons button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}

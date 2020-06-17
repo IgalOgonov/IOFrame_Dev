@@ -1,0 +1,71 @@
+<?php
+if(!$auth->isAuthorized(0) && !$auth->hasAction(SECURITY_RATE_LIMIT_AUTH)){
+    if($test)
+        echo 'Cannot set rulebooks'.EOL;
+    exit(AUTHENTICATION_FAILURE);
+}
+
+//update & override
+$inputs['override'] = $inputs['override'] === null? true : $inputs['override'];
+$inputs['update'] = $inputs['update'] === null? false : $inputs['update'];
+
+//inputs
+if(!isset($inputs['inputs']) || !\IOFrame\Util\is_json($inputs['inputs'])){
+    if($test)
+        echo 'Inputs must be set and a valid JSON'.EOL;
+    exit(INPUT_VALIDATION_FAILURE);
+}
+
+$inputs['inputs'] = json_decode($inputs['inputs'],true);
+
+if(count($inputs['inputs']) === 0){
+    if($test)
+        echo 'Inputs must be set and a valid JSON'.EOL;
+    exit(INPUT_VALIDATION_FAILURE);
+}
+
+foreach($inputs['inputs'] as $index => $inputArray){
+    $cleanInput = [];
+
+    $params = ['category','type','sequence'];
+
+    foreach($params as $param){
+        if(!isset($inputArray[$param])){
+            if($test)
+                echo 'Each input must contain a '.$param.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        elseif(!filter_var($inputArray[$param],FILTER_VALIDATE_INT) && $inputArray[$param] !== 0){
+            if($test)
+                echo $param.' must be a non-negative number!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        else
+            $cleanInput[$param] = $inputArray[$param];
+    }
+
+    $params = ['addTTL','blacklistFor'];
+
+    foreach($params as $param){
+        if(!isset($inputArray[$param])){
+            $cleanInput[$param] = 0;
+        }
+        elseif(!filter_var($inputArray[$param],FILTER_VALIDATE_INT) && $inputArray[$param] !== 0){
+            if($test)
+                echo $param.' must be a non-negative number!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        else
+            $cleanInput[$param] = $inputArray[$param];
+    }
+
+    if(isset($inputArray['meta']) && !\IOFrame\Util\is_json($inputArray['meta'])){
+        if($test)
+            echo 'meta must be a valid JSON string!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+    else
+        $cleanInput['meta'] = isset($inputArray['meta']) ? $inputArray['meta'] : null;
+
+    $inputs['inputs'][$index] = $cleanInput;
+}

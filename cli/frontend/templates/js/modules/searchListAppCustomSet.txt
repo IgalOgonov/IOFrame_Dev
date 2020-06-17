@@ -7,16 +7,25 @@ var %%VARIABLE_NAME%% = new Vue({
     mixins:[%%MIXINS%%],
     data(){
         return {
-            configObject: JSON.parse(JSON.stringify(document.siteConfig)),
+            configObject: JSON.parse(JSON.stringify(document.siteConfig)), %%IF(HAS_TYPES)
+            types: {
+                default:{
+                    title: 'Replace this',
+                    button: 'negative-1'
+                }
+            },
+            currentType: 'default',%%
             //Modes, and array of available operations in each mode
             modes: {
                 search:{
                     operations:{
                         'delete':{
-                            title:'Delete'
+                            title:'Delete',
+                            button:'negative-1'
                         },
                         'cancel':{
-                            title:'Cancel'
+                            title:'Cancel',
+                            button:'cancel-1'
                         }
                     },
                     title:'View %%VUE_NAME%%'
@@ -105,7 +114,17 @@ var %%VARIABLE_NAME%% = new Vue({
                     title:'Date Created',
                     parser:function(timestamp){
                         timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                        let date = timestampToDate(timestamp).split('-').reverse().join('-');
+                        let hours = Math.floor(timestamp%(1000 * 60 * 60 * 24)/(1000 * 60 * 60));
+                        let minutes = Math.floor(timestamp%(1000 * 60 * 60)/(1000 * 60));
+                        let seconds = Math.floor(timestamp%(1000 * 60)/(1000));
+                        if(hours < 10)
+                            hours = '0'+hours;
+                        if(minutes < 10)
+                            minutes = '0'+minutes;
+                        if(seconds < 10)
+                            seconds = '0'+seconds;
+                        return date + ', ' + hours+ ':'+ minutes+ ':'+seconds;
                     }
                 },
                 {
@@ -113,7 +132,17 @@ var %%VARIABLE_NAME%% = new Vue({
                     title:'Last Changed',
                     parser:function(timestamp){
                         timestamp *= 1000;
-                        return timestampToDate(timestamp).split('-').reverse().join('-');
+                        let date = timestampToDate(timestamp).split('-').reverse().join('-');
+                        let hours = Math.floor(timestamp%(1000 * 60 * 60 * 24)/(1000 * 60 * 60));
+                        let minutes = Math.floor(timestamp%(1000 * 60 * 60)/(1000 * 60));
+                        let seconds = Math.floor(timestamp%(1000 * 60)/(1000));
+                        if(hours < 10)
+                            hours = '0'+hours;
+                        if(minutes < 10)
+                            minutes = '0'+minutes;
+                        if(seconds < 10)
+                            seconds = '0'+seconds;
+                        return date + ', ' + hours+ ':'+ minutes+ ':'+seconds;
                     }
                 }
             ],
@@ -140,7 +169,7 @@ var %%VARIABLE_NAME%% = new Vue({
             //Whether we are currently loading
             initiated: false,
             verbose:true, //TODO remove this when done building
-            test:false
+            test:true //TODO remove this when done building
         }
     },
     created:function(){
@@ -148,6 +177,8 @@ var %%VARIABLE_NAME%% = new Vue({
         this.registerEvent('requestSelection', this.selectElement);
         this.registerEvent('searchResults', this.parseSearchResults);
         this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
+        this.registerEvent('searchAgain', this.searchAgain);
+        this.registerEvent('returnToMainApp', this.returnToMainApp);
     },
     computed:{
         //Main title TODO
@@ -199,11 +230,29 @@ var %%VARIABLE_NAME%% = new Vue({
             return Object.keys(this.modes[this.currentMode].operations).length>0;
         },
     },
-    watch:{
-    },
+    watch:{%%IF(HAS_TYPES)
+    'currentType':function(newVal){
+        if(this.verbose)
+            console.log('Changing type to '+newVal);
+        this.initiated = false;
+        this.updatedTitles = false;
+        this.selected = -1;
+        this.page = 0;
+        this.pageToGoTo = 0;
+        this.items = [];
+    }
+    %%},
     methods:{
+        //Returns to main app
+        returnToMainApp: function(){
+            if(this.verbose)
+                console.log('Returning to main app!');
+            this.switchModeTo('search');
+        },
         //Searches again (meant to be invoked after relevant changes) TODO Remove if no searchlist
         searchAgain: function(){
+            if(this.verbose)
+                console.log('Searching again!');
             this.items = [];
             this.total = 0;
             this.page = 0;
@@ -308,7 +357,14 @@ var %%VARIABLE_NAME%% = new Vue({
             }
             this.currentMode = newMode;
             this.currentOperation = '';
-        },
+        },%%IF(HAS_TYPES)
+        //Switches to requested type
+        switchTypeTo: function(newType){
+            if(this.currentType === newType)
+                return;
+            this.switchModeTo('search');
+            this.currentType = newType;
+        },%%
         //Executes the operation
         confirmOperation: function(payload){
             if(this.test)
@@ -319,6 +375,7 @@ var %%VARIABLE_NAME%% = new Vue({
             var verbose = this.verbose;
             var currentOperation = this.currentOperation;
             var thisElement = this.$el;
+            let operation = '';
 
             if(this.currentMode === 'search'){
                 switch (currentOperation){
@@ -329,6 +386,12 @@ var %%VARIABLE_NAME%% = new Vue({
                         break;
                 };
 
+                if(!operation){
+                    if(this.verbose)
+                        console.log('Returning, no operation set!');
+                    return;
+                }
+
                 if(this.test)
                     data.append('req','test');
 
@@ -336,7 +399,7 @@ var %%VARIABLE_NAME%% = new Vue({
                  this.apiRequest(
                      data,
                       '%%API_URL%%',
-                      '%%API_EVENT_NAME%%',
+                      operation,
                       {
                          verbose: this.verbose,
                          parseJSON: true

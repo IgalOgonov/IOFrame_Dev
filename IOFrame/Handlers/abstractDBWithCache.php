@@ -90,6 +90,7 @@ namespace IOFrame{
          *                                      can be strings - only the order matters.
          *                                      The conditions work the same as their MySQL counterparts.
          *                                      More complex conditions are not supported as of now
+         *                  'extraDBConditions'   => Extra conditions one may pass directly to the DB, IF columnConditions is not set
          *                  'fixSpecialConditions' - bool, default false. If true, will check and change specific conditions
          *                                           that are invalid in SQL. Current list is:
          *                                          'INREV'
@@ -358,13 +359,17 @@ namespace IOFrame{
                     }
             }
 
-            $dbConditions = $columnConditions;
-            if($fixSpecialConditions)
-                foreach ($dbConditions as $index => $condition) {
-                    if($condition[2] === 'INREV')
-                        //Set this to IN, for the DB query
-                        $dbConditions[$index][2] = 'IN';
-                }
+            if($columnConditions){
+                $dbConditions = $columnConditions;
+                if($fixSpecialConditions)
+                    foreach ($dbConditions as $index => $condition) {
+                        if($condition[2] === 'INREV')
+                            //Set this to IN, for the DB query
+                            $dbConditions[$index][2] = 'IN';
+                    }
+            }
+            else
+                $dbConditions = isset($params['extraConditions'])? $params['extraConditions'] : [];
 
             if($targets != [] || $cacheTargets === [])
                 $dbResults = $this->getFromTableByKey($targets,$keyCol,$tableName,$columns,array_merge($params,['extraConditions'=>$dbConditions]));

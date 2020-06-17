@@ -17,7 +17,7 @@ $siteConfig = [
     'isAdmin'=>$auth->isAuthorized(0)
 ];
 
-$devMode = $auth->isAuthorized(0) && isset($_REQUEST['devMode']) && $_REQUEST['devMode'];
+$devMode = true;//$auth->isAuthorized(0) && isset($_REQUEST['devMode']) && $_REQUEST['devMode'];
 
 if($devMode)
     echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';

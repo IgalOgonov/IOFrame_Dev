@@ -1,0 +1,33 @@
+/*Custom search-list stuff*/
+#tokens .search-list .expired{
+    background: rgba(255,0,0,0.1);
+    padding: 5px 10px;
+    border-radius: 2px;
+}
+
+@media (max-width: 800px) {
+    
+    /*All search lists*/
+    #tokens .search-list .search-titles {
+        display: none;
+    }
+    #tokens .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #tokens .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: rgba(0,0,0,0.1);
+    }
+    #tokens .search-list .search-item .search-item-property > span {
+        display: flex;
+    }
+    #tokens .search-list .search-item .search-item-property > span > span {
+        width: 100%;
+    }
+    #tokens .search-list .expired{
+        padding: 2px;
+        border-radius: 0px;
+    }
+}

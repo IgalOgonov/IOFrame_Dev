@@ -1,0 +1,109 @@
+/* Wrapper */
+.security-ips-editor .wrapper{
+    max-width: 1920px;
+}
+
+/*Info*/
+.security-ips-editor .info{
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+.security-ips-editor .info > div{
+    margin: 5px;
+}
+
+.security-ips-editor .info .value,
+.security-ips-editor form .value{
+    padding: 2px 5px;
+    background-color: rgba(0,0,0 ,0.1);
+}
+
+.security-ips-editor .info .title{
+    font-size: 1em;
+    font-weight: 800;
+}
+
+/*Form*/
+.security-ips-editor form{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    padding: 5px;
+    transition: 0.2s ease-in-out;
+}
+.security-ips-editor form > div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 20px 5px 10px;
+    margin: 5px;
+    border: 1px rgb(163, 171, 207) solid;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+    max-width: max-content;
+}
+
+.security-ips-editor form > div.changed {
+    background-color: rgba(204,240,253 ,0.5);
+}
+
+.security-ips-editor form > div.add-new {
+    margin: 15px 0px;
+    background: rgba(26, 255, 140, 0.5);
+}
+
+.security-ips-editor form > div.changed{
+    background-color: rgba(204, 240, 253, 0.5);
+}
+.security-ips-editor form > div.add {
+    background: rgba(0, 179, 64, 0.2);
+}
+.security-ips-editor form > div.remove {
+    background: rgba(204, 24, 0, 0.2);
+}
+
+.security-ips-editor form > div .title {
+    margin: 5px;
+}
+
+.security-ips-editor form > div > button {
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+.security-ips-editor form > div > button.remove {
+    background: rgb(204 24 0);
+}
+.security-ips-editor form > div > button.add {
+    background: rgb(40 200 70);
+}
+.security-ips-editor form > div > button:hover{
+    filter:brightness(110%);
+}
+
+/*Control buttons*/
+.security-ips-editor .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.security-ips-editor .control-buttons button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}
+
+
+
+@media (max-width: 800px) {
+    /*Sequences*/
+    .security-ips-editor form > div{
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 400px) {
+    /*Sequences*/
+    .security-ips-editor form > div{
+        flex-direction: column;
+    }
+}
