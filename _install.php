@@ -271,6 +271,10 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <input type="checkbox" name="rememberMe" value="1" checked><br>
                     <small>If this is checked, the framework will allow you to use the "Remember Me" feature,</small><br>
 
+                    <span>Save Relog Info Using Cookies:</span>
+                    <input type="checkbox" name="relogWithCookies" value="1" checked><br>
+                    <small>If this is checked, and "Remember Me" is checked, will automatically try to relog using cookies instead of local storage</small><br>
+
                     <span>Remember login for (seconds):</span>
                     <input type="number" name="userTokenExpiresIn" value="0" checked><br>
                     <small>Number of <b>seconds</b> tokens generated for auto-relog are valid for.</small><br>
@@ -345,6 +349,14 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'User setting rememberMe set to 1'.EOL;
                 else{
                     echo 'Failed to set User setting RememberMe to 1'.EOL.EOL;
+                }
+            }
+
+            if(isset($_REQUEST['relogWithCookies'])){
+                if($userSettings->setSetting('relogWithCookies',1,['createNew'=>true]))
+                    echo 'User setting relogWithCookies set to 1'.EOL;
+                else{
+                    echo 'Failed to set User setting relogWithCookies to 1'.EOL.EOL;
                 }
             }
 
@@ -1020,6 +1032,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($userArgs,["emailChangeTitle",'Email Change Confirmation Mail']);
             array_push($userArgs,["passwordResetTime",5]);
             array_push($userArgs,["rememberMe",1]);
+            array_push($userArgs,["relogWithCookies",1]);
             array_push($userArgs,["userTokenExpiresIn",0]);
             array_push($userArgs,["allowRegularLogin",1]);
             array_push($userArgs,["allowRegularReg",1]);

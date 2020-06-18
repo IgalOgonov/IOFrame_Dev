@@ -883,6 +883,19 @@ namespace IOFrame\Handlers{
                         echo 'User assinged ID '.$currSesID.EOL;
                 }
                 else{
+                    //If you are logging yourself out, erase all your relog cookies just so you dont wast time trying to relog with bad info later
+                    $cookiesToUnset = ['sesID','sesIV','userMail'];
+                    foreach($cookiesToUnset as $cookieName){
+                        if (isset($_COOKIE[$cookieName])){
+                            if(!$test){
+                                unset($_COOKIE[$cookieName]);
+                                setcookie($cookieName, null, -1,'/');
+                            }
+                            if ($verbose)
+                                echo 'Unsetting cookie '.$cookieName.EOL;
+                        }
+                    }
+
                     if (!$test){
                         session_start();
                         session_regenerate_id();
@@ -981,13 +994,16 @@ namespace IOFrame\Handlers{
 
                     //--------------------Encryption and stuff - temp login-------------------
                     if(isset($inputs["userID"])){
+
                         // Either way, we will be using this hex string as part of the login.
                         $hex_secure = false;
                         while(!$hex_secure)
                             $hex=bin2hex(openssl_random_pseudo_bytes(16,$hex_secure));
+
                         //Specify after how long this auto-login will expire (if it will)
                         $expires = ($this->userSettings->getSetting('userTokenExpiresIn') == 0)?
                             0 : time()+$this->userSettings->getSetting('userTokenExpiresIn');
+
                         // If user logged in with a password, send him and update in the DB a new IV for the next auto-connect.
                         // Else use the old.
                         if($log!='temp'){
@@ -1008,15 +1024,43 @@ namespace IOFrame\Handlers{
                             "expires" => $expires
                         ];
 
+                        //At this point, if we are using cookies to relog, we start by setting them here
+                        if($this->userSettings->getSetting('relogWithCookies')){
+                            $cookiesExpire = $expires ? $expires : time()+60*60*24*365*100;
+                            if ($verbose)
+                                echo 'Cookies expire at '.$cookiesExpire.EOL;
+
+                            if (!$test)
+                                setcookie("userID", $inputs["userID"], $cookiesExpire, "/", "", 1, 1);
+                            if ($verbose)
+                                echo 'Setting cookie userID as '.$inputs["userID"].EOL;
+
+                            if (!$test)
+                                setcookie("userMail", $inputs["m"], $cookiesExpire, "/", "", 1, 1);
+                            if ($verbose)
+                                echo 'Setting cookie userMail as '.$inputs["m"].EOL;
+
+                            if (!$test)
+                                setcookie("sesIV", $iv, $cookiesExpire, "/", "", 1, 1);
+                            if ($verbose)
+                                echo 'Setting cookie sesIV as '.$iv.EOL;
+
+                            if (!$test)
+                                setcookie("sesID", $hex, $cookiesExpire, "/", "", 1, 1);
+                            if ($verbose)
+                                echo 'Setting cookie sesID as '.$hex.EOL;
+                        }
+
                         $relogData = json_encode($relogData);
 
                         $authFullDetails[$inputs["userID"]] = $relogData;
 
                         $authFullDetails = json_encode($authFullDetails);
-                        //Update database with it
 
+                        //Update database with it
                         $query = 'UPDATE '.$this->SQLHandler->getSQLPrefix().'USERS SET
                         authDetails=:authFullDetails WHERE Email=:Email';
+
                         //If it was test, test results well be echoed later, nothing left to do.
                         if (!$test)
                             $this->SQLHandler->exeQueryBindParam($query,[[':authFullDetails', $authFullDetails],[':Email', $inputs["m"]]]);

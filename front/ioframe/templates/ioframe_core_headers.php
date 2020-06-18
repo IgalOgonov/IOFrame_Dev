@@ -48,6 +48,10 @@ if(is_dir($settings->getSetting('absPathToRoot').'front/ioframe/js/plugins')){
     document.serverTimeDelta = Math.floor( Math.floor(Date.now()/1000 - <?php echo time();?>) / 10) * 10;
     //CSRF Token
     localStorage.setItem('CSRF_token','<?php echo $_SESSION['CSRF_token'];?>');
+    //In a very specific case PHP has re-logged using cookies and the session ID changed - this will only work if the relog happaned on a page with this script
+    let newID = <?php echo isset($newID) ? "'".$newID."'" : 'false';?>;
+    if(newID)
+        localStorage.setItem('sesID',newID);
 
     document.addEventListener('DOMContentLoaded', function(e) {
         //Define callbacks if not defined

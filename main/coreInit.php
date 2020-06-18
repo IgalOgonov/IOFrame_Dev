@@ -3,7 +3,6 @@
 define('coreInit',true);
 
 session_start();
-
 //First, include all user includes
 if(!defined('helperFunctions'))
     require __DIR__ . '/../IOFrame/Util/helperFunctions.php';
@@ -72,6 +71,7 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
         $defaultSettingsParams
     );
     $defaultSettingsParams['SQLHandler'] = $SQLHandler;
+
     //--------------------Initialize site settings handler--------------------
     $siteAndResourceSettings = new IOFrame\Handlers\SettingsHandler(
         [
@@ -101,14 +101,84 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
     $logger = new Logger('testChannel1');
     $logger->pushHandler($loggerHandler);
     $SessionHandler = new IOFrame\Handlers\SessionHandler($settings,$defaultSettingsParams);
-    $auth = new IOFrame\Handlers\AuthHandler($settings,$defaultSettingsParams);
-    //-----AuthHandler should be a part of the default setting parameters-----
-    $defaultSettingsParams['AuthHandler'] = $auth;
+
     //-------------------Perform default checks-------------------
     $SessionHandler->checkSessionNotExpired();
+
+    //If we logged out, see if we can try to log in
+    if(
+        !isset($_SESSION['logged_in']) &&
+        isset($_COOKIE['sesID']) && $_COOKIE['sesID'] &&
+        isset($_COOKIE['sesIV']) && $_COOKIE['sesIV'] &&
+        isset($_COOKIE['userMail']) && $_COOKIE['userMail'] &&
+        isset($_COOKIE['userID']) && $_COOKIE['userID']
+    ){
+        $userID = $_COOKIE['userID'];
+        $sesID = $_COOKIE['sesID'];
+        $key = IOFrame\Util\stringScrumble($_COOKIE['sesID'],$_COOKIE['sesIV']);
+        $sesKey = bin2hex(base64_decode(openssl_encrypt($userID,'aes-256-ecb' , hex2bin($key) ,OPENSSL_ZERO_PADDING)));
+
+        //Try to log in
+        if(!defined('UserHandler'))
+            require __DIR__ . '/../IOFrame/Handlers/UserHandler.php';
+        $UserHandler = new IOFrame\Handlers\UserHandler(
+            $settings,
+            $defaultSettingsParams
+        );
+        $inputs = [
+            'log'=>'temp',
+            'sesKey'=> $sesKey,
+            'm'=> $_COOKIE['userMail'],
+            'userID'=>$userID
+        ];
+
+        //The result wont matter, since if we fail, the sesID wont change, but otherwise it will
+        $res = $UserHandler->logIn($inputs);
+
+        $success = false;
+
+        if(
+            gettype($res) === 'string' &&
+            strlen($res) === 128
+        ){
+            $res = openssl_decrypt(base64_encode(hex2bin($res)),'aes-256-ecb', hex2bin( $key ), OPENSSL_ZERO_PADDING );
+            $res = \IOFrame\Util\stringDescrumble($res);
+            $oldID = $res[0];
+            $newID = $res[1];
+            //Should always happen with https only cookies, but here just for consistency
+            if($oldID === $sesID){
+                //Should not matter at this point, but whatever
+                $_COOKIE['sesID'] = $newID;
+                $success = true;
+            }
+            else
+                $res = 'POSSIBLE_FAKE_SERVER';
+        }
+
+        //This is how we check if it worked - if $sesID is still the same, we didn't relog
+        if(!$success){
+            unset($_COOKIE['lastRelogResult']);
+            setcookie("lastRelogResult", $res, time()+(60*60*24*36500),'/','', 1, 1);
+            unset($_COOKIE['sesID']);
+            setcookie("sesID", null, -1,'/');
+            unset($_COOKIE['sesIV']);
+            setcookie("sesIV", null, -1,'/');
+            unset($_COOKIE['userMail']);
+            setcookie("userMail", null, -1,'/');
+        }
+        setcookie("lastRelog", time(), time()+(60*60*24*36500),'/','', 1, 1);
+        setcookie("lastRelogResult", ($success ? 'success' : $res), time()+(60*60*24*36500),'/','', 1, 1);
+    }
+
+    //Reset CSRF token if need be
     if(!isset($_SESSION['CSRF_token'])){
         $SessionHandler->reset_CSRF_token();
     }
+
+    //-----AuthHandler should be a part of the default setting parameters-----
+    $auth = new IOFrame\Handlers\AuthHandler($settings,$defaultSettingsParams);
+    $defaultSettingsParams['AuthHandler'] = $auth;
+
     //-------------------Include Installed Plugins----------------
     //Get the list of active plugins
     $orderedPlugins = [];                                               //To be used later, after initiation
