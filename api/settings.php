@@ -99,6 +99,7 @@ else
 switch($action){
 
     case 'getSetting':
+        require 'settingsAPI_fragments/get_auth.php';
         require 'settingsAPI_fragments/get_checks.php';
         require 'settingsAPI_fragments/getSetting_execution.php';
         echo ($result === 0)?
@@ -109,6 +110,7 @@ switch($action){
     case 'getSettings':
         if($action === 'getSettingsMeta')
             $target = 'metaSettings';
+        require 'settingsAPI_fragments/get_auth.php';
         require 'settingsAPI_fragments/get_checks.php';
         require 'settingsAPI_fragments/getSettings_execution.php';
         echo json_encode($result);
@@ -117,6 +119,7 @@ switch($action){
     case 'setSetting':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'settingsAPI_fragments/set_auth.php';
         require 'settingsAPI_fragments/set_checks.php';
         require 'settingsAPI_fragments/setSetting_execution.php';
         echo $result === true ?
@@ -126,6 +129,7 @@ switch($action){
     case 'unsetSetting':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'settingsAPI_fragments/unset_auth.php';
         require 'settingsAPI_fragments/unset_checks.php';
         require 'settingsAPI_fragments/unsetSetting_execution.php';
         echo ($result === false)?

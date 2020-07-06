@@ -12,6 +12,11 @@ foreach($_REQUEST as $key => $value){
         $resArr[$key]=$siteSettings->getSetting('maxInacTime');
     }
     else if($key=='CSRF_token'){
+        //Remember, the only way to get a CSRF key is to get referred by the same domain the server is hosted on.
+        if(!isset($_SERVER['HTTP_REFERER'])){
+            $resArr[$key] = null;
+            continue;
+        }
         //Clean referrer of protocol prefix
         if(strpos($_SERVER['HTTP_REFERER'],'//')!==-1){
             $_SERVER['HTTP_REFERER'] = explode('//',$_SERVER['HTTP_REFERER'])[1];

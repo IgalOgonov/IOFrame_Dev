@@ -1,15 +1,5 @@
 <?php
-if(!defined('validator'))
-    require __DIR__ . '/../../IOFrame/Util/validator.php';
 
-//Check auth
-if( !( $auth->hasAction(GALLERY_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
-    if($test)
-        echo 'Cannot modify galleries, or their memberships!'.EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
-//TODO Add gallery specific auth check
 if($inputs['gallery'] === null){
     if($test)
         echo 'Gallery name must be set!'.EOL;

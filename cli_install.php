@@ -19,7 +19,6 @@
             "sql_password": < As in sqlSettings, eg: "password" >,
             "sql_db_name": < As in sqlSettings, eg: "databaseName" >,
             "sql_table_prefix": < As in sqlSettings, eg: "ABC" >,
-            "dbLockOnAction"*: < As in sqlSettings, eg: false >
         }
     }
     NOTE: If an option is optional but a sub option is required, it is required as long as the parent option is present.
@@ -330,26 +329,6 @@ if($sqlSettings->setSetting('sql_table_prefix',$line,['createNew'=>true]))
 else
     echo 'Failed to set setting sql_table_prefix to '.$line.EOL;
 
-if(!$installFromFile){
-    echo "To enable node lock on state-modifying query, type \"yes\"".EOL;
-    $line = trim(fgets($handle));
-}
-else{
-    $line = (isset($installOptions['sql']['dbLockOnAction']) && $installOptions['sql']['dbLockOnAction'])?
-        'yes':'no';
-}
-if($line === 'yes'){
-    if($sqlSettings->setSetting('dbLockOnAction',1,['createNew'=>true]))
-        echo 'Setting dbLockOnAction set to 1'.EOL;
-    else
-        echo 'Failed to set setting dbLockOnAction to 1'.EOL;
-}
-else{
-    if($sqlSettings->setSetting('dbLockOnAction',0,['createNew'=>true]))
-        echo 'Setting dbLockOnAction set to 0'.EOL;
-    else
-        echo 'Failed to set setting dbLockOnAction to 0'.EOL;
-}
 
 try {
     //Create a PDO connection

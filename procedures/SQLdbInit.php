@@ -1227,6 +1227,260 @@ namespace IOFrame{
                 $res = false;
             }
 
+            /* ------------------------------------------------------------
+             * ObjectAuth related tables - quite a few
+             * ------------------------------------------------------------
+            */
+
+            /* INITIALIZE OBJECT_AUTH_CATEGORIES Table
+             *
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Title        - varchar(1024), title of the category.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_CATEGORIES (
+                                                              Object_Auth_Category int PRIMARY KEY AUTO_INCREMENT,
+                                                              Title varchar(1024) DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              INDEX (Title),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_CATEGORIES table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_CATEGORIES table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_OBJECTS Table
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Object       - varchar(1024), identifier of object.
+             * Title        - varchar(1024), title of the object.
+             * Is_Public       - bool, default null - whether the object is public. NULL is the default, and depends on business logic.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECTS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Object varchar(256) NOT NULL,
+                                                              Title varchar(1024) DEFAULT NULL,
+                                                              Is_Public BOOLEAN DEFAULT FALSE,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Object),
+                                                              FOREIGN KEY (Object_Auth_Category)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_CATEGORIES(Object_Auth_Category)
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Title),
+                                                              INDEX (Is_Public),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_OBJECTS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_OBJECTS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_ACTIONS Table
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Action       - varchar(1024), identifier of object.
+             * Title        - varchar(1024), title of the object.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_ACTIONS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Action varchar(256) NOT NULL,
+                                                              Title varchar(1024) DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Action),
+                                                              FOREIGN KEY (Object_Auth_Category)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_CATEGORIES(Object_Auth_Category)
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Title),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_ACTIONS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_ACTIONS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_GROUPS Table
+             *
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Object       - varchar(1024), identifier of object.
+             * Object_Auth_Group        - int, Auto incrementing ID.
+             * Title        - varchar(1024), title of the category.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_GROUPS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Object varchar(256) NOT NULL,
+                                                              Object_Auth_Group int AUTO_INCREMENT,
+                                                              Title varchar(1024) DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Object, Object_Auth_Group),
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_OBJECTS(Object_Auth_Category, Object_Auth_Object)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              INDEX(Object_Auth_Group),
+                                                              INDEX (Title),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_GROUPS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_GROUPS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_OBJECT_USERS Table
+             *
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Object       - varchar(1024), identifier of object.
+             * ID           - int, Auto incrementing ID.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECT_USERS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Object varchar(256) NOT NULL,
+                                                              ID int NOT NULL,
+                                                              Object_Auth_Action varchar(256) NOT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Object, ID, Object_Auth_Action),
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_OBJECTS(Object_Auth_Category, Object_Auth_Object)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Action)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_ACTIONS(Object_Auth_Category, Object_Auth_Action)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (ID)
+                                                              REFERENCES ".$prefix."USERS(ID)
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_OBJECT_USERS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_OBJECT_USERS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_OBJECT_GROUPS Table
+             *
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Object       - varchar(1024), identifier of object.
+             * Object_Auth_Group           - int, Auto incrementing ID.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECT_GROUPS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Object varchar(256) NOT NULL,
+                                                              Object_Auth_Group int NOT NULL,
+                                                              Object_Auth_Action varchar(256) NOT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Object, Object_Auth_Group, Object_Auth_Action),
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_OBJECTS(Object_Auth_Category, Object_Auth_Object)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Action)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_ACTIONS(Object_Auth_Category, Object_Auth_Action)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_GROUPS(Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_OBJECT_GROUPS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_OBJECT_GROUPS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE OBJECT_AUTH_USERS_GROUPS Table
+             *
+             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Object       - varchar(1024), identifier of object.
+             * Object_Auth_Group           - int, Auto incrementing ID.
+             * ID           - int, Auto incrementing ID.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_USERS_GROUPS (
+                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Object varchar(256) NOT NULL,
+                                                              ID int NOT NULL,
+                                                              Object_Auth_Group int NOT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Object_Auth_Category, Object_Auth_Object, ID, Object_Auth_Group),
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_OBJECTS(Object_Auth_Category, Object_Auth_Object)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (ID)
+                                                              REFERENCES ".$prefix."USERS(ID)
+                                                              ON DELETE CASCADE,
+                                                              FOREIGN KEY (Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
+                                                              REFERENCES ".$prefix."OBJECT_AUTH_GROUPS(Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Object_Auth_Group,ID),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "OBJECT_AUTH_USERS_GROUPS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "OBJECT_AUTH_USERS_GROUPS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
             /** ------------------------------------------ FUNCTIONS ------------------------------------------------
              * The very few DB functions in the framework.
              * While it violates my intention to keep all logic on the Application layer, and away from the DB, any other

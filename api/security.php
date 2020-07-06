@@ -370,7 +370,7 @@ switch($action){
         $arrExpected = [];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getRulebookCategories_checks.php';
+        require 'securityAPI_fragments/getRulebookCategories_auth.php';
         require 'securityAPI_fragments/getRulebookCategories_execution.php';
 
         if(is_array($result))
@@ -386,6 +386,7 @@ switch($action){
         $arrExpected = ["category","type"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/getRulebookRules_auth.php';
         require 'securityAPI_fragments/getRulebookRules_checks.php';
         require 'securityAPI_fragments/getRulebookRules_execution.php';
 
@@ -402,6 +403,7 @@ switch($action){
         $arrExpected = ["inputs","override","update"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/setRulebookRules_auth.php';
         require 'securityAPI_fragments/setRulebookRules_checks.php';
         require 'securityAPI_fragments/setRulebookRules_execution.php';
 
@@ -418,6 +420,7 @@ switch($action){
         $arrExpected = ["inputs"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/deleteRulebookRules_auth.php';
         require 'securityAPI_fragments/deleteRulebookRules_checks.php';
         require 'securityAPI_fragments/deleteRulebookRules_execution.php';
 
@@ -434,6 +437,7 @@ switch($action){
         $arrExpected = ["inputs","limit","offset"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/getEventsMeta_auth.php';
         require 'securityAPI_fragments/getEventsMeta_checks.php';
         require 'securityAPI_fragments/getEventsMeta_execution.php';
 
@@ -450,6 +454,7 @@ switch($action){
         $arrExpected = ["inputs","override","update"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/setEventsMeta_auth.php';
         require 'securityAPI_fragments/setEventsMeta_checks.php';
         require 'securityAPI_fragments/setEventsMeta_execution.php';
 
@@ -466,6 +471,7 @@ switch($action){
         $arrExpected = ["inputs"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/deleteEventsMeta_auth.php';
         require 'securityAPI_fragments/deleteEventsMeta_checks.php';
         require 'securityAPI_fragments/deleteEventsMeta_execution.php';
 
@@ -484,6 +490,7 @@ switch($action){
         $arrExpected = ["ips","reliable","type","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/getIPs_auth.php';
         require 'securityAPI_fragments/getIPs_checks.php';
         require 'securityAPI_fragments/getIPs_execution.php';
 
@@ -500,6 +507,7 @@ switch($action){
         $arrExpected = ["ranges","type","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/getIPRanges_auth.php';
         require 'securityAPI_fragments/getIPRanges_checks.php';
         require 'securityAPI_fragments/getIPRanges_execution.php';
 
@@ -517,6 +525,7 @@ switch($action){
         $arrExpected = ["ip","type","reliable","ttl"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/setIP_auth.php';
         require 'securityAPI_fragments/setIP_checks.php';
         require 'securityAPI_fragments/setIP_execution.php';
 
@@ -530,6 +539,7 @@ switch($action){
         $arrExpected = ["ip"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/deleteIP_auth.php';
         require 'securityAPI_fragments/deleteIP_checks.php';
         require 'securityAPI_fragments/deleteIP_execution.php';
 
@@ -544,6 +554,7 @@ switch($action){
         $arrExpected = ["prefix","from","to","newFrom","newTo","type","ttl"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/setIPRange_auth.php';
         require 'securityAPI_fragments/setIPRange_checks.php';
         require 'securityAPI_fragments/setIPRange_execution.php';
 
@@ -557,6 +568,7 @@ switch($action){
         $arrExpected = ["prefix","from","to"];
 
         require 'setExpectedInputs.php';
+        require 'securityAPI_fragments/deleteIPRange_auth.php';
         require 'securityAPI_fragments/deleteIPRange_checks.php';
         require 'securityAPI_fragments/deleteIPRange_execution.php';
 
@@ -570,7 +582,7 @@ switch($action){
         $arrExpected = ["range"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteExpired_checks.php';
+        require 'securityAPI_fragments/deleteExpired_auth.php';
         require 'securityAPI_fragments/deleteExpired_execution.php';
 
             echo !$result? '0' : $result;

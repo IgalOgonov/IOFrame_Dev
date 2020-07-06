@@ -1,8 +1,4 @@
 <?php
-if(!defined('validator'))
-    require __DIR__ . '/../../IOFrame/Util/validator.php';
-
-//TODO Add gallery specific auth check
 
 if($inputs['gallery'] === null){
     if($test)

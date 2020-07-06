@@ -156,6 +156,7 @@ switch($action){
         $arrExpected = ["tokens","tokenLike","actionLike","usesAtLeast","usesAtMost","expiresBefore","expiresAfter","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
+        require 'tokensAPI_fragments/getTokens_auth.php';
         require 'tokensAPI_fragments/getTokens_checks.php';
         require 'tokensAPI_fragments/getTokens_execution.php';
         if(is_array($result))
@@ -171,6 +172,7 @@ switch($action){
         $arrExpected = ["token","tokenAction","uses","ttl","overwrite","update"];
 
         require 'setExpectedInputs.php';
+        require 'tokensAPI_fragments/setToken_auth.php';
         require 'tokensAPI_fragments/setToken_checks.php';
         require 'tokensAPI_fragments/setToken_execution.php';
         echo !$result? '0' : $result;
@@ -183,6 +185,7 @@ switch($action){
         $arrExpected = ["tokens","overwrite","update"];
 
         require 'setExpectedInputs.php';
+        require 'tokensAPI_fragments/setTokens_auth.php';
         require 'tokensAPI_fragments/setTokens_checks.php';
         require 'tokensAPI_fragments/setTokens_execution.php';
         if(is_array($result))
@@ -198,6 +201,7 @@ switch($action){
         $arrExpected = ["tokens"];
 
         require 'setExpectedInputs.php';
+        require 'tokensAPI_fragments/deleteTokens_auth.php';
         require 'tokensAPI_fragments/deleteTokens_checks.php';
         require 'tokensAPI_fragments/deleteTokens_execution.php';
         echo !$result? '0' : $result;
@@ -210,6 +214,7 @@ switch($action){
         $arrExpected = ["time"];
 
         require 'setExpectedInputs.php';
+        require 'tokensAPI_fragments/deleteExpiredTokens_auth.php';
         require 'tokensAPI_fragments/deleteExpiredTokens_checks.php';
         require 'tokensAPI_fragments/deleteExpiredTokens_execution.php';
         echo !$result? '0' : $result;

@@ -8,13 +8,6 @@ if(!$inputs['remote'])
 else
     $inputs['remote'] = true;
 
-//Check auth
-if( !( $auth->hasAction(IMAGE_DELETE_AUTH) || $auth->isAuthorized(0) ) ){
-    if($test)
-        echo 'Cannot delete image!'.EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
 //Addresses
 if($inputs['addresses'] === null || !IOFrame\Util\is_json($inputs['addresses'])){
     if($test)

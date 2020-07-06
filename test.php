@@ -169,6 +169,12 @@ echo '<section :class="{open:templatesTest, closed:!templatesTest}">';
 require 'test/verbose/templatesTest.php';
 echo '</section>';
 
+echo '<h1>'.'Object Auth test'.'</h1>';
+echo '<button @click = "objectAuthTest = !objectAuthTest">Toggle Visibility</button>';
+echo '<section :class="{open:objectAuthTest, closed:!objectAuthTest}">';
+require 'test/verbose/objectAuthTest.php';
+echo '</section>';
+
 echo '<h1>'.'General sandbox'.'</h1>';
 echo '<button @click = "generalSandbox = !generalSandbox">Toggle Visibility</button>';
 echo '<section :class="{open:generalSandbox, closed:!generalSandbox}">';
@@ -208,6 +214,8 @@ phpinfo();
 // --------------- End of body
 echo '</body>';
 
+//determine which tab to open by default
+$openTab = isset($_REQUEST['openTab']) ? $_REQUEST['openTab'] : '';
 
 // --------------- Vue script
 echo '<script>
@@ -215,6 +223,7 @@ echo '<script>
     var test = new Vue({
     el: \'#test\',
     data: {
+        openTab: \''.htmlspecialchars($openTab).'\',
         serverInfo: false,
         sessionInfo: false,
         settingsInfo: false,
@@ -240,11 +249,16 @@ echo '<script>
         contactsTest: false,
         ordersTest: false,
         templatesTest: false,
+        objectAuthTest: false,
         generalSandbox: false,
         SQLSandbox: false,
         cryptoSandbox: false,
         cURLSandbox: false,
         GeoIPSandbox: false
+    },
+    created: function(){
+        if(this.openTab && (this[this.openTab] !== undefined) )
+            this[this.openTab] = true;
     }
     });
 

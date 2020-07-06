@@ -252,6 +252,7 @@ switch($action){
     case "c":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'objectAPI_fragments/c_auth.php';
         require 'objectAPI_fragments/c_checks.php';
         require 'objectAPI_fragments/c_execution.php';
         echo ($result === 0)?
@@ -260,6 +261,7 @@ switch($action){
     case "u":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'objectAPI_fragments/u_auth.php';
         require 'objectAPI_fragments/u_checks.php';
         require 'objectAPI_fragments/u_execution.php';
         echo ($result === 0)?
@@ -268,6 +270,7 @@ switch($action){
     case "d":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'objectAPI_fragments/d_auth.php';
         require 'objectAPI_fragments/d_checks.php';
         require 'objectAPI_fragments/d_execution.php';
         echo ($result === 0)?
@@ -276,6 +279,7 @@ switch($action){
     case "a":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
+        require 'objectAPI_fragments/a_auth.php';
         require 'objectAPI_fragments/a_checks.php';
         require 'objectAPI_fragments/a_execution.php';
         echo ($result === 0)?

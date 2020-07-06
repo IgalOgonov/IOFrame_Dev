@@ -7,13 +7,6 @@ if(!$inputs['remote'])
 else
     $inputs['remote'] = true;
 
-//Check auth
-if( !( $auth->hasAction(GALLERY_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
-    if($test)
-        echo 'Cannot modify galleries, or their memberships!'.EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
 //Addresses
 if($inputs['addresses'] === null || !IOFrame\Util\is_json($inputs['addresses'])){
     if($test)
@@ -30,19 +23,24 @@ if(count($inputs['addresses'])<1){
 }
 
 foreach($inputs['addresses'] as $index => $address){
-
-    $valid = \IOFrame\Util\validator::validateRelativeFilePath($address);
-    $valid = $valid || filter_var($address,FILTER_VALIDATE_URL);
-
-    //TODO Add address specific auth check
-    if(!\IOFrame\Util\validator::validateRelativeFilePath($valid)){
-        if($test)
-            echo 'Invalid address at index '.$index.EOL;
-        exit(INPUT_VALIDATION_FAILURE);
+    if(!$inputs['remote']){
+        if(!\IOFrame\Util\validator::validateRelativeFilePath($address)){
+            if($test)
+                echo 'Invalid address at index '.$index.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
     }
+    else{
+        $valid = \IOFrame\Util\validator::validateRelativeFilePath($address) || filter_var($address,FILTER_VALIDATE_URL);
+        if(!$valid){
+            if($test)
+                echo 'Invalid address at index '.$index.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+    }
+
 }
 
-//TODO Add gallery specific auth check
 if($inputs['gallery'] === null){
     if($test)
         echo 'Gallery name must be set!'.EOL;

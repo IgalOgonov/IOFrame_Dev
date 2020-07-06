@@ -19,16 +19,16 @@ var_dump(
                     'email' => 'test@test.com',
                     'phone' => '+972542354678',
                     'fax' => '+972542354679',
-                    'contactInfo' => '{testParam:"test1"}',
+                    'contactInfo' => '{"testParam":"test1"}',
                     'country' => 'Israel',
                     'state' => 'North',
                     'city' =>  'Haifa',
                     'street' =>  'Street',
                     'zipCode' => '1234566',
-                    'address' =>  '{testParam:"test2"}',
+                    'address' =>  '{"testParam":"test2"}',
                     'companyName' => 'Company',
                     'companyID' => '345454654',
-                    'extraInfo' => '{testParam:"test3"}',
+                    'extraInfo' => '{"testParam":"test3"}',
                 ]
             ],
             [
@@ -45,7 +45,7 @@ var_dump(
                     'city' =>  'Haifa',
                     'street' =>  'Street',
                     'zipCode' => '1234567',
-                    'address' =>  '{testParam:"test1"}',
+                    'address' =>  '{"testParam":"test1"}',
                     'companyName' => 'Company',
                     'companyID' => '345454654',
                     'extraInfo' => null,
@@ -60,6 +60,14 @@ var_dump(
             ],
         ],
         ['test'=>true,'verbose'=>true,'override'=>true]
+    )
+);
+echo EOL;
+
+echo 'Getting all types:'.EOL;
+var_dump(
+    $ContactHandler->getContactTypes(
+        ['test'=>true,'verbose'=>true]
     )
 );
 echo EOL;

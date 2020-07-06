@@ -17,14 +17,18 @@ namespace IOFrame\Util{
      *                         Is a text file, where there are two types of template variables:
      *                         a.   Normal variables, denoted %%VARIABLE_NAME%% (obviously whatever inside the dobule percentage
      *                              signs - changes). Those are replaced by stuff from $params, or are removed when not found.
-     *                         b.   Conditional blocks, denoted %%IF(VARIABLE_NAME)<anything except "%%" goes here>%%.
+     *                         b.   Conditional blocks, denoted %%IF(ARRAY_VARIABLE_NAME AS ITEM)<anything except "%%" goes here,
+     *                              references to array values are %ITEM% (static name) >%%.
      *                              Those blocks will only be inserted if VARIABLE_NAME is both provided, and its value isn't false (weak comparison).
+     *                         c.   FOR blocks, denoted %%FOR(VARIABLE_NAME)<anything except "%%" goes here>%%.
+     *                              Those blocks will only be inserted if VARIABLE_NAME is both provided, and its value is a non-empty array.
      *                         The rest of the text isn't touched.
-     *                         Normal blocks CAN be placed inside conditional blocks, but nested conditional blocks are not supported
+     *                         Normal blocks CAN be placed inside conditional / FOR blocks, but nested conditional / FOR blocks are not supported yet
      * @param array $variables Names of variables inside the template that need to be replaced, or IF blocks that need to be kept,
      *                         of the form: [
      *                              'VARIABLE_NAME':<string, value>,
-     *                              'IF_BLOCK_VARIABLE_NAME':<bool, whether to keep it>
+     *                              'IF_BLOCK_VARIABLE_NAME':<bool, whether to keep it>,
+     *                              'FOR_BLOCK_VARIABLE_NAME':<array, whether to keep it>
      *                          ]
      *                         Notice no variable names here have '%%' anywhere in them.
      *                         Any variables or IF blocks which are left out, will be replaced by an empty string in the template.
@@ -56,10 +60,61 @@ namespace IOFrame\Util{
         //Then, clean up anything that's left of normal variables
         $template = preg_replace('/\%\%[A-Z0-9_]+\%\%/','',$template);
 
+        //FOR blocks
+        foreach($variables as $variable=>$value){
+            //No need to touch anything that's false
+            if(gettype($value) !== 'array')
+                continue;
+            //Next comes the php equivalent of a DO-WHILE
+            $search = true;
+            $currentOffset = 0;
+
+            while($search){
+                $removedCharacters = 0;
+                $forAddition = '';
+                $offset = strpos($template,'%%FOR('.$variable.' AS ITEM)',$currentOffset);
+                if($offset !== false){
+
+                    if($verbose)
+                        echo 'FOR block '.$variable.'  found at offset '.$offset.': ';
+
+                    $endBlock = strpos($template,'%%',$offset + 2);
+                    if($endBlock === false)
+                        throw new \Exception('The template contains an unclosed FOR block!');
+
+                    if($verbose)
+                        echo 'FOR block closes: '.$endBlock.EOL.EOL;
+
+                    $condLength = strlen('%%FOR('.$variable.')');
+
+                    $forTemplate = substr($template,$offset+$condLength,$endBlock - $offset - $condLength);
+
+                    $removedCharacters += strlen($forTemplate);
+
+                    foreach($value as $replacement){
+                        $tempTemplate = str_replace('%ITEM%',$replacement,$forTemplate);
+                        $forAddition .= $tempTemplate;
+                        $removedCharacters -= $tempTemplate;
+                    }
+
+                    $removedCharacters += 2 + strlen('%%FOR('.$variable.')');
+
+                    $template = substr($template,0,$offset).
+                        $forAddition.
+                        substr($template,$endBlock+2);
+
+                    //No need to start searching from the start every time;
+                    $currentOffset = $endBlock + 2 - $removedCharacters;
+                }
+                else
+                    $search = false;
+            }
+        }
+
         //IF blocks
         foreach($variables as $variable=>$value){
             //No need to touch anything that's false
-            if(!$value)
+            if(!$value || gettype($value) !== 'boolean')
                 continue;
             //Next comes the php equivalent of a DO-WHILE
             $search = true;
@@ -73,23 +128,23 @@ namespace IOFrame\Util{
                     if($verbose)
                         echo 'IF block '.$variable.'  found at offset '.$offset.': ';
 
-                    $endIf = strpos($template,'%%',$offset + 2);
-                    if($endIf === false)
+                    $endBlock = strpos($template,'%%',$offset + 2);
+                    if($endBlock === false)
                         throw new \Exception('The template contains an unclosed IF block!');
 
                     if($verbose)
-                        echo 'If block closes: '.$endIf.EOL.EOL;
+                        echo 'If block closes: '.$endBlock.EOL.EOL;
 
                     //Remove the closing block
                     $condLength = strlen('%%IF('.$variable.')');
                     $template = substr($template,0,$offset).
-                        substr($template,$offset+$condLength,$endIf - $offset - $condLength).
-                        substr($template,$endIf+2);
+                        substr($template,$offset+$condLength,$endBlock - $offset - $condLength).
+                        substr($template,$endBlock+2);
 
                     $removedCharacters += 2 + strlen('%%IF('.$variable.')');
 
                     //No need to start searching from the start every time;
-                    $currentOffset = $endIf + 2 - $removedCharacters;
+                    $currentOffset = $endBlock + 2 - $removedCharacters;
                 }
                 else
                     $search = false;

@@ -8,13 +8,6 @@ if(!isset($userSettings))
         $defaultSettingsParams
     );
 
-//If regular login is not allowed, return 4 (login type not allowed).
-if($userSettings->getSetting('allowRegularReg') != 1){
-    if($test)
-        echo('Registration through this API is not allowed!'.EOL);
-    exit(AUTHENTICATION_FAILURE);
-}
-
 //Make sure a username is specified if the settings require it.
 if( ($userSettings->getSetting('usernameChoice') == 0) && $inputs["u"] === null ){
     if($test)
@@ -58,21 +51,6 @@ else{
             exit(INPUT_VALIDATION_FAILURE);
         }
 }
-
-//Check if self registration is allowed, user is admin, or user has the appropriate action:
-if (
-!(
-    $userSettings->getSetting('selfReg')!=0 ||
-    $auth->isAuthorized(0) ||
-    $auth->hasAction('REGISTER_USER_AUTH') ||
-    isset($_SESSION['INSTALLING'])
-)
-){
-    if($test)
-        echo "User must be authorized to register new users".EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
 
 
 ?>

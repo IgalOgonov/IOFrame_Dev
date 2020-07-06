@@ -213,7 +213,7 @@ namespace IOFrame{
             if($prependPrefix)
                 $tableName = $this->SQLHandler->getSQLPrefix().$tableName;
             $tempRes = [];
-
+            $keysWereDeleted = false;
             //If keys are not empty, we need to get specific rows
             if($keys != []){
 
@@ -239,6 +239,7 @@ namespace IOFrame{
                         if($verbose)
                             echo 'Key '.json_encode($keys[$i]).' is invalid!'.EOL;
                         unset($keys[$i]);
+                        $keysWereDeleted = true;
                         continue;
                     }
                 }
@@ -253,6 +254,9 @@ namespace IOFrame{
                     array_push($conds,$keys[$i]);
                 }
             }
+
+            if($keysWereDeleted && $keys === [])
+                return [];
 
             //If keys were not empty, conditions need to be specific
             if($conds != []){
@@ -275,12 +279,14 @@ namespace IOFrame{
                 else
                     $conds = $extraConditions;
             }
+
             $res = $this->SQLHandler->selectFromTable(
                 $tableName,
                 $conds,
                 $columns,
                 ['test'=>$test,'verbose'=>$verbose,'limit'=>$limit,'offset'=>$offset,'orderBy'=>$orderBy,'orderType'=>$orderType]
             );
+
             if(is_array($res)){
                 $resLength = count($res);
                 for($i = 0; $i<$resLength; $i+=1){
@@ -297,6 +303,7 @@ namespace IOFrame{
                             continue;
                         array_push($identifier,$res[$i][$colID]);
                     }
+
                     $identifier = implode($keyDelimiter,$identifier);
 
                     //Here we have no extra columns, or multiple ones

@@ -508,9 +508,6 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <input type="text" name="sql_u" placeholder="Your SQL server username"><br>
                     <input type="text" name="sql_p" placeholder="Your SQL server password"><br>
                     <input type="text" name="sql_db" placeholder="Your SQL server database name"><br>
-                    <span>Safe DB Mode:</span> <input type="checkbox" name="dbLockOnAction" value="0"><br>
-                    <small>If this is checked, database queries that modify the database will lock the (default database API on the)
-                     server from making other modifying actions until the result is returned.</small><br>
                     <input type="submit" value="Next">
                     </form>';
             break;
@@ -538,14 +535,6 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 echo 'Incorrect input! Please try again';
                 echo '</div>';
                 die();
-            }
-
-            if(isset($_REQUEST['dbLockOnAction'])){
-                if($sqlSettings->setSetting('dbLockOnAction',$_REQUEST['dbLockOnAction'],['createNew'=>true]))
-                    echo 'Setting dbLockOnAction set to '.$_REQUEST['dbLockOnAction'].EOL;
-                else{
-                    echo 'Failed to set setting dbLockOnAction  to '.$_REQUEST['dbLockOnAction'].EOL.EOL;
-                }
             }
 
             $sqlArgs = [
@@ -1019,6 +1008,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($siteArgs,["logStatus",IOFrame\LOG_MODE_1]);
             array_push($siteArgs,["sslOn",1]);
             array_push($siteArgs,["maxObjectSize",4000000]);
+            array_push($siteArgs,["maxCacheSize",65536]);
             array_push($siteArgs,["maxUploadSize",4000000]);
             array_push($siteArgs,["tokenTTL",3600]);
 

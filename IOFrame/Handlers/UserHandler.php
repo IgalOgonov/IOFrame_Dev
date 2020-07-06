@@ -884,15 +884,17 @@ namespace IOFrame\Handlers{
                 }
                 else{
                     //If you are logging yourself out, erase all your relog cookies just so you dont wast time trying to relog with bad info later
-                    $cookiesToUnset = ['sesID','sesIV','userMail'];
-                    foreach($cookiesToUnset as $cookieName){
-                        if (isset($_COOKIE[$cookieName])){
-                            if(!$test){
-                                unset($_COOKIE[$cookieName]);
-                                setcookie($cookieName, null, -1,'/');
+                    if($forgetMe){
+                        $cookiesToUnset = ['sesID','sesIV','userMail'];
+                        foreach($cookiesToUnset as $cookieName){
+                            if (isset($_COOKIE[$cookieName])){
+                                if(!$test){
+                                    unset($_COOKIE[$cookieName]);
+                                    setcookie($cookieName, null, -1,'/');
+                                }
+                                if ($verbose)
+                                    echo 'Unsetting cookie '.$cookieName.EOL;
                             }
-                            if ($verbose)
-                                echo 'Unsetting cookie '.$cookieName.EOL;
                         }
                     }
 

@@ -2,12 +2,6 @@
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
-if( !( $auth->hasAction(GALLERY_GET_ALL_AUTH) || $auth->isAuthorized(0) ) ){
-    if($test)
-        echo 'Cannot get all galleries'.EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
 //Limit, max 500, min 1
 if($inputs['limit'] !== null){
     if(!filter_var($inputs['limit'],FILTER_VALIDATE_INT)){

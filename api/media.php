@@ -372,6 +372,8 @@ $inputs = [];
 //Standard pagination inputs
 $standardPaginationInputs = ['limit','offset','createdAfter','createdBefore','changedAfter','changedBefore','includeRegex','excludeRegex'];
 
+//TODO For everything that has checks before auth, add rate-limiting.
+
 switch($action){
 
     case 'uploadMedia':
@@ -381,6 +383,7 @@ switch($action){
         $arrExpected =["type","items","address","imageQualityPercentage","gallery","overwrite"];
 
         require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/uploadMedia_auth.php';
         require 'mediaAPI_fragments/uploadMedia_checks.php';
         require 'mediaAPI_fragments/uploadMedia_execution.php';
 
@@ -395,7 +398,9 @@ switch($action){
         $arrExpected =["address","resourceType","lastChanged"];
 
         require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/getDBMedia_pre_checks_auth.php';
         require 'mediaAPI_fragments/getDBMedia_checks.php';
+        require 'mediaAPI_fragments/getDBMedia_post_checks_auth.php';
         require 'mediaAPI_fragments/getDBMedia_execution.php';
         break;
 
@@ -404,6 +409,7 @@ switch($action){
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getImages_checks.php';
+        require 'mediaAPI_fragments/getImages_auth.php';
         require 'mediaAPI_fragments/getImages_execution.php';
 
         if(is_array($result))
@@ -420,7 +426,9 @@ switch($action){
         $arrExpected =["address","name","caption","alt","deleteEmpty"];
 
         require 'setExpectedInputs.php';
+        // This one is too specific to
         require 'mediaAPI_fragments/updateImage_checks.php';
+        require 'mediaAPI_fragments/updateImage_auth.php';
         require 'mediaAPI_fragments/updateImage_execution.php';
 
         echo ($result === 0)?
@@ -435,6 +443,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/moveImage_checks.php';
+        require 'mediaAPI_fragments/moveImage_auth.php';
         require 'mediaAPI_fragments/moveImage_execution.php';
 
         echo ($result === 0)?
@@ -449,6 +458,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/deleteImages_checks.php';
+        require 'mediaAPI_fragments/deleteImages_auth.php';
         require 'mediaAPI_fragments/deleteImages_execution.php';
 
 
@@ -466,6 +476,7 @@ switch($action){
         $arrExpected =["addresses","remote"];
 
         require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/incrementImages_auth.php';
         require 'mediaAPI_fragments/incrementImages_checks.php';
         require 'mediaAPI_fragments/incrementImages_execution.php';
 
@@ -481,6 +492,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getImageGalleries_checks.php';
+        require 'mediaAPI_fragments/getImageGalleries_auth.php';
         require 'mediaAPI_fragments/getImageGalleries_execution.php';
 
         if(is_array($result))
@@ -495,6 +507,7 @@ switch($action){
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/getGalleries_auth.php';
         require 'mediaAPI_fragments/getGalleries_checks.php';
         require 'mediaAPI_fragments/getGalleries_execution.php';
 
@@ -510,6 +523,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/getGallery_checks.php';
+        require 'mediaAPI_fragments/getGallery_auth.php';
         require 'mediaAPI_fragments/getGallery_execution.php';
 
         if(is_array($result))
@@ -527,6 +541,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/setGallery_checks.php';
+        require 'mediaAPI_fragments/setGallery_auth.php';
         require 'mediaAPI_fragments/setGallery_execution.php';
 
         echo ($result === 0)?
@@ -541,6 +556,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/deleteGallery_checks.php';
+        require 'mediaAPI_fragments/deleteGallery_auth.php';
         require 'mediaAPI_fragments/deleteGallery_execution.php';
 
         echo ($result === 0)?
@@ -551,10 +567,11 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["addresses","gallery"];
+        $arrExpected =["remote","addresses","gallery"];
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/addToGallery_checks.php';
+        require 'mediaAPI_fragments/addToGallery_auth.php';
         require 'mediaAPI_fragments/addToGallery_execution.php';
 
         if(is_array($result))
@@ -572,6 +589,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/removeFromGallery_checks.php';
+        require 'mediaAPI_fragments/removeFromGallery_auth.php';
         require 'mediaAPI_fragments/removeFromGallery_execution.php';
 
         echo ($result === 0)?
@@ -586,6 +604,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/moveImageInGallery_checks.php';
+        require 'mediaAPI_fragments/moveImageInGallery_auth.php';
         require 'mediaAPI_fragments/moveImageInGallery_execution.php';
 
         echo ($result === 0)?
@@ -600,6 +619,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/swapImagesInGallery_checks.php';
+        require 'mediaAPI_fragments/swapImagesInGallery_auth.php';
         require 'mediaAPI_fragments/swapImagesInGallery_execution.php';
 
         echo ($result === 0)?
@@ -613,6 +633,7 @@ switch($action){
         $arrExpected =["relativeAddress","name"];
 
         require 'setExpectedInputs.php';
+        require 'mediaAPI_fragments/createFolder_auth.php';
         require 'mediaAPI_fragments/createFolder_checks.php';
         require 'mediaAPI_fragments/createFolder_execution.php';
 

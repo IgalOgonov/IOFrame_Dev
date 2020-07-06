@@ -126,6 +126,7 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'mailAPI_fragments/mailTo_checks.php';
+        require 'mailAPI_fragments/mailTo_auth.php';
         require 'mailAPI_fragments/mailTo_execution.php';
 
         echo ($result === 0)?
@@ -136,6 +137,7 @@ switch($action){
         $arrExpected = ["ids","limit","offset","createdAfter","createdBefore","changedAfter","changedBefore","includeRegex","excludeRegex"];
 
         require 'setExpectedInputs.php';
+        require 'mailAPI_fragments/getTemplates_auth.php';
         require 'mailAPI_fragments/getTemplates_checks.php';
         require 'mailAPI_fragments/getTemplates_execution.php';
 
@@ -151,6 +153,7 @@ switch($action){
         $arrExpected = ["id","title","content"];
 
         require 'setExpectedInputs.php';
+        require 'mailAPI_fragments/setTemplate_auth.php';
         require 'mailAPI_fragments/setTemplate_checks.php';
         require 'mailAPI_fragments/setTemplate_execution.php';
 
@@ -169,6 +172,7 @@ switch($action){
         $arrExpected = ["ids"];
 
         require 'setExpectedInputs.php';
+        require 'mailAPI_fragments/deleteTemplates_auth.php';
         require 'mailAPI_fragments/deleteTemplates_checks.php';
         require 'mailAPI_fragments/deleteTemplates_execution.php';
 

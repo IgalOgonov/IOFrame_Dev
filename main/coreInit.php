@@ -102,12 +102,12 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
     $logger->pushHandler($loggerHandler);
     $SessionHandler = new IOFrame\Handlers\SessionHandler($settings,$defaultSettingsParams);
 
+    $sessionExpired = !$SessionHandler->checkSessionNotExpired();
     //-------------------Perform default checks-------------------
-    $SessionHandler->checkSessionNotExpired();
 
     //If we logged out, see if we can try to log in
     if(
-        !isset($_SESSION['logged_in']) &&
+        ($sessionExpired || !isset($_SESSION['logged_in'])) &&
         isset($_COOKIE['sesID']) && $_COOKIE['sesID'] &&
         isset($_COOKIE['sesIV']) && $_COOKIE['sesIV'] &&
         isset($_COOKIE['userMail']) && $_COOKIE['userMail'] &&
@@ -149,6 +149,7 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
             if($oldID === $sesID){
                 //Should not matter at this point, but whatever
                 $_COOKIE['sesID'] = $newID;
+                setcookie("sesID", $newID, time()+(60*60*24*36500),'/','', 1, 1);
                 $success = true;
             }
             else

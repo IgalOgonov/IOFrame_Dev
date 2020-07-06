@@ -283,8 +283,8 @@ switch($action){
         $arrExpected = array_merge(["ids","getLimitedInfo","typeIs","statusIs"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/getOrders_validation_checks.php';
         require 'ordersAPI_fragments/getOrders_auth_checks.php';
+        require 'ordersAPI_fragments/getOrders_validation_checks.php';
         require 'ordersAPI_fragments/getOrders_execution.php';
 
         if(is_array($result))
@@ -304,8 +304,8 @@ switch($action){
             array_push($arrExpected,'id');
 
         require 'setExpectedInputs.php';
+    require 'ordersAPI_fragments/setOrder_auth_checks.php';
         require 'ordersAPI_fragments/setOrder_validation_checks.php';
-        require 'ordersAPI_fragments/setOrder_auth_checks.php';
         require 'ordersAPI_fragments/setOrder_execution.php';
 
         echo ($result === 0)?
@@ -319,8 +319,8 @@ switch($action){
         $arrExpected = array_merge(["ids","typeIs","statusIs","returnIDMeta"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/getOrders_validation_checks.php';
         require 'ordersAPI_fragments/archiveOrders_auth_checks.php';
+        require 'ordersAPI_fragments/getOrders_validation_checks.php';
         require 'ordersAPI_fragments/archiveOrders_execution.php';
 
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -346,8 +346,8 @@ switch($action){
         $arrExpected =["userID","orderID","relationType","meta"];
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/setUserOrder_validation_checks.php';
         require 'ordersAPI_fragments/setUserOrder_auth_checks.php';
+        require 'ordersAPI_fragments/setUserOrder_validation_checks.php';
         require 'ordersAPI_fragments/setUserOrder_execution.php';
 
         echo ($result === 0)?
@@ -361,8 +361,8 @@ switch($action){
         $arrExpected =["userID","orderID"];
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/removeUserFromOrder_validation_checks.php';
         require 'ordersAPI_fragments/removeUserFromOrder_auth_checks.php';
+        require 'ordersAPI_fragments/removeUserFromOrder_validation_checks.php';
         require 'ordersAPI_fragments/removeUserFromOrder_execution.php';
 
         echo ($result === 0)?

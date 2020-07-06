@@ -1,7 +1,5 @@
 <?php
-
 //Input checks
-
 if($params == null){
     if($test)
         echo 'Params must be set!';
@@ -39,51 +37,7 @@ foreach($expectedParams as $expectedParam){
                     echo 'newRank must be positive or 0!'.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
-
-            if($params[$expectedParam] < $auth->getRank()){
-                if($test)
-                    echo 'You cannot set somebodys rank to be lower than your own!';
-                exit(AUTHENTICATION_FAILURE);
-            }
             break;
     }
 
 }
-
-
-//Auth check TODO Add relevant actions, not just rank 0
-
-if(!$auth->isAuthorized(0)){
-    if($test)
-        echo 'Authorization rank must be 0!';
-    exit(AUTHENTICATION_FAILURE);
-}
-
-if(gettype($params['identifier']) == 'integer'){
-    $identityCond = [$SQLHandler->getSQLPrefix().'USERS.ID',$params['identifier'],'='];
-}
-else{
-    $identityCond = [$SQLHandler->getSQLPrefix().'USERS.Email',[$params['identifier'],'STRING'],'='];
-}
-
-$targetUser = $SQLHandler->selectFromTable(
-    $SQLHandler->getSQLPrefix().'USERS',
-    $identityCond,
-    ['Auth_Rank'],
-    ['test'=>$test]
-);
-
-if(!is_array($targetUser) || count($targetUser) == 0 ){
-    if($test)
-        echo 'Target user does not exist!';
-    exit('0');
-}
-
-$targetRank = $targetUser[0]['Auth_Rank'];
-
-if($targetRank <= $auth->getRank()){
-    if($test)
-        echo 'Target user is lower or equal rank to you!';
-    exit(AUTHENTICATION_FAILURE);
-}
-

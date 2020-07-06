@@ -112,6 +112,7 @@ foreach($result as $uploadName => $res){
 }
 
 //Update the resources
+$updateDB = [];
 if($mediaToUpdate != [])
     $updateDB =  $FrontEndResourceHandler->setResources(
         $mediaToUpdate,

@@ -33,7 +33,6 @@ namespace IOFrame\Handlers{
 
         /**
          * Basic construction function.
-         * If setting 'dbLockOnAction' is true, will ensure the global lock for DB operations is created.
          * @params SettingsHandler $settings  regular settings handler.
          * @params array $params
          */
@@ -84,11 +83,6 @@ namespace IOFrame\Handlers{
             $this->logger = new Logger(LOG_DEFAULT_CHANNEL);
             $this->logger->pushHandler($this->loggerHandler);
 
-
-            //Ensure the global DB operation lock exists, in case we are running in that mode
-            if($this->sqlSettings->getSetting('dbLockOnAction') == true)
-                if(!is_file(DB_LOCK_FILE))
-                    fclose(fopen(DB_LOCK_FILE,'w'));
         }
 
         /**
@@ -111,7 +105,8 @@ namespace IOFrame\Handlers{
          * @params array $params Includes parameters:
          *                      'fetchAll' bool, default false - If true, also fetches all the results of the query.
          *                      EXCLUDES 'test' and 'verbose'!
-         *
+         *                      'returnError' => bool default, if set to true will return error on failure.
+         *                                       error list can be found at https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
          * @throws \Exception Throws back the exception after releasing the lock, if it was locked
          *
          * @returns mixed
@@ -127,14 +122,6 @@ namespace IOFrame\Handlers{
             else
                 $fetchAll = false;
 
-            //As a rule of thumb, a query with fetchAll will not disrupt the ROW_COUNT() and LAST_INSERT_ID() functions.
-            $lockMode = ( ($this->sqlSettings->getSetting('dbLockOnAction') == true) && !$fetchAll )?
-                true : false;
-            if($lockMode){
-                $globalLock = fopen(DB_LOCK_FILE,'r');
-                flock($globalLock, LOCK_EX);
-            };
-
             $exe = $this->conn->prepare($query);
             //Bind params
             foreach($paramsToBind as $pair){
@@ -143,19 +130,14 @@ namespace IOFrame\Handlers{
             //Execute query, and release the lock after it succeeds/fails
             try{
                 $res = $exe->execute();
-                if($lockMode){
-                    flock($globalLock, LOCK_UN);
-                    fclose($globalLock);
-                };
             }
             catch(\Exception $e){
-                if($lockMode){
-                    flock($globalLock, LOCK_UN);
-                    fclose($globalLock);
-                };
                 throw new \Exception($e);
             }
-            if($fetchAll && $res !== false)
+
+            if($res === false && isset($params['returnError']) && $params['returnError'])
+                return $exe->errorCode();
+            elseif($fetchAll && $res !== false)
                 return $exe->fetchAll();
             else
                 return $res;
@@ -176,6 +158,8 @@ namespace IOFrame\Handlers{
          *                      'limit' If not null/0, will limit number of selected rows.
          *                      'offset' SQL offset
          *                      'justTheQuery' will only return the query it would send instead of executing
+         *                      'returnError' will return the SQL error instead of "-2" when possible. Notice that errors are not
+         *                                    always properly provided.
          *                      'DISTINCT','DISTINCTROW','HIGH_PRIORITY',...other valid SELECT flags will add the after "SELECT"
          * @params bool $test indicates test mode
          * @returns mixed
@@ -185,8 +169,6 @@ namespace IOFrame\Handlers{
          */
 
         function selectFromTable(string $tableName, array $cond = [], array $columns = [], array $params = []){
-
-
 
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
@@ -205,6 +187,8 @@ namespace IOFrame\Handlers{
                 $offset = $params['offset'] : $offset = null;
             isset($params['justTheQuery'])?
                 $justTheQuery = $params['justTheQuery'] : $justTheQuery = false;
+            (isset($params['returnError']))?
+                $returnError = $params['returnError'] : $returnError = false;
 
             $query = '';
 
@@ -302,10 +286,10 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Query to send: '.$query.EOL;
             try{
-                $obj = $this->exeQueryBindParam($query,[],['fetchAll'=>true]);
+                $obj = $this->exeQueryBindParam($query,[],['returnError'=>$returnError,'fetchAll'=>true]);
             }
             catch(\Exception $e){
-                //TODO Log exception
+                //TODO LOG
                 return -2;
             }
             //Check whether object exists
@@ -328,6 +312,8 @@ namespace IOFrame\Handlers{
          *                      'offset' SQL offset
          *                      'returnRows' If true, will return the number of affected rows on success.
          *                      'justTheQuery' If true, will only return the query and not execute it.
+         *                      'returnError' will return the SQL error instead of "-2" when possible. Notice that errors are not
+         *                                    always properly provided.
          *                      'tables' An array of table names one may use - generally useful if deleting from multiple tables at once
          * @params bool $test indicates test mode
          * @returns int
@@ -357,6 +343,8 @@ namespace IOFrame\Handlers{
                 $returnRows = $params['returnRows'] : $returnRows = false;
             isset($params['justTheQuery'])?
                 $justTheQuery = $params['justTheQuery'] : $justTheQuery = false;
+            (isset($params['returnError']))?
+                $returnError = $params['returnError'] : $returnError = false;
             isset($params['tables'])?
                 $tables = $params['tables'] : $tables = [];
 
@@ -421,10 +409,13 @@ namespace IOFrame\Handlers{
             else{
                 try{
                     if(!$returnRows)
-                        return $this->exeQueryBindParam($query,[]);
+                        return $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
                     else{
-                        $this->exeQueryBindParam($query,[]);
-                        return $this->exeQueryBindParam('SELECT ROW_COUNT()',[],['fetchAll'=>true])[0][0];
+                        $res = $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
+                        if($res === true)
+                            return $this->exeQueryBindParam('SELECT ROW_COUNT()',[],['fetchAll'=>true,'returnError'=>$returnError])[0][0];
+                        else
+                            return $returnError ? $res : -1;
                     }
                 }
                 catch(\Exception $e){
@@ -449,6 +440,8 @@ namespace IOFrame\Handlers{
          *                      'onDuplicateKeyColExp' allows custom expressions only for specific columns.
          *                      'returnRows' If true, will return the ID if the FIRST inserted row (their count depends on $values)
          *                      'justTheQuery' If true, will only return the query and not execute it.
+         *                      'returnError' will return the SQL error instead of "-2" when possible. Notice that errors are not
+         *                                    always properly provided.
          * @params bool $test indicates test mode
          * @returns int
          *      -2 server error
@@ -475,6 +468,8 @@ namespace IOFrame\Handlers{
                 $returnRows = $params['returnRows'] : $returnRows = false;
             isset($params['justTheQuery'])?
                 $justTheQuery = $params['justTheQuery'] : $justTheQuery = false;
+            (isset($params['returnError']))?
+                $returnError = $params['returnError'] : $returnError = false;
 
             //columns
             $columnNames = ' ('.implode(',',$columns).')';
@@ -528,10 +523,14 @@ namespace IOFrame\Handlers{
             else{
                 try{
                     if(!$returnRows)
-                        return $this->exeQueryBindParam($query,[]);
+                        return $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
                     else{
-                        $this->exeQueryBindParam($query,[]);
-                        return (int)$this->exeQueryBindParam('SELECT LAST_INSERT_ID()',[],['fetchAll'=>true])[0][0];
+                        $res = $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
+
+                        if($res === true)
+                            return (int)$this->exeQueryBindParam('SELECT LAST_INSERT_ID()',[],['fetchAll'=>true,'returnError'=>$returnError])[0][0];
+                        else
+                            return ($returnError ? $res : -1);
                     }
                 }
                 catch(\Exception $e){
@@ -559,6 +558,8 @@ namespace IOFrame\Handlers{
          *                      'limit' If not null/0, will limit number of deleted rows.
          *                      'returnRows' If true, will return the number of affected rows on success.
          *                      'justTheQuery' If true, will only return the query and not execute it.
+         *                      'returnError' will return the SQL error instead of "-2" when possible. Notice that errors are not
+         *                                    always properly provided.
          * @params bool $test indicates test mode
          * @returns int|string
          *      -2 server error
@@ -585,6 +586,8 @@ namespace IOFrame\Handlers{
                 $returnRows = $params['returnRows'] : $returnRows = false;
             isset($params['justTheQuery'])?
                 $justTheQuery = $params['justTheQuery'] : $justTheQuery = false;
+            (isset($params['returnError']))?
+                $returnError = $params['returnError'] : $returnError = false;
 
             //orderType - Note that without LIMIT, this is meaningless
             if(strtolower($orderType) == 'asc')
@@ -653,10 +656,14 @@ namespace IOFrame\Handlers{
             else{
                 try{
                     if(!$returnRows)
-                        return $this->exeQueryBindParam($query,[]);
+                        return $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
                     else{
-                        $this->exeQueryBindParam($query,[]);
-                        return $this->exeQueryBindParam('SELECT ROW_COUNT()',[],['fetchAll'=>true])[0][0];
+                        $res = $this->exeQueryBindParam($query,[],['returnError'=>$returnError]);
+
+                        if($res === true)
+                            return $this->exeQueryBindParam('SELECT ROW_COUNT()',[],['fetchAll'=>true,'returnError'=>$returnError])[0][0];
+                        else
+                            return $returnError ? $res : -1;
                     }
                 }
                 catch(\Exception $e){

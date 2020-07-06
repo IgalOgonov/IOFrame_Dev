@@ -4,7 +4,6 @@ if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
 //Input checks
-
 if($params == null && ($action === 'getUsersWithActions' || $action === 'getGroupActions') ){
     if($test)
         echo 'Params must be set!';
@@ -141,14 +140,4 @@ foreach($expectedParams as $expectedParam){
                 }
                 break;
         }
-}
-
-
-//Auth check TODO Add relevant actions, not just rank 0
-//TODO REMEMBER DIFFERENT ACTIONS - DEPENDING ON REQUEST
-
-if(!$auth->isAuthorized(0)){
-    if($test)
-        echo 'Authorization rank must be 0!';
-    exit(AUTHENTICATION_FAILURE);
 }

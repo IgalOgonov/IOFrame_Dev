@@ -1,6 +1,4 @@
 <?php
-
-
 if(!isset($params['id'])){
     if($test)
         echo 'You must send an object id to delete an object!';

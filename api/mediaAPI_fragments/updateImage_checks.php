@@ -33,12 +33,6 @@ if(!$inputs['deleteEmpty'] && $inputs['alt'] === null && $inputs['name'] === nul
 
 if($inputs['alt'] !== null){
 
-    if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_ALT_AUTH) || $auth->isAuthorized(0) ) ){
-        if($test)
-            echo 'Cannot change image alt tag!'.EOL;
-        exit(AUTHENTICATION_FAILURE);
-    }
-
     if(strlen($inputs['alt'])>IMAGE_ALT_MAX_LENGTH){
         if($test)
             echo 'Maximum alt length: '.IMAGE_ALT_MAX_LENGTH.EOL;
@@ -49,12 +43,6 @@ if($inputs['alt'] !== null){
 }
 
 if($inputs['name'] !== null){
-
-    if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_NAME_AUTH) || $auth->isAuthorized(0) ) ){
-        if($test)
-            echo 'Cannot change image name!'.EOL;
-        exit(AUTHENTICATION_FAILURE);
-    }
 
     if(strlen($inputs['name'])>IMAGE_NAME_MAX_LENGTH){
         if($test)
@@ -68,12 +56,6 @@ if($inputs['name'] !== null){
 
 if($inputs['caption'] !== null){
 
-    if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->isAuthorized(0) ) ){
-        if($test)
-            echo 'Cannot change image caption!'.EOL;
-        exit(AUTHENTICATION_FAILURE);
-    }
-
     if(strlen($inputs['caption'])>IMAGE_CAPTION_MAX_LENGTH){
         if($test)
             echo 'Maximum caption length: '.IMAGE_CAPTION_MAX_LENGTH.EOL;
@@ -86,29 +68,14 @@ if($inputs['caption'] !== null){
 if($inputs['deleteEmpty']){
 
     if($inputs['alt'] === null){
-        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_ALT_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot change image alt tag!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
-        }
         $meta['alt'] = null;
     };
 
     if($inputs['name'] === null){
-        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_NAME_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot change image name!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
-        }
         $meta['name'] = null;
     };
 
     if($inputs['caption'] === null){
-        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot change image caption!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
-        }
         $meta['caption'] = null;
     };
 }

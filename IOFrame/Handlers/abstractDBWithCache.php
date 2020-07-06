@@ -28,6 +28,12 @@ namespace IOFrame{
         protected $cacheTTL = 3600;
 
         /**
+         * @var int maximum size of an item (in bytes, since each character is UTF8 encoded)
+         *          Defaults to, from lowest to highest priority: 64kb, siteSettings->getSetting('maxCacheSize'), $params['maxCacheSize'];
+         */
+        protected $maxCacheSize = 65536;
+
+        /**
          * Basic construction function
          * @param Handlers\SettingsHandler $localSettings Settings handler containing LOCAL settings.
          * @param array $params An potentially containing an SQLHandler and/or a logger and/or a RedisHandler.
@@ -51,6 +57,10 @@ namespace IOFrame{
             if(isset($params['cacheTTL']))
                 $this->cacheTTL = $params['cacheTTL'];
 
+            if(isset($params['maxCacheSize']))
+                $this->maxCacheSize = $params['maxCacheSize'];
+            elseif($this->siteSettings !== null && $this->siteSettings->getSetting('maxCacheSize'))
+                $this->maxCacheSize = $this->siteSettings->getSetting('maxCacheSize');
         }
 
         function getCacheTTL(){
@@ -187,7 +197,7 @@ namespace IOFrame{
                 if(gettype($identifier) === 'array'){
                     //Optionally fix the identifier
                     if($groupByFirstNKeys !== 0){
-                        for($i = 0; $i < $totalColCount - $groupByFirstNKeys; $i++)
+                        for($i = 0; $i < count($identifier) - $groupByFirstNKeys; $i++)
                             array_pop($identifier);
                     }
                     $identifier = implode($keyDelimiter,$identifier);
@@ -348,6 +358,12 @@ namespace IOFrame{
                         unset($targets[$index]);
 
                         $cacheResults[$indexMap[$index]] = $cachedResultIsDBObject? $cachedResultArray[0] : $cachedResultArray;
+
+                        //Add TTL to the object that was requested
+                        if(!$test)
+                            $this->RedisHandler->call('expire',[$indexMap[$index],$cacheTTL]);
+                        if($verbose)
+                            echo 'Extending '.$type.' '.$indexMap[$index].' TTL by '.$cacheTTL.' seconds'.EOL;
                     }
 
                 }
@@ -385,11 +401,19 @@ namespace IOFrame{
                         $useCache &&
                         is_array($dbResult)
                     ){
-                        if(!$test)
-                            $this->RedisHandler->call('set',[$cacheName . $identifier,json_encode($dbResult),$cacheTTL]);
-                        if($verbose)
-                            echo 'Adding '.$type.' '.$cacheName . $identifier.' to cache for '.
-                                $this->cacheTTL.' seconds as '.json_encode($dbResult).EOL;
+                        $cacheItem = json_encode($dbResult);
+                        $cacheItemSize = strlen($cacheItem);
+                        if($cacheItemSize < $this->maxCacheSize){
+                            if(!$test)
+                                $this->RedisHandler->call('set',[$cacheName . $identifier,$cacheItem,$cacheTTL]);
+                            if($verbose)
+                                echo 'Adding '.$type.' '.$cacheName . $identifier.' to cache for '.
+                                    $cacheTTL.' seconds as '.$cacheItem.EOL;
+                        }
+                        elseif($verbose){
+                            echo $type.' '.$cacheName . $identifier.' not added to cache due to being of size  '.$cacheItemSize.
+                                ', when max size is '.$this->maxCacheSize.EOL;
+                        }
                     }
                 }
             else{
@@ -401,14 +425,13 @@ namespace IOFrame{
                 foreach($targets as $target){
                     if(gettype($target) === 'array'){
                         if($groupByFirstNKeys)
-                            for($i = 0; $i < $totalColCount - $groupByFirstNKeys; $i++)
+                            for($i = 0; $i < count($target) - $groupByFirstNKeys; $i++)
                                 array_pop($target);
                         $target = implode($keyDelimiter,$target);
                     }
                     if(!is_array($results[$target]))
                         $results[$target] = $missingErrorCode;
                 }
-
             return $results;
         }
 

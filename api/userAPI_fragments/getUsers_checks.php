@@ -2,13 +2,6 @@
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
-//AUTH
-if (!$auth->isAuthorized(0) && !$auth->hasAction(GET_USERS_AUTH) ){
-    if($test)
-        echo "User must be authorized to get users".EOL;
-    exit(AUTHENTICATION_FAILURE);
-}
-
 //Validate normal integers
 foreach(['idAtLeast','idAtMost','createdBefore','createdAfter','rankAtLeast','rankAtMost','createdBefore','createdAfter','limit','offset'] as $param){
     if($inputs[$param] !== null && !( $inputs[$param] === 0 || filter_var($inputs[$param], FILTER_VALIDATE_INT) ) ){
@@ -44,4 +37,3 @@ if($inputs['orderBy'] !== null){
         exit(INPUT_VALIDATION_FAILURE);
     }
 }
-?>

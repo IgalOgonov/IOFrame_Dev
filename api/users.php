@@ -204,6 +204,7 @@ switch($action){
             'isBanned','isSuspicious','createdBefore','createdAfter','orderBy','orderType', 'limit','offset' ];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/getUsers_auth.php';
         require 'userAPI_fragments/getUsers_checks.php';
         require 'userAPI_fragments/getUsers_execution.php';
 
@@ -213,6 +214,7 @@ switch($action){
         $arrExpected = ['id','username','email','active','created','bannedDate','suspiciousDate'];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/updateUser_auth.php';
         require 'userAPI_fragments/updateUser_checks.php';
         require 'userAPI_fragments/updateUser_execution.php';
 
@@ -223,6 +225,7 @@ switch($action){
         $arrExpected =["u","m","p"];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/addUser_auth.php';
         require 'userAPI_fragments/addUser_checks.php';
         require 'userAPI_fragments/addUser_execution.php';
 
@@ -248,10 +251,14 @@ switch($action){
         $arrExpected =["userID","m","p","sesKey"];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/logUser_pre_checks_auth.php';
         require 'userAPI_fragments/logUser_checks.php';
+        require 'userAPI_fragments/logUser_post_checks_auth.php';
         require 'userAPI_fragments/logUser_execution.php';
 
         if($result === 1){
+            if(!defined('SecurityHandler'))
+                require __DIR__ . '/../IOFrame/Handlers/SecurityHandler.php';
             if(!isset($SecurityHandler))
                 $SecurityHandler = new IOFrame\Handlers\SecurityHandler(
                     $settings,
@@ -308,6 +315,7 @@ switch($action){
         $arrExpected =["newPassword"];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/changePassword_auth.php';
         require 'userAPI_fragments/changePassword_checks.php';
         require 'userAPI_fragments/changePassword_execution.php';
 
@@ -350,6 +358,7 @@ switch($action){
         $arrExpected =["newMail"];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/changeMail_auth.php';
         require 'userAPI_fragments/changeMail_checks.php';
         require 'userAPI_fragments/changeMail_execution.php';
 
@@ -364,7 +373,9 @@ switch($action){
         $arrExpected =["minutes","id"];
 
         require 'setExpectedInputs.php';
+        require 'userAPI_fragments/banUser_pre_checks_auth.php';
         require 'userAPI_fragments/banUser_checks.php';
+        require 'userAPI_fragments/banUser_post_checks_auth.php';
         require 'userAPI_fragments/banUser_execution.php';
         echo ($result === 0)?
             '0' : $result;
