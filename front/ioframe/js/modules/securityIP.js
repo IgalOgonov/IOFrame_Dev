@@ -198,13 +198,13 @@ var securityIP = new Vue({
                                 type:'Select',
                                 list:[
                                     {
+                                        title:'Yes',
+                                        value:true
+                                    },
+                                    {
                                         title:'No',
                                         value:false
                                     },
-                                    {
-                                        title:'Yes',
-                                        value:true
-                                    }
                                 ],
                                 default: false
                             }
@@ -287,12 +287,12 @@ var securityIP = new Vue({
                                 type:'Select',
                                 list:[
                                     {
-                                        title:'No',
-                                        value:false
-                                    },
-                                    {
                                         title:'Yes',
                                         value:true
+                                    },
+                                    {
+                                        title:'No',
+                                        value:false
                                     }
                                 ],
                                 default: false

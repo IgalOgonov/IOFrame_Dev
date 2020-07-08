@@ -106,7 +106,10 @@ function initPage(pathToRoot, callbacks = {}){
                 //Our "only hope" is that our auto relog info is valid
                 if(localStorage.getItem("sesID")!==null && localStorage.getItem("sesIV")!==null ){
                     autoLogin(pathToRoot,0,callbacks).then(function(res){
+                        if(res)
+                            callbacks['sessionInfoUpdated'] = function(){};
                         updateSesInfo(pathToRoot,callbacks);
+
                     });
                 }
                 else{
@@ -187,6 +190,16 @@ function updateLastActionTime(){
 function autoLogin(pathToRoot, timeout = 0, callbacks = {}, test = false){
 
     return new Promise(function(resolve, reject) {
+
+        if(document.loggedIn){
+            console.log('Tried to relog despite being logged in!');
+            sessionStorage.setItem('debug_'+Date.now(),'Tried to relog despite being logged in!');
+            resolve(true);
+            return;
+        }
+        else{
+            sessionStorage.setItem('debug_last_autologin_attempt',Date.now());
+        }
 
         if(callbacks['beforeRelog']!==undefined)
             callbacks['beforeRelog']();

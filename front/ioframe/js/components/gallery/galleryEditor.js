@@ -38,34 +38,29 @@ Vue.component('gallery-editor', {
             type: Boolean,
             default: false
         },
-        //View 2 elements
-        viewElements: {
+        view:{
             type: Object,
             default: function(){
-                return {};
+                return {
+                    elements: {},
+                    selected: {},
+                    upToDate: {},
+                    target: {},
+                    url: {}
+                };
             }
         },
-        //View 2 selected
-        viewSelected:{
-            type: Array,
+        searchList:{
+            type: Object,
             default: function(){
-                return [];
+                return {
+                    elements: {},
+                    selected: {},
+                    upToDate: {},
+                    target: {},
+                    url: {}
+                };
             }
-        },
-        //Whether view2 is up-to-date
-        viewUpToDate: {
-            type: Boolean,
-            default: false
-        },
-        //View 2 target
-        target: {
-            type: String,
-            default:''
-        },
-        //View 2 url
-        url: {
-            type: String,
-            default:''
         },
         //Test Mode
         test: {
@@ -81,48 +76,76 @@ Vue.component('gallery-editor', {
     data: function(){
         return {
             //Whether we are currently initiating
-            initiating: false
+            initiating: false,
+            //Type of media viewer - 'local' or 'db'
+            viewerType: 'local',
         };
     },
-    template: '\
-         <div class="gallery-editor">\
-            <div>\
-                <div v-if="galleryMembers.length === 0">\
-                Nothing to display!\
-                </div>\
-                \
-                <div  v-else=""\
-                is="media-viewer"\
-                class="gallery-viewer"\
-                :display-elements-ordered="galleryMembers"\
-                :multiple-targets="selected"\
-                :select-multiple="allowSelectMultiple"\
-                :allow-searching="false"\
-                :show-sizes="false"\
-                :show-names="false"\
-                :draggable="true"\
-                :test="test"\
-                :verbose="verbose"\
-                :identifier="identifier+\'-viewer1\'"\
-                ></div>\
-                \
-                <h1 v-if="needViewer">Select images from bellow:</h1>\
-                \
-                <div  v-if="needViewer"\
-                is="media-viewer"\
-                :url="url"\
-                :target="target"\
-                :display-elements="viewElements"\
-                :select-multiple="allowSelectMultiple"\
-                :multiple-targets="viewSelected"\
-                :initiate="!viewUpToDate"\
-                :verbose="verbose"\
-                :test="test"\
-                :identifier="identifier+\'-viewer2\'"\
-                ></div>\
-            </div>\
-         </div>\
-        ',
+    template: `
+         <div class="gallery-editor">
+            <div>
+                <div v-if="galleryMembers.length === 0">
+                Nothing to display!
+                </div>
+
+                <div  v-else=""
+                is="media-viewer"
+                class="gallery-viewer"
+                :display-elements-ordered="galleryMembers"
+                :multiple-targets="selected"
+                :select-multiple="allowSelectMultiple"
+                :allow-searching="false"
+                :show-sizes="false"
+                :show-names="false"
+                :draggable="true"
+                :test="test"
+                :verbose="verbose"
+                :identifier="identifier+'-viewer1'"
+                ></div>
+
+                <div v-if="needViewer">
+                    <h1 >Select images from bellow:</h1>
+
+                    <div class="types">
+                        <button class="positive-3" :class="{selected:viewerType === 'local'}" @click="viewerType = 'local'">Local</button>
+                        <button class="positive-3" :class="{selected:viewerType === 'db'}" @click="viewerType = 'db'">Remote</button>
+                    </div>
+
+                    <div  v-if="viewerType === 'local'"
+                    is="media-viewer"
+                    :url="view.url"
+                    :target="view.target"
+                    :display-elements="view.elements"
+                    :select-multiple="allowSelectMultiple"
+                    :multiple-targets="view.selected"
+                    :initiate="!view.upToDate"
+                    :verbose="verbose"
+                    :test="test"
+                    :identifier="identifier+'-viewer2'"
+                    ></div>
+                    <div    v-if="viewerType === 'db'"
+                    is="search-list"
+                    :_functions="searchList.functions"
+                    :api-url="searchList.url"
+                    :extra-params="searchList.extraParams"
+                    :extra-classes="searchList.extraClasses"
+                    api-action="getImages"
+                    :page="searchList.page"
+                    :limit="searchList.limit"
+                    :total="searchList.total"
+                    :items="searchList.items"
+                    :initiate="!searchList.initiated"
+                    :columns="searchList.columns"
+                    :filters="searchList.filters"
+                    :selected="searchList.selected"
+                    :test="test"
+                    :verbose="verbose"
+                    :identifier="identifier+'-search'"
+                    ></div>
+                </div>
+            </div>
+         </div>
+        `,
     methods: {
         //Initiates the gallery info from the API
         initiateGallery: function(){
@@ -262,6 +285,11 @@ Vue.component('gallery-editor', {
             if(this.verbose)
                 console.log('Initiating at update!');
             this.initiateGallery();
+        }
+    },
+    watch:{
+        viewerType: function(){
+            eventHub.$emit('resetEditorView');
         }
     }
 });

@@ -1,9 +1,5 @@
 <?php
 
-//-------------------- Define current version --------------------
-if(!defined("IOFRAME_VERSION"))
-    define("IOFRAME_VERSION",1.0);
-
 require 'main/definitions.php';
 if(!defined('SettingsHandler'))
     require 'IOFrame/Handlers/SettingsHandler.php';
@@ -54,8 +50,6 @@ if(!file_exists('localFiles/.htaccess'))
         file_get_contents('plugins/.htaccess')
     );
 
-//--------------------Initialize the version --------------------
-file_put_contents('localFiles/ver.txt',(string)IOFRAME_VERSION);
 
 //--------------------Create the definitions json file --------------------
 if(!is_dir('localFiles/definitions')){
@@ -1011,6 +1005,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($siteArgs,["maxCacheSize",65536]);
             array_push($siteArgs,["maxUploadSize",4000000]);
             array_push($siteArgs,["tokenTTL",3600]);
+            array_push($siteArgs,["CPMenu",json_encode([],JSON_FORCE_OBJECT)]);
 
             array_push($userArgs,["pwdResetExpires",72]);
             array_push($userArgs,["mailConfirmExpires",72]);
@@ -1035,6 +1030,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($pageArgs,["regConfirm",'']);
             array_push($pageArgs,["registrationPage",'']);
             array_push($pageArgs,["homepage",'front/ioframe/pages/welcome']);
+            array_push($pageArgs,["404",'']);
 
             array_push($resourceArgs,["imagePathLocal",'front/ioframe/img/']);
             array_push($resourceArgs,["jsPathLocal",'front/ioframe/js/']);

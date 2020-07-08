@@ -167,22 +167,162 @@ var galleries = new Vue({
         selected:-1,
         //Currently selected gallery object
         gallery: {},
+        //The editor's searchlist - filled with remote results
+        editorSearchList:{
+            //Filters to display for the search list
+            filters:[
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'createdAfter',
+                            title:'Created After',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        },
+                        {
+                            name:'createdBefore',
+                            title:'Created Before',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        }
+                    ]
+                },
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'changedAfter',
+                            title:'Changed After',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        },
+                        {
+                            name:'changedBefore',
+                            title:'Changed Before',
+                            type:'Datetime',
+                            parser: function(value){ return Math.round(value/1000); }
+                        }
+                    ]
+                },
+                {
+                    type:'Group',
+                    group: [
+                        {
+                            name:'includeRegex',
+                            title:'Include',
+                            placeholder:'Text identifier includes',
+                            type:'String',
+                            min:0,
+                            max: 64,
+                            validator: function(value){
+                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
+                            }
+                        },
+                        {
+                            name:'excludeRegex',
+                            title:'Exclude',
+                            placeholder:'Text identifier excludes',
+                            type:'String',
+                            min:0,
+                            max: 64,
+                            validator: function(value){
+                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
+                            }
+                        },
+                    ]
+                }
+            ],
+            //Result comunts to display, and how to parse them
+            columns:[
+                {
+                    id:'image',
+                    custom:true,
+                    title:'Image',
+                    parser:function(item){
+                        let src = item.dataType? (document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&lastChanged='+item.lastChanged) : item.identifier;
+                        return '<img src="'+src+'">';
+                    }
+                },
+                {
+                    id:'name',
+                    custom:true,
+                    title:'Name',
+                    parser:function(item){
+                        return item.name? item.name : (item.dataType ? item.identifier : 'Unnamed link');
+                    }
+                },
+                {
+                    id:'lastChanged',
+                    title:'Last Changed',
+                    parser:function(timestamp){
+                        timestamp *= 1000;
+                        let date = timestampToDate(timestamp).split('-').reverse().join('-');
+                        let hours = Math.floor(timestamp%(1000 * 60 * 60 * 24)/(1000 * 60 * 60));
+                        let minutes = Math.floor(timestamp%(1000 * 60 * 60)/(1000 * 60));
+                        let seconds = Math.floor(timestamp%(1000 * 60)/(1000));
+                        if(hours < 10)
+                            hours = '0'+hours;
+                        if(minutes < 10)
+                            minutes = '0'+minutes;
+                        if(seconds < 10)
+                            seconds = '0'+seconds;
+                        return date + ', ' + hours+ ':'+ minutes+ ':'+seconds;
+                    }
+                },
+                {
+                    id:'identifier',
+                    title:'Media Identifier',
+                    parser:function(identifier){
+                        return '<textarea disabled>'+identifier+'</textarea>';
+                    }
+                }
+            ],
+            page:0,
+            limit:25,
+            total: 0,
+            items: [],
+            initiated: false,
+            selected:[],
+            extraParams:{
+                getDB:1
+            },
+            extraClasses: function(item){
+                if(item.vertical)
+                    return 'vertical';
+                else if(item.small)
+                    return 'small';
+                else
+                    return false;
+            },
+            functions:{
+                'mounted': function(){
+                    //This means we re-mounted the component without searching again
+                    if(!this.initiate){
+                        eventHub.$emit('resizeImages');
+                    }
+                }
+            },
+            url: document.rootURI + 'api/media'
+        },
         //Members of currently selected gallery
         galleryMembers: [],
         //Whether currently selected gallery is initiated
         galleryInitiated: false,
         //Selected gallery - current gallery in editor
         selectedGalleryMembers:[],
-        //View 2 elements - editor
-        viewElements: {},
-        //View 2 selected - editor
-        viewSelected: [],
-        //Whether view2 is up-to-date  - editor
-        viewUpToDate:false,
-        //View 2 target - editor
-        target:'',
-        //View 2 url - editor
-        url:'',
+        editorView:{
+            //View 2 elements - editor
+            elements: {},
+            //View 2 selected - editor
+            selected: [],
+            //Whether view2 is up-to-date  - editor
+            upToDate:false,
+            //View 2 target - editor
+            target:'',
+            //View 2 url - editor
+            url:'',
+        },
         //Current operation mode
         currentMode: 'search',
         //Current operation
@@ -193,7 +333,7 @@ var galleries = new Vue({
         moveTargets:[],
         //Whether we are currently loading
         isLoading:false,
-        verbose:false,
+        verbose:true,
         test:false
     },
     created:function(){
@@ -204,8 +344,10 @@ var galleries = new Vue({
         eventHub.$on('goToPage',this.goToPage);
         eventHub.$on('viewElementsUpdated', this.updateSecondView);
         eventHub.$on('changeURLRequest', this.changeViewURL);
+        eventHub.$on('resetEditorView', this.resetEditorView);
         eventHub.$on('select', this.selectElement);
         eventHub.$on('drop', this.moveGalleryElement);
+        eventHub.$on('resizeImages',this.resizeImages);
     },
     computed:{
         //Gets the selected gallery
@@ -274,7 +416,7 @@ var galleries = new Vue({
             return Object.keys(this.modes[this.currentMode].operations).length>0;
         },
         targetIsFolder:function(){
-            return this.target!== '' && (this.target.indexOf('.') === -1);
+            return this.editorView.target!== '' && (this.editorView.target.indexOf('.') === -1);
         },
         mediaURL: function(){
             return document.pathToRoot + 'api/media';
@@ -286,23 +428,42 @@ var galleries = new Vue({
             if(this.verbose)
                 console.log('Recieved response',response);
 
-            if(!response.from || response.from !== 'search')
+            if(!response.from)
                 return;
 
-            //Either way, the galleries should be considered initiated
-            this.galleries = [];
-            this.galleriesInitiated = true;
+            if( response.from === 'search' ){
+                //Either way, the galleries should be considered initiated
+                this.galleries = [];
+                this.galleriesInitiated = true;
 
-            //In this case the response was an error code, or the page no longer exists
-            if(response.content['@'] === undefined)
-                return;
+                //In this case the response was an error code, or the page no longer exists
+                if(response.content['@'] === undefined)
+                    return;
 
-            this.total = (response.content['@']['#'] - 0) ;
-            delete response.content['@'];
+                this.total = (response.content['@']['#'] - 0) ;
+                delete response.content['@'];
 
-            for(let k in response.content){
-                response.content[k].identifier = k;
-                this.galleries.push(response.content[k]);
+                for(let k in response.content){
+                    response.content[k].identifier = k;
+                    this.galleries.push(response.content[k]);
+                }
+            }
+            else if(response.from === 'editor-search' ){
+                //Either way, the galleries should be considered initiated
+                this.editorSearchList.items = [];
+                this.editorSearchList.initiated = true;
+
+                //In this case the response was an error code, or the page no longer exists
+                if(response.content['@'] === undefined)
+                    return;
+
+                this.editorSearchList.total = (response.content['@']['#'] - 0) ;
+                delete response.content['@'];
+
+                for(let k in response.content){
+                    response.content[k].identifier = k;
+                    this.editorSearchList.items.push(response.content[k]);
+                }
             }
         },
         //Parses API response for gallery initiation
@@ -342,24 +503,38 @@ var galleries = new Vue({
             if(this.verbose)
                 console.log('Recieved response',response);
 
-            if(!response.from || response.from !== 'search')
+            if(!response.from)
                 return;
 
-            this.page = response.content;
 
-            this.galleriesInitiated = false;
-            
-            this.selected = -1;
+            if( response.from === 'search' ){
+                this.page = response.content;
+
+                this.galleriesInitiated = false;
+
+                this.selected = -1;
+            }
+            else if(response.from === 'editor-search' ){
+                this.editorSearchList.page = response.content;
+
+                this.editorSearchList.initiated = false;
+
+                this.editorSearchList.selected = -1;
+            }
         },
         //Resets editor
         resetEditor: function(newMode){
             this.selectedGalleryMembers = [];
             this.galleryMembers = [];
             this.galleryInitiated = false;
-            this.viewElements = {};
-            this.viewSelected = [];
+            this.editorView.elements = {};
+            this.editorView.selected = [];
+            this.editorView.upToDate = false;
+            this.editorSearchList.selected = [];
+            this.editorSearchList.items = [];
+            this.editorSearchList.total = 0;
+            this.editorSearchList.initiated = false;
             this.moveTargets = [];
-            this.viewUpToDate = false;
         },
         //Switches to requested mode
         switchModeTo: function(newMode){
@@ -382,7 +557,7 @@ var galleries = new Vue({
                     break;
                 case 'cancel':
                     if(this.currentMode === 'search'){
-                        this.target = '';
+                        this.editorView.target = '';
                     }
                     else if(this.currentMode === 'edit'){
                         this.selectedGalleryMember = [];
@@ -448,8 +623,16 @@ var galleries = new Vue({
                         break;
                     case 'add':
                         let stuffToAdd = [];
-                        for(let k in this.viewSelected){
-                            stuffToAdd.push( (this.url==='') ? this.viewSelected[k] : this.url+'/'+this.viewSelected[k] );
+                        if(this.editorView.selected.length > 0){
+                            for(let k in this.editorView.selected){
+                                stuffToAdd.push( (this.editorView.url==='') ? this.editorView.selected[k] : this.editorView.url+'/'+this.editorView.selected[k] );
+                            }
+                        }
+                        else if(this.editorSearchList.selected.length > 0){
+                            for(let k in this.editorSearchList.selected){
+                                stuffToAdd.push(this.editorSearchList.items[this.editorSearchList.selected[k]].identifier);
+                            }
+                            data.append('remote',true);
                         }
                         if(stuffToAdd.length > 0){
                             data.append('action','addToGallery');
@@ -506,7 +689,7 @@ var galleries = new Vue({
             }
             else if(this.currentMode === 'edit'){
                 this.selectedGalleryMembers = [];
-                this.viewSelected = [];
+                this.resetEditorView();
             };
             this.operationInput = '';
             this.currentOperation = '';
@@ -546,12 +729,13 @@ var galleries = new Vue({
             if(this.verbose)
                 console.log('Selecting item ',request);
 
-            if(!request.from || request.from !== 'search')
+            if(!request.from)
                 return;
 
-            request = request.content;
-
             if(this.currentMode === 'search'){
+
+                request = request.content;
+
                 this.resetEditor();
                 if(this.selected === request){
                     this.switchModeTo('edit');
@@ -561,24 +745,36 @@ var galleries = new Vue({
                 }
             }
             else if(this.currentMode === 'edit'){
-                if(!request.from || request.from !== 'editor-viewer2')
-                    return;
 
-                let newTarget = request.key;
-                let targetName = newTarget.split('/').pop();
-                let element = this.viewElements[newTarget];
-                // Select/Unselect an image
-                if(!element.folder){
-                    if(this.viewSelected.indexOf(targetName) !== -1){
-                        this.viewSelected.splice(this.viewSelected.indexOf(targetName),1);
+                if(request.from === 'editor-viewer2'){
+
+                    let newTarget = request.key;
+                    let targetName = newTarget.split('/').pop();
+                    let element = this.editorView.elements[newTarget];
+                    // Select/Unselect an image
+                    if(!element.folder){
+                        if(this.editorView.selected.indexOf(targetName) !== -1){
+                            this.editorView.selected.splice(this.editorView.selected.indexOf(targetName),1);
+                        }
+                        else{
+                            this.editorView.selected.push(targetName);
+                        }
                     }
+                    //Open a folder
                     else{
-                        this.viewSelected.push(targetName);
+                        this.changeViewURL({from:'editor',content:newTarget});
                     }
                 }
-                //Open a folder
-                else{
-                    this.changeViewURL({from:'editor',content:newTarget});
+                else if(request.from === 'editor-search'){
+
+                    request = request.content;
+
+                    if(this.editorSearchList.selected.indexOf(request) !== -1){
+                        this.editorSearchList.selected.splice(this.editorView.editorSearchList.indexOf(request),1);
+                    }
+                    else{
+                        this.editorSearchList.selected.push(request);
+                    }
                 }
 
             }
@@ -760,8 +956,8 @@ var galleries = new Vue({
 
             //If we got a valid view, update the app
             if(typeof response === 'object'){
-                this.viewElements = response;
-                this.viewUpToDate = true;
+                this.editorView.elements = response;
+                this.editorView.upToDate = true;
             }
             //Handle errors
             else{
@@ -778,9 +974,57 @@ var galleries = new Vue({
             if(this.verbose)
                 console.log('Recieved', request);
 
-            this.url = request.content;
-            this.viewSelected = [];
-            this.viewUpToDate = false;
+            this.editorView.url = request.content;
+            this.editorView.selected = [];
+            this.editorView.upToDate = false;
+        },
+        //Resizes searchlist images
+        resizeImages: function (timeout = 5) {
+
+            let context = this;
+
+            if(!this.editorSearchList.initiated && timeout > 0){
+                if(this.verbose)
+                    console.log('resizing images again, timeout '+timeout);
+                setTimeout(function(){context.resizeImages(timeout-1)},1000);
+                return;
+            }
+            else if(!this.editorSearchList.initiated && timeout === 0){
+                if(this.verbose)
+                    console.log('Cannot resize images, timeout reached!');
+                return;
+            }
+
+            if(this.verbose)
+                console.log('resizing images!');
+
+            let searchItems = this.$el.querySelectorAll('#galleries .search-list .search-item');
+            let verbose = this.verbose;
+            for( let index in this.editorSearchList.items ){
+                let element = searchItems[index];
+                let image = element.querySelector('img');
+                image.onload = function () {
+                    let naturalWidth = image.naturalWidth;
+                    let naturalHeight = image.naturalHeight;
+                    if(naturalWidth < 320){
+                        Vue.set(context.editorSearchList.items[index],'small',true);
+                        if(verbose)
+                            console.log('setting image '+index+' ass small');
+                    }
+                    else if(naturalHeight > naturalWidth){
+                        Vue.set(context.editorSearchList.items[index],'vertical',true);
+                        if(verbose)
+                            console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
+                    }
+                };
+                if(image.complete)
+                    image.onload();
+            };
+        },
+        //Resets selected images in editor
+        resetEditorView: function(){
+            this.editorView.selected = [];
+            this.editorSearchList.selected = [];
         }
     },
     mounted: function(){

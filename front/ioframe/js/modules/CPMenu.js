@@ -2,7 +2,7 @@ var CPMenu = new Vue({
     el: '#menu',
     name:'Side Menu',
     data: {
-        configObject: document.siteConfig,
+        configObject: JSON.parse(JSON.stringify(document.siteConfig)),
         selected: '',
         logo:{
             imgURL: '',
@@ -110,9 +110,9 @@ var CPMenu = new Vue({
                 position: 7,
             },
             {
-                id: 'objects',
-                title: 'Objects',
-                url: 'objects',
+                id: 'tokens',
+                title: 'Tokens',
+                url: 'tokens',
                 position: 8,
             },
             {
@@ -134,9 +134,9 @@ var CPMenu = new Vue({
                 position: 11,
             },
             {
-                id: 'tokens',
-                title: 'Tokens',
-                url: 'tokens',
+                id: 'objects',
+                title: 'Objects',
+                url: 'objects',
                 position: 12,
             },
             {
@@ -146,6 +146,14 @@ var CPMenu = new Vue({
                 position: -3,
             }
         ];
+
+        /* Array of id's to ignore in the default menu
+         */
+        if(this.configObject.cp.ignoreDefaults === undefined)
+            this.configObject.cp.ignoreDefaults = [];
+
+        defaultMenu = defaultMenu.filter(item => this.configObject.cp.ignoreDefaults.indexOf(item.id) == -1);
+
         /* Extra menu items - needs to be an array similar to Menu, will be appended to the end.
          */
         if(this.configObject.cp.extraMenu === undefined)

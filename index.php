@@ -43,7 +43,7 @@ if( is_array($match)) {
 //Get required matches from the db/cache
 $matches = $RouteHandler->getMatches($matchNames);
 
-//If the correct match is found, proccess it
+//If the correct match is found, process it
 if(isset($matches[$routeTarget]) && is_array($matches[$routeTarget])){
 
     //DB array
@@ -127,7 +127,7 @@ if(
 }
 
 //The default is to require a 404 page - but we might have a dynamic one!
-if(gettype($pageSettings->getSetting('404')) == 'string' ){
+if(gettype($pageSettings->getSetting('404')) == 'string'  && $pageSettings->getSetting('404')){
     $extensions = ['php','html','htm','png','jpg','gif'];
     //The homepage resides at the address defined at 'homepage'
     $url = __DIR__.'/'.$pageSettings->getSetting('404');

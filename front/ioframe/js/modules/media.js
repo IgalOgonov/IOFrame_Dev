@@ -859,11 +859,26 @@ var media = new Vue({
             this.searchList.selected = -1;
         },
         //Resizes searchlist images
-        resizeImages: function () {
+        resizeImages: function (timeout = 5) {
+
+            let context = this;
+
+            if(!this.searchList.initiated && timeout > 0){
+                if(this.verbose)
+                    console.log('resizing images again, timeout '+timeout);
+                setTimeout(function(){context.resizeImages(timeout-1)},1000);
+                return;
+            }
+            else if(!this.searchList.initiated && timeout === 0){
+                if(this.verbose)
+                    console.log('Cannot resize images, timeout reached!');
+                return;
+            }
+
             if(this.verbose)
                 console.log('resizing images!');
+
             let searchItems = this.$el.querySelectorAll('#media .search-list .search-item');
-            let context = this;
             let verbose = this.verbose;
             for( let index in this.searchList.items ){
                 let element = searchItems[index];
@@ -885,8 +900,6 @@ var media = new Vue({
                 if(image.complete)
                     image.onload();
             };
-
-            delete this.searchList.functions.updated;
         }
     },
     mounted: function(){

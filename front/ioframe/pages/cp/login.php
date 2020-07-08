@@ -28,7 +28,8 @@ $siteConfig = array_merge($siteConfig,
             'id' => 'login',
             'title' => 'Login'
         ]
-    ]);
+    ]
+);
 $userSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.SETTINGS_DIR_FROM_ROOT.'/userSettings/');
 $siteConfig['login'] = [
     'hasRememberMe'=>$userSettings->getSetting('rememberMe')? true: false,

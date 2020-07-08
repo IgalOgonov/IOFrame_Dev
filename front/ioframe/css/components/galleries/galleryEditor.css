@@ -15,3 +15,82 @@
 .gallery-editor .gallery-viewer .media-object-container.draggedOver {
     background: rgba(0,0,0,0.1);
 }
+
+/* Types */
+.gallery-editor .types{
+    display: flex;
+}
+
+.gallery-editor .types > button {
+    padding: 5px 10px;
+    font-size: 1em;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out, border 0s;
+}
+
+.gallery-editor .types > button.selected  {
+    border-bottom: 3px black solid;
+}
+
+.gallery-editor .types > button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+.gallery-editor .types > button:not(:first-child){
+    border-left: 0;
+}
+.gallery-editor .types > button:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+.gallery-editor .types > button:not(:last-child){
+    border-right: 0;
+}
+
+
+/* Search List - Media selector */
+.gallery-editor .search-list .search-results{
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.gallery-editor .search-list .search-titles {
+    display: none;
+}
+.gallery-editor .search-list .search-item {
+    flex-direction: column;
+    max-width: 360px;
+    min-width: 360px;
+    margin: 5px;
+}
+.gallery-editor .search-list .search-item span:not(.image) .search-item-title {
+    display: inherit !important;
+    padding: 0px 3px;
+    background: rgba(0,0,0,0.1);
+}
+.gallery-editor .search-list .search-results > * > * {
+    flex:0;
+}
+.gallery-editor .search-list .search-results > .search-item > .image span {
+    height: 250px;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 5px 0px;
+}
+.gallery-editor .search-list .search-results > .search-item.vertical > .image span {
+    flex-direction: row;
+}
+.gallery-editor .search-list .search-results > .search-item.small > .image span {
+    width: max-content;
+    margin: 5px auto;
+}
+.gallery-editor .search-list .search-results > .search-item > .image span img {
+    max-width: 100%;
+    max-height: 100%;
+}
+.gallery-editor .search-list .search-results > .search-item > .identifier textarea {
+    width: 100%;
+    margin: 5px 0px;
+    padding: 5px;
+    border: 1px rgb(163, 171, 207) solid;
+    background: rgb(204,240,253);
+}
