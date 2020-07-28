@@ -1,0 +1,64 @@
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#welcome{
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    max-width: 600px;
+    min-width: 365px;
+    background-color: var(--main-color-2);
+    border: 1px solid var(--secondary-color-4);
+    border-radius: 10px;
+}
+
+#welcome > * {
+    padding: 5px 10px;
+}
+
+#welcome > .title{
+    background-color: var(--secondary-color-2);
+    border-radius: 10px 10px 0px 0px;
+}
+
+#welcome > .title::after{
+    content: 'IOFrame installed successfully!';
+}
+
+#welcome > .explanation{
+}
+#welcome > .explanation > .why-this-page-is-here::after{
+    content: 'If you are on this page, you either got here via a direct link, or this IOFrame system has nothing installed on top of it.';
+}
+#welcome > .explanation > .owner::after{
+    content: 'If you are the site owner / user, the site is likely still under construction.';
+}
+#welcome > .explanation > .dev::after{
+    content: 'If you are a developer, and the site should be finished, you might want to check the routing settings, as routing too this page should be disabled by now.';
+}
+
+
+
+#welcome > .links{
+    background-color: var(--main-color-3);
+    border-radius: 0px 0px 10px 10px;
+}
+#welcome > .links >.control-panel::before{
+    content: 'In case you were looking for the control panel, follow this link:';
+}
+
+#welcome > .links >.control-panel > a::after{
+    content: 'Admin Panel';
+}
+
+#welcome > .links >.docs-site::before{
+    content: 'For the IOFrame documentation, follow this link:';
+}
+
+#welcome > .links >.docs-site > a::after{
+    content: 'IOFrame';
+}

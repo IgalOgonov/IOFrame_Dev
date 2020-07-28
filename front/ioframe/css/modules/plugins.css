@@ -45,8 +45,10 @@
     border: 1px  var(--dark-1) solid;
 }
 
-#plugins .plugin-icons {
+#plugins .plugin-icons > img {
     width: 64px;
+    height: 64px;
+    margin: 5px;
 }
 
 #plugins .plugin-names {

@@ -6,7 +6,7 @@
     margin-right: 5px;
     position: relative;
     transition: 0.5s linear;
-    min-width: 200px;
+    max-width: 200px;
     box-shadow: 1px 0px 5px 0px var(--main-color-4);
 }
 /* Logo */
@@ -18,7 +18,12 @@
 }
 #menu > .logo > img,
 #menu > .other-cp > img{
-    height: 100px;
+    max-height: 100px;
+    max-width: calc(100% - 10px);
+    margin: 10px 0px;
+}
+#menu > .logo > img:hover, #menu > .other-cp > img:hover {
+    filter: brightness(102.5%);
 }
 
 /* children */

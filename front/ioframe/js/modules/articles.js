@@ -336,7 +336,7 @@ var articles = new Vue({
             operationInput: '',
             //Whether we are currently loading
             initiated: false,
-            verbose:true, //TODO remove this when done building
+            verbose:false,
             test:false
         }
     },
@@ -345,7 +345,7 @@ var articles = new Vue({
         this.registerEvent('requestSelection', this.selectElement);
         this.registerEvent('searchResults', this.parseSearchResults);
         this.registerEvent('operationRequest', this.handleOperationResponse);
-        this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
+        this.registerEvent('goToPage', this.goToPage);
         this.registerEvent('searchAgain', this.searchAgain);
         this.registerEvent('returnToMainApp', this.returnToMainApp);
     },

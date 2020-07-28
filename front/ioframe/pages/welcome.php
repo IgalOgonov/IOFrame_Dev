@@ -1,35 +1,56 @@
+<!DOCTYPE html>
 <?php
-/*For now basic, this is the admin panel for a CMS framework. Currently handles logging in and creating users.*/
-if(!defined('coreInit'))
-    require __DIR__ . '/../../main/coreInit.php';
+
+require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definitions.php';
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';
+
+array_push($CSS, 'welcome.css');
+foreach($languages as $languagePrefix)
+    array_push($CSS, $languagePrefix.'_welcome.css');
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';
+
+echo '<title>IOFrame Installed!</title>';
+
+$frontEndResourceTemplateManager->printResources('CSS');
 
 ?>
 
+<script>
+    document.siteConfig = <?php echo json_encode($siteConfig)?>;
+</script>
 
-    <!DOCTYPE html>
-    <?php require $settings->getSetting('absPathToRoot').'front/ioframe/templates/headers.php';
+<?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_end.php'; ?>
 
-    /* ----- All css might be skipped and replaced with something else if you would like*/
-    echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/global.css">';
+<body>
 
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
-    echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/popUpTooltip.css">';
-    echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/ext/bootstrap_3_3_7/css/bootstrap.min.css">';
+<div id="welcome">
+    <div class="title"></div>
+    <div class="explanation">
+        <div class="why-this-page-is-here"></div>
+        <div class="owner"></div>
+        <div class="dev"></div>
+    </div>
+    <div class="links">
+        <div class="control-panel">
+            <a href="cp/login"></a>
+        </div>
+        <div class="docs-site">
+            <a href="https://ioframe.io"></a>
+        </div>
+    </div>
+</div>
 
-    if($auth->isAuthorized(0))
-        echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.js"></script>';
-    else
-        echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.min.js"></script>';
-
-    echo '<title>IOFrame welcome page</title>';
-
-    ?>
-
-
-    <body>
-    <p id="errorLog"></p>
-
-    <h1>Todo - Design this page</h1>
+</body>
 
 
-<?php require $settings->getSetting('absPathToRoot').'front/ioframe/templates/footers.php';?>
+<?php
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_start.php';
+
+$frontEndResourceTemplateManager->printResources('JS');
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_end.php';
+
+?>

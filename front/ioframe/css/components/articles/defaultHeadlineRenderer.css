@@ -62,7 +62,6 @@
     color:var(--secondary-color-4);
     font-size: 0.8em;
     display: flex;
-    align-items: top;
 }
 .default-headline-renderer > .created::before,
 .default-headline-renderer > .updated::before{

@@ -184,7 +184,7 @@
     position: fixed;
     top: 5vh;
     width: calc(100vw - 275px);
-    box-shadow: 0px 0px 6px var(-dark-1);
+    box-shadow: 0px 0px 6px var(--dark-1);
     border-radius: 5px;
     z-index: 1;
 }
