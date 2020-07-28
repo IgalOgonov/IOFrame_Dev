@@ -1,6 +1,10 @@
 <?php
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
+require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+$config = HTMLPurifier_Config::createDefault();
+$config->set('HTML.AllowedElements', []);
+$purifier = new HTMLPurifier($config);
 
 //Address
 if($inputs['address'] !== null){
@@ -24,15 +28,25 @@ else{
 
 //Alt and Name
 $meta = [];
+$expected = ['name','alt','caption'];
+foreach($languages as $lang){
+    array_push($expected,$lang.'_name');
+    array_push($expected,$lang.'_caption');
+}
+$anythingSet = false;
+foreach($expected as $attr)
+    if($inputs[$attr] !== null){
+        $anythingSet = true;
+        $inputs[$attr] = $purifier->purify($inputs[$attr]);
+    }
 
-if(!$inputs['deleteEmpty'] && $inputs['alt'] === null && $inputs['name'] === null && $inputs['caption'] === null ){
+if(!$inputs['deleteEmpty'] && !$anythingSet ){
     if($test)
-        echo 'Either alt, caption or name have to be set!'.EOL;
+        echo 'With deleteEmpty, at least one meta attribute needs to be set!'.EOL;
     exit(INPUT_VALIDATION_FAILURE);
 }
 
 if($inputs['alt'] !== null){
-
     if(strlen($inputs['alt'])>IMAGE_ALT_MAX_LENGTH){
         if($test)
             echo 'Maximum alt length: '.IMAGE_ALT_MAX_LENGTH.EOL;
@@ -42,42 +56,39 @@ if($inputs['alt'] !== null){
     $meta['alt'] = $inputs['alt'];
 }
 
-if($inputs['name'] !== null){
-
-    if(strlen($inputs['name'])>IMAGE_NAME_MAX_LENGTH){
-        if($test)
-            echo 'Maximum name length: '.IMAGE_NAME_MAX_LENGTH.EOL;
-        exit(INPUT_VALIDATION_FAILURE);
+$nameArr = ['name'];
+foreach($languages as $lang){
+    array_push($nameArr,$lang.'_name');
+}
+foreach($nameArr as $nameParam)
+    if($inputs[$nameParam] !== null){
+        if(strlen($inputs[$nameParam])>IMAGE_NAME_MAX_LENGTH){
+            if($test)
+                echo 'Maximum name length: '.IMAGE_NAME_MAX_LENGTH.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
     }
 
-    $meta['name'] = $inputs['name'];
+
+$captionArr = ['caption'];
+foreach($languages as $lang){
+    array_push($captionArr,$lang.'_caption');
 }
-
-
-if($inputs['caption'] !== null){
-
-    if(strlen($inputs['caption'])>IMAGE_CAPTION_MAX_LENGTH){
-        if($test)
-            echo 'Maximum caption length: '.IMAGE_CAPTION_MAX_LENGTH.EOL;
-        exit(INPUT_VALIDATION_FAILURE);
+foreach($captionArr as $captionParam)
+    if($inputs[$captionParam] !== null){
+        if(strlen($inputs[$captionParam])>IMAGE_CAPTION_MAX_LENGTH){
+            if($test)
+                echo 'Maximum caption length: '.IMAGE_CAPTION_MAX_LENGTH.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
     }
-
-    $meta['caption'] = $inputs['caption'];
-}
 
 if($inputs['deleteEmpty']){
-
-    if($inputs['alt'] === null){
-        $meta['alt'] = null;
-    };
-
-    if($inputs['name'] === null){
-        $meta['name'] = null;
-    };
-
-    if($inputs['caption'] === null){
-        $meta['caption'] = null;
-    };
+    foreach($expected as $attr)
+        if($inputs[$attr] === null){
+            $meta[$attr] = null;
+        };
 }
+
 
 $meta = json_encode($meta);

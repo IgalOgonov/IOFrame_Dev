@@ -89,6 +89,7 @@ namespace IOFrame{
          *              'orderBy'=> Same as SQLHandler
          *              'orderType'=> Same as SQLHandler
          *              'prependPrefix' => bool, default true - whether to prepend the SLQ prefix to $tableName
+         *              'pushKeyToColumns' => bool, default true - always push the key to the columns-to-get
          *              'extraConditions'   => Extra conditions one may pass,
          *              'extraConditionsAnd'=> bool, default true - if true will join extraConditions with 'AND', otherwise with 'OR'
          *              'extraKeyColumns'   => Array of additional columns that are considered key columns.
@@ -134,6 +135,7 @@ namespace IOFrame{
         protected function getFromTableByKey(array $keys, $keyCol, string $tableName, array $columns = [], array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $prependPrefix = isset($params['prependPrefix'])? $params['prependPrefix'] : true;
+            $pushKeyToColumns = isset($params['pushKeyToColumns'])? $params['pushKeyToColumns'] : true;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
             $fillMissingKeysWithNull = isset($params['fillMissingKeysWithNull'])? $params['fillMissingKeysWithNull'] : false;
@@ -204,7 +206,7 @@ namespace IOFrame{
                 if(isset($keyColumnPrefixes[$index]))
                     $retrieveByCol[$index] = $keyColumnPrefixes[$index].$colName;
                 //We always have to get the key column
-                if(!in_array($colName,$columns) && $columns!=[]){
+                if(!in_array($colName,$columns) && $columns!=[] && $pushKeyToColumns){
                     array_push($columns,$retrieveByCol[$index]);
                 }
             }

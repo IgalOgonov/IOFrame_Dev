@@ -2,7 +2,7 @@ if(eventHub === undefined)
     var eventHub = new Vue();
 
 Vue.component('media-editor', {
-    mixins:[IOFrameCommons,sourceURL],
+    mixins:[eventHubManager,IOFrameCommons,sourceURL],
     props: {
         //Identifier
         identifier: {
@@ -43,10 +43,28 @@ Vue.component('media-editor', {
     },
     data: function(){
         return {
+            languages: JSON.parse(JSON.stringify(document.languages)),
             newImageInfo:{
                 name:'',
                 alt:'',
                 caption:''
+            },
+            expectedMeta:{
+                name:{
+                    text:'Name',
+                    placeholder:'Image has no name',
+                    type:'input'
+                },
+                alt:{
+                    text:'Alt',
+                    placeholder:'Image has no ALT',
+                    type:'input'
+                },
+                caption:{
+                    text:'Caption',
+                    placeholder:'Image has no description',
+                    type:'textarea'
+                },
             },
             h: 0,
             w: 0,
@@ -57,50 +75,65 @@ Vue.component('media-editor', {
             galleriesInitiated: false
         }
     },
-    template: '\
-         <div class="image-editor">\
-            <div class="image-container">\
-                <img :src="imageURL">\
-            </div>\
-            <div class="info-container">\
-                <div class="properties">\
-                    <label for="name" v-text="\'Name\'"></label>\
-                    <input name="name" class="name property" type="text" v-model:value="newImageInfo.name" placeholder="Image has no name">\
-                    <label for="alt" v-text="\'ALT Tag\'"></label>\
-                    <input name="alt" class="alt property" type="text" v-model:value="newImageInfo.alt" placeholder="Image has no ALT">\
-                    <label for="description" v-text="\'Description\'"></label>\
-                    <textarea name="description" class="description property" v-model:value="newImageInfo.caption" placeholder="Image has no description"></textarea>\
-                </div>\
-                <div class="properties">\
-                    <label v-if="type===\'local\'" for="size" v-text="\'Size\'"></label>\
-                    <div v-if="type===\'local\'" name="size"" class="size property"  v-text="getImageSize"></div>\
-                    <label for="dimensions" v-text="\'Dimensions (W x H)\'"></label>\
-                    <div name="dimensions" class="dimensions property"  v-text="w + \' x \' + h"></div>\
-                    <label for="address" v-text="\'Address\'"></label>\
-                    <div name="address" class="address property" v-text="getImageAddress"></div>\
-                </div>\
-                <div class="galleries-container">\
-                    <h1 class="gallery-title" v-if="galleriesInitiated" v-text="\'Galleries\'">\
-                    </h1>\
-                    <div class="gallery" v-if="galleriesInitiated" v-for="(item,index) in galleries">\
-                        {{item}} \
-                    </div>\
-                    <button class="initiate-galleries" v-if="!galleriesInitiated" v-text="\'Show Galleries\'" @click="initiateGalleriesRequest">\
-                    </button>\
-                </div>\
-            </div>\
-            <div class="operations" v-if="edited">\
-                <button class="update positive-1" @click="updateImage"">\
-                    <div v-text="\'Confirm\'"></div>\
-                    <img :src="sourceURL()+\'img/icons/confirm-icon.svg\'">\
-                </button>\
-                <button class="reset cancel-1" @click="resetImage">\
-                    <div v-text="\'Reset\'"></div>\
-                    <img :src="sourceURL()+\'img/icons/cancel-icon.svg\'">\
-                </button>\
-            </div>\
-         </div>\
-        ',
+    template: `
+         <div class="image-editor">
+            <div class="image-container">
+                <img :src="imageURL">
+            </div>
+            <div class="info-container">
+                <div class="properties">
+                    <label v-for="(itemArr, item) in expectedMeta"
+                    >
+                        <div v-text="itemArr.text"></div>
+                        <input
+                        v-if="itemArr.type === 'input'"
+                        :name="item"
+                        class="property"
+                        :class="[item]"
+                        type="text"
+                        v-model:value="newImageInfo[item]"
+                        :placeholder="itemArr.placeholder">
+
+                        <textarea
+                        v-if="itemArr.type === 'textarea'"
+                        :name="item"
+                        class="property"
+                        :class="[item]"
+                        v-model:value="newImageInfo[item]"
+                        :placeholder="itemArr.placeholder"
+                        ></textarea>
+                    </label>
+                </div>
+                <div class="properties">
+                    <label v-if="type==='local'" for="size" v-text="'Size'"></label>
+                    <div v-if="type==='local'" name="size"" class="size property"  v-text="getImageSize"></div>
+                    <label for="dimensions" v-text="'Dimensions (W x H)'"></label>
+                    <div name="dimensions" class="dimensions property"  v-text="w + ' x ' + h"></div>
+                    <label for="address" v-text="'Address'"></label>
+                    <div name="address" class="address property" v-text="getImageAddress"></div>
+                </div>
+                <div class="galleries-container">
+                    <h1 class="gallery-title" v-if="galleriesInitiated" v-text="'Galleries'">
+                    </h1>
+                    <div class="gallery" v-if="galleriesInitiated" v-for="(item,index) in galleries">
+                        {{item}}
+                    </div>
+                    <button class="initiate-galleries" v-if="!galleriesInitiated" v-text="'Show Galleries'" @click.prevent="initiateGalleriesRequest">
+                    </button>
+                </div>
+            </div>
+            <div class="operations" v-if="edited">
+                <button class="update positive-1" @click.prevent="updateImage"">
+                    <div v-text="'Confirm'"></div>
+                    <img :src="sourceURL()+'img/icons/confirm-icon.svg'">
+                </button>
+                <button class="reset cancel-1" @click.prevent="resetImage">
+                    <div v-text="'Reset'"></div>
+                    <img :src="sourceURL()+'img/icons/cancel-icon.svg'">
+                </button>
+            </div>
+         </div>
+        `,
     methods: {
         updateImage: function(){
 
@@ -122,9 +155,9 @@ Vue.component('media-editor', {
                 address = this.image.identifier;
             data.append('address', address);
             data.append('deleteEmpty', true);
-            data.append('name', this.newImageInfo.name);
-            data.append('alt', this.newImageInfo.alt);
-            data.append('caption', this.newImageInfo.caption);
+            for(let i in this.expectedMeta){
+                data.append(i, this.newImageInfo[i]);
+            }
             if(this.type !== 'local')
                 data.append('remote', true);
             if(this.test)
@@ -176,21 +209,12 @@ Vue.component('media-editor', {
             );
         },
         resetImage: function(){
-
-            if(this.image.name !== undefined)
-                this.newImageInfo.name = this.image.name;
-            else
-                this.newImageInfo.name = '';
-
-            if(this.image.alt !== undefined)
-                this.newImageInfo.alt = this.image.alt;
-            else
-                this.newImageInfo.alt = '';
-
-            if(this.image.caption !== undefined)
-                this.newImageInfo.caption = this.image.caption;
-            else
-                this.newImageInfo.caption = '';
+            for(let i in this.expectedMeta){
+                if(this.image[i] !== undefined)
+                    this.newImageInfo[i] = this.image[i];
+                else
+                    this.newImageInfo[i] = '';
+            }
 
             this.edited = false;
         },
@@ -286,6 +310,9 @@ Vue.component('media-editor', {
         },
         //Handles responses
         imageUpdateResponse: function(request){
+            if(this.verbose)
+                console.log('imageUpdateResponse got', request);
+
             if(!request.from || request.from !== this.identifier)
                 return;
 
@@ -306,8 +333,7 @@ Vue.component('media-editor', {
             else{
                 alertLog(this.type+' image not updated, unknown error: '+response,'error',this.$el);
             }
-        }
-
+        },
 
     },
     computed:{
@@ -379,29 +405,39 @@ Vue.component('media-editor', {
                 return 'Database';
         },
         imageChanged: function(){
-            return this.nameChanged || this.altChanged || this.captionChanged;
-        },
-        nameChanged: function(){
-            return (this.image.name !== undefined && this.newImageInfo.name !== this.image.name) ||
-                (this.image.name === undefined && this.newImageInfo.name !== '') ;
-        },
-        altChanged: function(){
-            return (this.image.alt !== undefined && this.newImageInfo.alt !== this.image.alt) ||
-                (this.image.alt === undefined && this.newImageInfo.alt !== '') ;
-        },
-        captionChanged: function(){
-            return (this.image.caption !== undefined && this.newImageInfo.caption !== this.image.caption) ||
-                (this.image.caption === undefined && this.newImageInfo.caption !== '') ;
+            for(let type in this.expectedMeta){
+                if( (this.image[type] !== undefined && this.newImageInfo[type] !== this.image[type]) ||
+                (this.image[type] === undefined && this.newImageInfo[type] !== '') )
+                    return true;
+            }
+            return false;
         }
     },
     created:function(){
         if(this.verbose)
             console.log('Viewer ',this.identifier,' created');
         //Checks if image properties were changed
-        eventHub.$on('changed',this.checkIfImagePropertiessChanged);
-        eventHub.$on('updateImageDimensions',this.updateImageDimensions);
-        eventHub.$on('initiateGalleries',this.initiateGalleries);
-        eventHub.$on('imageUpdateResponse',this.imageUpdateResponse);
+        this.registerHub(eventHub);
+        this.registerEvent('changed',this.checkIfImagePropertiessChanged);
+        this.registerEvent('updateImageDimensions',this.updateImageDimensions);
+        this.registerEvent('initiateGalleries',this.initiateGalleries);
+        this.registerEvent('imageUpdateResponse',this.imageUpdateResponse);
+        //Add all right properties depending on languages
+        for(let i in this.languages){
+            let lang = this.languages[i];
+            Vue.set(this.newImageInfo,lang+'_caption','');
+            Vue.set(this.newImageInfo,lang+'_name','');
+            Vue.set(this.expectedMeta,lang+'_name',{
+                text:'Name ['+lang+']',
+                placeholder:'Image has no '+lang+' name',
+                type:'input'
+            });
+            Vue.set(this.expectedMeta,lang+'_caption',{
+                text:'Caption ['+lang+']',
+                placeholder:'Image has no '+lang+' caption',
+                type:'textarea'
+            });
+        }
     },
     mounted: function(){
         if(this.verbose)

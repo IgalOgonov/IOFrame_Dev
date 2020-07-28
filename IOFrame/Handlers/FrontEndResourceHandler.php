@@ -290,7 +290,8 @@ namespace IOFrame\Handlers{
 
                 $changeTime = 0;
                 //Minify or add to minified list
-                if($forceMinify && !($resource['Minified_Version'] || $isDir)){
+                $resourceNameHintsItsMinified = preg_match('/.+\.min\.'.$type.'$/',$address);
+                if($forceMinify && !($resource['Minified_Version'] || $isDir || $resourceNameHintsItsMinified)){
 
                     if($minifyName){
                         if($newAddress == '')

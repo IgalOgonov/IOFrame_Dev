@@ -82,6 +82,12 @@ Also, if you want your maximum file size be controlled by IOFrame, change
 	upload_max_filesize = <some very big number>
 	AND 
 	post_max_size = <some very big number>
+	
+Finally, it's a good idea to set 
+
+    session.cookie_samesite = "None";
+
+for the reason [explained here](https://stackoverflow.com/questions/59534999/how-to-tell-php-to-use-samesite-none-for-cross-site-cookies).  
 
 Restart Apache.
 

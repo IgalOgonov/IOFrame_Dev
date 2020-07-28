@@ -1,3 +1,102 @@
+/*Define most colors that will be found in the color platte*/
+:root{
+    /*scrolling*/
+    --scrollbarBG: rgb(218, 221, 239);
+    --thumbBG: rgb(111, 121, 166);
+    /*general colors*/
+    --soft-red-1: rgb(220,200,200);
+    --soft-red-2: rgb(180,120,130);
+    --soft-green-1: rgb(200,230,220);
+    --soft-green-2: rgb(120,180,130);
+    --dark-1: rgb(10,10,10);
+    --dark-2: rgb(60,60,60);
+    --gray-1: rgb(120,120,120);
+    --gray-2: rgb(150,150,150);
+    --gray-3: rgb(200, 200, 200);
+    --gray-4: rgb(220, 220, 220);
+    --white-1: rgb(240, 240, 240);
+    --white-2: rgb(250, 250, 250);
+    --shadow-gray-1: rgba(200,200,200,0.1);
+    --shadow-gray-2: rgba(200,200,200,0.2);
+    --shadow-gray-3: rgba(200,200,200,0.3);
+    --shadow-gray-4: rgba(200,200,200,0.4);
+    --shadow-gray-5: rgba(200,200,200,0.5);
+    --shadow-gray-6: rgba(200,200,200,0.6);
+    --shadow-gray-7: rgba(200,200,200,0.7);
+    --shadow-gray-8: rgba(200,200,200,0.8);
+    --shadow-dark-1: rgba(0,0,0,0.1);
+    --shadow-dark-2: rgba(0,0,0,0.2);
+    --shadow-dark-3: rgba(0,0,0,0.3);
+    --shadow-dark-4: rgba(0,0,0,0.4);
+    --shadow-dark-5: rgba(0,0,0,0.5);
+    --shadow-dark-6: rgba(0,0,0,0.6);
+    --shadow-dark-7: rgba(0,0,0,0.7);
+    --shadow-dark-8: rgba(0,0,0,0.8);
+    /*main colors*/
+    --main-color-1: rgb(250,252,255);
+    --main-color-2: rgb(236, 251, 255);
+    --main-color-3: rgb(224,244,255);
+    --main-color-4: rgb(204,240,253);
+    --main-color-5: rgb(161,233,246);
+    --main-color-6: rgb(130,221,236);
+    --main-color-7: rgb(105,  196,  211);
+    --main-color-8: rgb(54,  145,  160);
+    --main-color-9: rgb(28,  119,  134);
+    --main-color-10: rgb(0,  68,  83);
+    --secondary-color-1: rgb(245,246,255);
+    --secondary-color-2: rgb(218, 221, 239);
+    --secondary-color-3: rgb(190, 196, 223);
+    --secondary-color-4: rgb(163, 171, 207);
+    --secondary-color-5: rgb(136, 146, 191);
+    --secondary-color-6: rgb(111, 121, 166);
+    --secondary-color-7: rgb(60, 70, 115);
+    --secondary-color-8: rgb(34, 44, 89);
+    --secondary-color-9: rgb(9, 19, 64);
+    /*message related - backgrounds & borders*/
+    --message-warning-bg-1: rgb(218, 209, 104);
+    --message-warning-border-1: rgb(90,81, 0);
+    --message-error-bg-1: rgb(204, 24, 0);
+    --message-error-border-1: rgb(77, 0, 0);
+    --message-success-bg-1: rgb(26, 255, 140);
+    --message-success-border-1: rgb(0, 77, 0);
+    /*message related - colors*/
+    --message-warning-color-1: rgb(190, 140, 40);
+    --message-error-color-1: rgb(204, 24, 0);
+    --message-success-color-1: rgb(0, 179, 64);
+    /*button related*/
+    --button-positive-color-1: rgb(45, 150, 7);
+    --button-positive-color-2: rgb(60, 200, 10);
+    --button-dangerous-color-1: rgb(181, 161, 0);
+    --button-dangerous-border-1: rgb(150, 40, 0);
+    --button-dangerous-color-2: rgb(255, 140, 0);
+    --button-dangerous-border-2: rgb(205, 100, 0);
+    --button-negative-color-1: rgb(204, 24, 0);
+    --button-negative-border-1: rgb(150, 40, 0);
+    --button-negative-color-2: rgb(254, 44, 10);
+    --button-negative-border-2: rgb(255, 0, 0);
+    --button-negative-2-color-1: var(--white-1);
+    --button-negative-2-bg-1: rgb(234, 14, 0);
+    --button-negative-2-border-1: var(--message-error-border-1);
+    --button-negative-2-color-2: var(--white-2);
+    --button-negative-2-bg-2: rgb(155, 7, 0);
+    --button-negative-2-border-2: rgb(37, 0, 0);
+    --button-positive-2-bg-1: rgb(40, 200, 70);
+    --button-positive-2-border-1: rgb(30, 207, 80);
+    --button-positive-2-bg-2: rgb(40, 255, 100);
+    --button-positive-2-border-2: rgb(10, 150, 4);
+    --button-dangerous-2-bg-1: rgb(218, 209, 104);
+    --button-dangerous-2-border-1: rgb(90,81, 0);
+    --button-dangerous-2-bg-2: rgb(255, 247, 148);
+    --button-dangerous-2-color-2: rgb(255, 26, 26);
+    --button-dangerous-2-border-2: rgb(255, 193, 139);
+    --button-dangerous-3-bg-1: rgb(255, 200, 104);
+    --button-dangerous-3-border-1: rgb(90,81, 0);
+    --button-dangerous-3-color-1: rgb(120, 0, 0);
+    --button-dangerous-3-bg-2: rgb(255, 230, 124);
+    --button-dangerous-3-color-2: rgb(180, 0, 0);
+    --button-dangerous-3-border-2: rgb(105,91, 0);
+}
+
 /*Messages*/
 .message{
     padding: 5px;
@@ -8,49 +107,49 @@
 }
 
 .message-dull{
-    background: rgba(0,0,0,0.1);
-    color: rgb(60, 60, 60);
-    border: 1px rgb(120, 120, 120) solid;
+    background: var(--gray-4);
+    color: var(--dark-2);
+    border: 1px var(--gray-1) solid;
 }
 .message-info-1{
-    background: rgb(250,252,255);
-    color: rgb(34, 44, 89);
-    border: 1px  rgb(163, 171, 207) solid;
+    background: var(--main-color-1);
+    color: var(--secondary-color-8);
+    border: 1px var(--secondary-color-4) solid;
 }
 .message-info-2, .alert.alert-info{
-    background: rgb(236, 251, 255);
-    color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color: var(--dark-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 .message-warning-1{
-    background: rgb(218 209 104);
-    color: rgb(10, 10, 10);
-    border: 1px rgb(90,81, 0) solid;
+    background: var(--message-warning-bg-1);
+    color: var(--dark-1);
+    border: 1px var(--message-warning-border-1) solid;
 }
 .message-warning-2, .alert.alert-warning{
-    background: rgb(236, 251, 255);
-    color: rgb(190 140 40);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color: var(--message-warning-color-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 .message-error-1{
-    background: rgb(204 24 0);
-    color: rgb(10, 10, 10);
-    border: 1px rgb(77 0 0) solid;
+    background: var(--message-error-bg-1);
+    color: var(--dark-2);
+    border: 1px var(--message-error-border-1) solid;
 }
 .message-error-2, .alert.alert-error{
-    background: rgb(236, 251, 255);
-    color: rgb(204 24 0);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color: var(--message-error-color-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 .message-success-1{
-    background: rgb(26 255 140);
-    color: rgb(10,10,10);
-    border: 1px rgb(0 77 0) solid;
+    background: var(--message-success-bg-1);
+    color: var(--dark-2);
+    border: 1px var(--message-success-border-1) solid;
 }
 .message-success-2, .alert.alert-success{
-    background: rgb(236, 251, 255);
-    color: rgb(0 179 64);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color: var(--message-success-color-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 
 /* Alerts */
@@ -72,153 +171,118 @@ button{
     transition: 0.2s ease-in-out;
 }
 
-.standard .buttons{
-}
-
-.standard .buttons button{
-    padding: 5px 10px;
-    margin: 5px;
-}
-
-
 button.cancel-1{
-    background: rgb(245,246,255);
-    color: rgb(34, 44, 89);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--secondary-color-1);
+    color: var(--secondary-color-8);
+    border: 1px var(--secondary-color-4) solid;
 }
 button.cancel-1:hover{
-    background: rgb(235,236,245);
-    color: rgb(70, 70, 70);
-    border: 1px rgb(190, 190, 190) solid;
+    background: var(--secondary-color-1);
+    color: var(--secondary-color-4);
+    border: 1px var(--gray-3) solid;
 }
 
 button.cancel-2{
-    background: rgba(0,0,0,0.1);
-    color: rgb(60, 60, 60);
-    border: 1px rgb(120, 120, 120) solid;
+    background: var(--gray-4);
+    color: var(--dark-2);
+    border: 1px var(--gray-1) solid;
 }
 button.cancel-2:hover{
-    background: rgba(0,0,0,0.2);
-    color: rgb(0, 0, 0);
-    border: 1px rgb(200, 200, 200) solid;
+    background: var(--gray-2);
+    color: var(--dark-1);
+    border: 1px var(--gray-3) solid;
 }
 
 button.positive-1{
-    background: rgb(236, 251, 255);
-    color: rgb(45 150 7);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-2);
+    color: var(--button-positive-color-1);
+    border: 1px var(--main-color-5) solid;
 }
 button.positive-1:hover{
-    background: rgb(224,244,255);
-    color: rgb(60, 200, 10);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-3);
+    color: var(--button-positive-color-2);
+    border: 1px var(--main-color-5) solid;
 }
 
 button.positive-2{
-    background: rgb(40 200 70);
-    color: rgb(10,10,10);
-    border: 1px rgb(30 207 80) solid;
+    background: var(--button-positive-2-bg-1);
+    color: var(--dark-1);
+    border: 1px var(--button-positive-2-border-1) solid;
 }
 button.positive-2:hover{
-    background: rgb(40 255 100);
-    color: rgb(0,0,0);
-    border: 1px rgb(10 150 4) solid;
+    background: var(--button-positive-2-bg-2);
+    color: var(--dark-1);
+    border: 1px var(--button-positive-2-border-2) solid;
 }
 
 button.positive-3{
-    background: rgb(236, 251, 255);
-    color: rgb(54 145 160);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-2);
+    color: var(--main-color-8);
+    border: 1px var(--main-color-5) solid;
 }
 button.positive-3:hover{
-    background: rgb(224,244,255);
-    color: rgb(105 196 211);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-3);
+    color: var(--main-color-7);
+    border: 1px var(--main-color-5) solid;
 }
 
 button.dangerous-1{
-    background: rgb(236, 251, 255);
-    color: rgb(181, 161, 0);
-    border: 1px rgb(150, 40, 0) solid;
+    background: var(--main-color-2);
+    color: var(--button-dangerous-color-1);
+    border: 1px var(--button-dangerous-border-1) solid;
 }
 button.dangerous-1:hover{
-    color: rgb(255, 140, 0);
-    border: 1px rgb(205 100 0) solid;
-    background: rgb(224,244,255);
+    background: var(--main-color-3);
+    color: var(--button-dangerous-color-2);
+    border: 1px var(--button-dangerous-border-2) solid;
 }
 
 button.dangerous-2{
-    background: rgb(218 209 104);
-    color: rgb(10, 10, 10);
-    border: 1px rgb(90,81, 0) solid;
+    background: var(--button-dangerous-2-bg-1);
+    color: var(--dark-1);
+    border: 1px var(--button-dangerous-2-border-1) solid;
 }
 button.dangerous-2:hover{
-    background: rgb(255, 247, 148);
-    color: rgb(255, 26, 26);
-    border: 1px rgb(255, 193, 139) solid;
+    background: var(--button-dangerous-2-bg-2);
+    color: var(--button-dangerous-2-color-2);
+    border: 1px var(--button-dangerous-2-border-2) solid;
 }
 
 button.dangerous-3{
-    background: rgb(255 200 104);
-    color: rgb(120, 0, 0);
-    border: 1px rgb(90,81, 0) solid;
+    background: var(--button-dangerous-3-bg-1);
+    color: var(--button-dangerous-3-color-1);
+    border: 1px var(--button-dangerous-3-border-1) solid;
 }
 button.dangerous-3:hover{
-    background: rgb(255 230 124);
-    color: rgb(180, 0, 0);
-    border: 1px rgb(105,91, 0) solid;
+    background: var(--button-dangerous-3-bg-2);
+    color: var(--button-dangerous-3-color-2);
+    border: 1px var(--button-dangerous-3-border-2) solid;
 }
 
 button.negative-1{
-    background: rgb(236, 251, 255);
-    color: rgb(204 24 0);
-    border: 1px rgb(155 0 0) solid;
+    background: var(--main-color-2);
+    color: var(--button-negative-color-1);
+    border: 1px var(--button-negative-border-1) solid;
 }
 button.negative-1:hover{
-    color: rgb(254 44 10);
-    background: rgb(224,244,255);
-    border: 1px rgb(255 0 0) solid;
+    background: var(--main-color-3);
+    color: var(--button-negative-color-2);
+    border: 1px var(--button-negative-border-2) solid;
 }
 
 button.negative-2{
-    background: rgb(234 14 0);
-    color: rgb(240 240 240);
-    border: 1px rgb(77 0 0) solid;
+    background: var(--button-negative-2-bg-1);
+    color: var(--button-negative-2-color-1);
+    border: 1px var(--button-negative-2-border-1) solid;
 }
 button.negative-2:hover{
-    background: rgb(155 7 0);
-    color: rgb(255 255 255);
-    border: 1px rgb(37 0 0) solid;
-}
-
-button.standard-button-1{
-    border: none;
-    border-radius: 5px;
-}
-button.standard-button-1:hover{
-    border: none;
-}
-
-button.standard-button-2{
-    border: none;
-    border-radius: 0px;
-}
-button.standard-button-2:hover{
-    border: none;
-}
-
-button.standard-button-3{
-    border: none;
-    border-radius: 100%;
-}
-button.standard-button-3:hover{
-    border: none;
+    background: var(--button-negative-2-bg-2);
+    color: var(--button-negative-2-color-2);
+    border: 1px var(--button-negative-2-border-2) solid;
 }
 
 /* Scrollbar */
 *{
-    --scrollbarBG: rgb(218, 221, 239);
-    --thumbBG: rgb(111, 121, 166);
     scrollbar-color: var(--thumbBG) var(--scrollbarBG);
 }
 
@@ -230,40 +294,40 @@ form label{
 }
 
 form{
-    background-color: rgb(236, 251, 255);
-    color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    background-color: var(--main-color-2);
+    color: var(--dark-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 /*input, textarea, select*/
 form input:not([type=submit]) {
     margin: 3px 0px 3px 0px;
     padding:5px;
-    background-color: rgba(200,200,200,0.1);
+    background-color: var(--shadow-gray-1);
     border: none;
     border-left: solid 3px darkgrey;
     transition: 0.2s ease-in-out;
 }
 form textarea {
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
     padding: 5px;
-    background-color: rgba(200,200,200,0.1);
+    background-color: var(--shadow-gray-1);
     height: 28px;
     transition: all 0.2s ease-in-out, height 0s, width 0s;
 }
 form input:focus,
 form textarea:focus{
-    background-color: rgba(200,200,200,0.3);
+    background-color: var(--shadow-gray-3);
 }
 form input:hover:not(:focus),
 form textarea:hover:not(:focus){
-    background-color: rgba(200,200,200,0.2);
+    background-color: var(--shadow-gray-2);
 }
 
 /* Select */
 select{
     padding: 5px;
-    background: rgb(250,252,255);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-1);
+    border: 1px var(--secondary-color-4) solid;
     transition: background 0.2s ease-in-out;
     /*remove annoying arrow*/
     -moz-appearance: none;
@@ -271,7 +335,7 @@ select{
     appearance: none;
 }
 select:hover{
-    background: rgb(204,240,253);
+    background: var(--main-color-4);
 }
 
 /*Standard media sizes*/

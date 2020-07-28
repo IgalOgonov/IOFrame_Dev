@@ -2,13 +2,13 @@
 
 #plugins h1{
     text-align: center;
-    color: rgb(0, 0, 149);
+    color: var(--secondary-color-6);
     font-weight: 700;
-    background-color: rgba(135,135,255,0.15);
+    background-color: var(--main-color-2);
 }
 
 #plugins div.option {
-    background-color: aliceblue;
+    background-color: var(--main-color-3);
     border: 0px;
     display: table;
     border-radius: 5px;
@@ -42,7 +42,7 @@
 }
 
 #plugins button.activeButton {
-    border: 1px rgb(0,0,0) solid;
+    border: 1px  var(--dark-1) solid;
 }
 
 #plugins .plugin-icons {
@@ -51,9 +51,11 @@
 
 #plugins .plugin-names {
     text-align: center;
-    font-family: Times, serif;
     font-size: 20px;
     font-weight: 700;
+}
+#plugins .plugin-names *{
+    'Baskerville Old Face',sans-serif
 }
 
 #plugins .real-name-popup {
@@ -95,27 +97,26 @@
 
 #plugins table tr td{
     padding: 2px;
-    border: 1px solid rgb(163,171,207);
-    background-color: rgba(0, 140, 207, 0.2);
+    border: 1px solid var(--secondary-color-4);
+    background-color: var(--main-color-3);
 }
 #plugins table tr th{
     padding: 2px;
     text-align: center;
 }
 
-#plugins .ui-button {
-    text-align: right;
-}
-
 #plugins .order-icons{
     text-align: center;
+}
+#plugins .order-icons > img {
+    cursor: all-scroll;
 }
 
 #plugins .order-indices{
     text-align: center;
     font-size: 30px;
     font-weight: 700;
-    color: rgb(0, 140, 207);
+    color: var(--main-color-8);
 }
 
 #plugins .order-names{

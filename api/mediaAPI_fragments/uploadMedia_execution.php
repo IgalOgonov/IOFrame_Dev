@@ -77,24 +77,27 @@ foreach($result as $uploadName => $res){
             $deleteLocalFiles[$uploadName] = $rootFolder.$res;
 
         //Meta information
-        $alt  = isset($inputs['items'][$uploadName]['alt'])? $inputs['items'][$uploadName]['alt'] : null;
-        $name  = isset($inputs['items'][$uploadName]['name'])? $inputs['items'][$uploadName]['name'] : null;
-        $caption  = isset($inputs['items'][$uploadName]['caption'])? $inputs['items'][$uploadName]['caption'] : null;
-        $size  = $inputs['type'] === 'db' ? $res['size'] : null;
-        if($alt || $name || $caption || $size){
-            $meta = [];
-            if($alt)
-                $meta['alt'] = $alt;
-            if($name)
-                $meta['name'] = $name;
-            if($caption)
-                $meta['caption'] = $caption;
-            if($size)
-                $meta['size'] = $size;
-            $meta = json_encode($meta);
+        $expected = ['name','alt','caption','size'];
+        foreach($languages as $lang){
+            array_push($expected,$lang.'_name');
+            array_push($expected,$lang.'_caption');
         }
+        $anythingNotNull = false;
+        foreach($expected as $attr){
+            if($attr === 'size' && $inputs['type'] === 'db'){
+                $meta['size'] = $res['size'];
+                $anythingNotNull = true;
+            }
             else
-                $meta = null;
+                if(isset($inputs['items'][$uploadName][$attr])){
+                    $meta[$attr] = $inputs['items'][$uploadName][$attr];
+                    $anythingNotNull = true;
+                }
+        }
+        if($anythingNotNull)
+            $meta = json_encode($meta);
+        else
+            $meta = null;
         //Add resources to be updated
         array_push(
             $mediaToUpdate,

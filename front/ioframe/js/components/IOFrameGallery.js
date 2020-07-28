@@ -34,6 +34,11 @@ Vue.component('ioframe-gallery', {
             type: Boolean,
             default: false
         },
+        //Whether the image slider should be displayed
+        hasSlider:{
+            type: Boolean,
+            default: true
+        },
         //TODO Whether to go into full-screen display mode when one of the images is clicked
         fullScreenOnClick:{
             type: Boolean,
@@ -75,10 +80,20 @@ Vue.component('ioframe-gallery', {
             type: Boolean,
             default: true
         },
+        //Indicates buttons should be on top of the gallery rather than near the slider
+        buttonsOnTop:{
+            type: Boolean,
+            default: false
+        },
         //If set to false, will not allow looping
         infiniteLoop:{
             type: Boolean,
             default: true
+        },
+        //Potential caption for the gallery
+        caption:{
+            type: String,
+            default: ''
         },
         /** When emitting events, if identifier is '', just the resulting object would be emitted.
          *  If an identifier is set, the emitted object would be of the form {from:this.identifier,content:<whatever would be emitted without identifier>}
@@ -95,7 +110,7 @@ Vue.component('ioframe-gallery', {
         //Verbose mode will log various runtime debug messages into the console
         verbose:{
             type: Boolean,
-            default: true
+            default: false
         },
     },
     data: function(){
@@ -352,14 +367,18 @@ Vue.component('ioframe-gallery', {
         },
         //Calculates whether there are previous items which are out of display range
         prevItemsOutOfDisplayRange: function(){
-            if(this.infiniteLoop)
+            if(!this.hasSlider && this.displayNumber > 1)
+                return true;
+            else if(this.infiniteLoop)
                 return this.displayNumber < this.images.length;
             else
                 return this.indicesInDisplayRange.indexOf(0) === -1;
         },
         //Calculates whether there are next items which are out of display range
         nextItemsOutOfDisplayRange: function(){
-            if(this.infiniteLoop)
+            if(!this.hasSlider && this.displayNumber > 1)
+                return true;
+            else if(this.infiniteLoop)
                 return this.displayNumber < this.images.length;
             else
                 return this.indicesInDisplayRange.indexOf(this.images.length) === -1;
@@ -378,7 +397,7 @@ Vue.component('ioframe-gallery', {
     template: `
         <div class="ioframe-gallery">
 
-            <div v-if="hasPreview" class="gallery-preview">
+            <div v-if="hasPreview || displayNumber<2 || !hasSlider" class="gallery-preview">
 
                 <div v-for="(item, index) in gallery" class="preview-container" :class="[{selected:selected === index}, 'preview-'+index]">
                     <img v-if="loadingImageUrl" :src="loadingImageUrl" class="gallery-member-preview" :class="'gallery-member-preview-placeholder-'+index" style="display:none;">
@@ -387,23 +406,23 @@ Vue.component('ioframe-gallery', {
 
             </div>
 
-            <div class="slider">
+            <div class="slider" :class="[{'on-top':displayNumber <= 1 || buttonsOnTop || !hasSlider},{'no-gallery':displayNumber<2 || !hasSlider}]">
 
                 <button v-if="prevItemsOutOfDisplayRange" class="prev" @click.prevent="moveSelection(false)">
                     <div v-if="navigationButtons.prev" v-html="navigationButtons.prev"></div>
                     <div v-else="">&#60</div>
                 </button>
 
-                <div class="gallery-container">
+                <div class="gallery-container" v-if="displayNumber>1">
 
                     <div v-if="prevItemsOutOfDisplayRange && outOfDisplayImagesUrl.prev"  class="out-of-view prev" v-html="outOfDisplayImagesUrl.prev"></div>
 
                     <div
                     v-for="(item, index) in gallery"
-                    v-if="indicesInDisplayRange.indexOf(index)!==-1"
+                    v-if="indicesInDisplayRange.indexOf(index)!==-1 && hasSlider"
                     class="image-container gallery"
                     :class="[{selected:selected === index}, 'image-'+index]"
-                    @click="select(index)"
+                    @click.prevent="select(index)"
                     >
                         <img v-if="loadingImageUrl" :src="loadingImageUrl" class="gallery-member" :class="'gallery-member-placeholder-'+index" style="display:none;">
                         <img :src="item.url" :alt="item.alt? item.alt : ''" class="gallery-member" :class="'gallery-member-'+index">
@@ -419,6 +438,8 @@ Vue.component('ioframe-gallery', {
                 </button>
 
             </div>
+
+            <figcaption v-if="caption" v-text="caption"></figcaption>
 
         </div>
     `

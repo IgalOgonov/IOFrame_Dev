@@ -2,8 +2,6 @@
 require __DIR__.'/../../IOFrame/Handlers/ObjectAuthHandler.php';
 
 $ObjectAuthHandler = new IOFrame\Handlers\ObjectAuthHandler($settings,$defaultSettingsParams);
-$IOFrameJSRoot = 'front/ioframe/js/';
-$IOFrameCSSRoot = 'front/ioframe/css/';
 
 /* ------------------------------------------------------------
                         Gets
@@ -25,10 +23,10 @@ var_dump(
         'categories',
         [
             'titleLike'=>'t',
-            'categoryIs'=>1,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                1,
-                2
+                'test_1',
+                'test_2'
             ],
             'limit'=>5,
             'offset'=>0,
@@ -41,7 +39,7 @@ var_dump(
 echo EOL.'Getting specific categories:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
-        [[1]],
+        [['test_1']],
         'categories',
         [
             'test'=>true,
@@ -67,10 +65,10 @@ var_dump(
         'objects',
         [
             'titleLike'=>'t',
-            'categoryIs'=>0,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                0,
-                1
+                'test_1',
+                'test_2'
             ],
             'objectLike'=>'t',
             'objectIn'=>[
@@ -89,7 +87,7 @@ var_dump(
 echo EOL.'Getting specific objects:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
-        [[1,'test_1']],
+        [['test_1','test_2']],
         'objects',
         [
             'test'=>true,
@@ -116,10 +114,10 @@ var_dump(
         'actions',
         [
             'titleLike'=>'t',
-            'categoryIs'=>0,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                0,
-                1
+                'test_1',
+                'test_2'
             ],
             'actionLike'=>'t',
             'actionIn'=>[
@@ -137,7 +135,7 @@ var_dump(
 echo EOL.'Getting specific actions:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
-        [[1,'test_1']],
+        [['test_1','test_1']],
         'actions',
         [
             'test'=>true,
@@ -164,10 +162,10 @@ var_dump(
         'groups',
         [
             'titleLike'=>'t',
-            'categoryIs'=>0,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                0,
-                1
+                'test_1',
+                'test_2'
             ],
             'groupIs'=>0,
             'groupIn'=>[
@@ -186,7 +184,7 @@ echo EOL.'Getting specific group:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
         [
-            [1,'test_1',1]
+            ['test_1','test_1',1]
         ],
         'groups',
         [
@@ -214,10 +212,10 @@ var_dump(
         'objectUsers',
         [
             'titleLike'=>'t',
-            'categoryIs'=>1,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                0,
-                1
+                'test_1',
+                'test_2'
             ],
             'userIDIs'=>1,
             'userIDIn'=>[
@@ -241,7 +239,7 @@ echo EOL.'Getting specific objectUsers:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
         [
-            [1,'test_1',1]
+            ['test_1','test_1',1]
         ],
         'objectUsers',
         [
@@ -269,10 +267,10 @@ var_dump(
         'objectGroups',
         [
             'titleLike'=>'t',
-            'categoryIs'=>1,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                0,
-                1
+                'test_1',
+                'test_2'
             ],
             'groupIs'=>1,
             'groupIn'=>[
@@ -295,7 +293,7 @@ var_dump(
 echo EOL.'Getting specific objectGroups:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
-        [[1,'test_1',1]],
+        [['test_1','test_1',1]],
         'objectGroups',
         [
             'test'=>true,
@@ -322,10 +320,10 @@ var_dump(
         'userGroups',
         [
             'titleLike'=>'t',
-            'categoryIs'=>1,
+            'categoryIs'=>'test_1',
             'categoryIn'=>[
-                1,
-                1
+                'test_1',
+                'test_2'
             ],
             'userIDIs'=>1,
             'userIDIn'=>[
@@ -348,7 +346,7 @@ var_dump(
 echo EOL.'Getting specific userGroups:'.EOL;
 var_dump(
     $ObjectAuthHandler->getItems(
-        [[1,'test_1',1]],
+        [['test_1','test_1',1]],
         'userGroups',
         [
             'test'=>true,
@@ -367,7 +365,12 @@ var_dump(
     $ObjectAuthHandler->setItems(
         [
             [
-                'Title' => 'test'
+                'Object_Auth_Category' => 'test_1',
+                'Title' => 'test 1'
+            ],
+            [
+                'Object_Auth_Category' => 'test_2',
+                'Title' => 'test 2'
             ],
         ],
         'categories',
@@ -380,8 +383,8 @@ var_dump(
     $ObjectAuthHandler->setItems(
         [
             [
-                'Object_Auth_Category' => 1,
-                'Title' => 'test 2'
+                'Object_Auth_Category' => 'test_2',
+                'Title' => 'test two'
             ],
         ],
         'categories',
@@ -396,14 +399,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Title' => 'test',
                 'Is_Public' => true
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_2'
             ],
         ],
@@ -419,13 +422,13 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_1',
                 'Title' => 'test'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_2',
             ],
         ],
@@ -441,15 +444,21 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Title' => 'test group'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Title' => 'test group 2'
+            ],
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_2',
+                'Title' => 'test group 3'
             ],
         ],
         'groups',
@@ -457,6 +466,39 @@ var_dump(
     )
 );
 
+echo EOL.'Updating some groups:'.EOL;
+var_dump(
+    $ObjectAuthHandler->setItems(
+        [
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_1',
+                'Object_Auth_Group' => 1,
+                'Title' => 'test group 3'
+            ]
+        ],
+        'groups',
+        ['test'=>true,'update'=>true,'override'=>false,'verbose'=>true]
+    )
+);
+
+echo EOL.'Inserting an existing group into a different object:'.EOL;
+var_dump(
+    $ObjectAuthHandler->setItems(
+        [
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_1',
+                'Object_Auth_Group' => 3,
+                'Title' => 'test group 3'
+            ]
+        ],
+        'groups',
+        ['test'=>true,'update'=>false,'override'=>true,'verbose'=>true]
+    )
+);
 
 echo EOL.'Updating some groups:'.EOL;
 var_dump(
@@ -464,7 +506,7 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1,
                 'Title' => 'test group 1'
@@ -482,21 +524,21 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Action' => 'test_2'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 2,
                 'Object_Auth_Action' => 'test_2'
@@ -514,16 +556,30 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 2,
+                'Object_Auth_Action' => 'test_2'
+            ],
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_2',
+                'Object_Auth_Group' => 3,
+                'Object_Auth_Action' => 'test_1'
+            ],
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_1',
+                'Object_Auth_Group' => 3,
                 'Object_Auth_Action' => 'test_2'
             ],
         ],
@@ -539,24 +595,31 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 1
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 2
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 2,
                 'Object_Auth_Group' => 1
+            ],
+            [
+
+                'Object_Auth_Category' => 'test_1',
+                'Object_Auth_Object' => 'test_2',
+                'ID' => 2,
+                'Object_Auth_Group' => 3
             ],
         ],
         'userGroups',
@@ -574,7 +637,7 @@ var_dump(
     $ObjectAuthHandler->deleteItems(
         [
             [
-                'Object_Auth_Category' => 1
+                'Object_Auth_Category' => 'test_1'
             ],
         ],
         'categories',
@@ -588,12 +651,12 @@ var_dump(
     $ObjectAuthHandler->deleteItems(
         [
             [
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_2'
             ],
         ],
@@ -608,12 +671,12 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_2',
             ],
         ],
@@ -629,7 +692,7 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1
             ]
@@ -646,14 +709,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 2,
                 'Object_Auth_Action' => 'test_2'
@@ -671,14 +734,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 2,
                 'Object_Auth_Action' => 'test_2'
@@ -696,14 +759,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 1
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 2
@@ -725,12 +788,12 @@ var_dump(
     $ObjectAuthHandler->moveItems(
         [
             [
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_2'
             ],
         ],
@@ -748,18 +811,18 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Action' => 'test_2',
             ],
         ],
         [
 
-            'Object_Auth_Category' => 1
+            'Object_Auth_Category' => 'test_1'
         ],
         'actions',
         ['test'=>true,'verbose'=>true]
@@ -773,7 +836,7 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1
             ]
@@ -793,14 +856,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 2,
                 'Object_Auth_Action' => 'test_2'
@@ -821,14 +884,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 1,
                 'Object_Auth_Action' => 'test_1'
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'Object_Auth_Group' => 2,
                 'Object_Auth_Action' => 'test_2'
@@ -849,14 +912,14 @@ var_dump(
         [
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 1
             ],
             [
 
-                'Object_Auth_Category' => 1,
+                'Object_Auth_Category' => 'test_1',
                 'Object_Auth_Object' => 'test_1',
                 'ID' => 1,
                 'Object_Auth_Group' => 2
@@ -878,9 +941,9 @@ var_dump(
 echo EOL.'Checking user actions that all exist (OR)'.EOL;
 var_dump(
     $ObjectAuthHandler->useHasActions(
-        1,
         'test_1',
         1,
+        'test_1',
         ['test_1','test_2'],
         ['actionSeparator'=>'OR','test'=>true,'verbose'=>true]
     )
@@ -889,9 +952,9 @@ var_dump(
 echo EOL.'Checking user actions that all exist  (OR) - fake user'.EOL;
 var_dump(
     $ObjectAuthHandler->useHasActions(
-        1,
         'test_1',
         99999,
+        'test_1',
         ['test_1','test_2'],
         ['actionSeparator'=>'OR','test'=>true,'verbose'=>true]
     )
@@ -900,9 +963,9 @@ var_dump(
 echo EOL.'Checking user actions that some exist (OR)'.EOL;
 var_dump(
     $ObjectAuthHandler->useHasActions(
-        1,
         'test_1',
         1,
+        'test_1',
         ['test_1','test_3','test_5'],
         ['actionSeparator'=>'OR','test'=>true,'verbose'=>true]
     )
@@ -911,9 +974,9 @@ var_dump(
 echo EOL.'Checking user actions (AND)'.EOL;
 var_dump(
     $ObjectAuthHandler->useHasActions(
-        1,
         'test_1',
         1,
+        'test_1',
         ['test_1','test_2'],
         ['test'=>true,'verbose'=>true]
     )
@@ -922,10 +985,84 @@ var_dump(
 echo EOL.'Checking user actions that some exist (AND)'.EOL;
 var_dump(
     $ObjectAuthHandler->useHasActions(
-        1,
         'test_1',
         1,
+        'test_1',
         ['test_1','test_3','test_5'],
         ['test'=>true,'verbose'=>true]
+    )
+);
+
+echo EOL.'Getting user objects'.EOL;
+var_dump(
+    $ObjectAuthHandler->userObjects(
+        'test_1',
+        1,
+        ['test'=>true,'verbose'=>true]
+    )
+);
+
+echo EOL.'Getting user objects with actions'.EOL;
+var_dump(
+    $ObjectAuthHandler->userObjects(
+        'test_1',
+        1,
+        [
+            'objects' => ['test_1','test_2'],
+            'requiredActions' => ['test_1','test_2'],
+            'test'=>true,
+            'verbose'=>true
+        ]
+    )
+);
+
+echo EOL.'Getting group objects'.EOL;
+var_dump(
+    $ObjectAuthHandler->groupObjects(
+        'test_1',
+        3,
+        [
+            'test'=>true,
+            'verbose'=>true
+        ]
+    )
+);
+
+echo EOL.'Getting group objects with actions'.EOL;
+var_dump(
+    $ObjectAuthHandler->groupObjects(
+        'test_1',
+        3,
+        [
+            'objects' => ['test_1','test_2'],
+            'requiredActions' => ['test_1','test_2'],
+            'test'=>true,
+            'verbose'=>true
+        ]
+    )
+);
+
+echo EOL.'Getting group users'.EOL;
+var_dump(
+    $ObjectAuthHandler->groupUsers(
+        'test_1',
+        1,
+        [
+            'test'=>true,
+            'verbose'=>true
+        ]
+    )
+);
+
+echo EOL.'Getting group users - specific ones'.EOL;
+var_dump(
+    $ObjectAuthHandler->groupUsers(
+        'test_1',
+        1,
+        [
+            'users' => [1,2,3],
+            'test'=>true,
+            'verbose'=>true
+        ]
     )
 );

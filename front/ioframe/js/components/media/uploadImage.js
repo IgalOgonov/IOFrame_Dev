@@ -2,7 +2,7 @@ if(eventHub === undefined)
     var eventHub = new Vue();
 
 Vue.component('media-uploader', {
-    mixins:[IOFrameCommons,sourceURL],
+    mixins:[eventHubManager,IOFrameCommons,sourceURL],
     props: {
         //Identifier
         identifier: {
@@ -31,6 +31,7 @@ Vue.component('media-uploader', {
     },
     data: function(){
         return {
+            languages: JSON.parse(JSON.stringify(document.languages)),
             newImageInfo:{
                 identifier:this.randomIdentifier(),
                 link: '',
@@ -38,6 +39,23 @@ Vue.component('media-uploader', {
                 alt:'',
                 caption:'',
                 quality:100
+            },
+            expectedMeta:{
+                name:{
+                    text:'Name',
+                    placeholder:'Image name',
+                    type:'input'
+                },
+                alt:{
+                    text:'Alt',
+                    placeholder:'Image ALT',
+                    type:'input'
+                },
+                caption:{
+                    text:'Caption',
+                    placeholder:'Image description',
+                    type:'textarea'
+                },
             },
             //Info of the uploaded image
             uploadedInfo:{
@@ -54,57 +72,76 @@ Vue.component('media-uploader', {
             remoteType: 'db' //can be 'db' or 'link'
         }
     },
-    template: '\
-        <div class="image-uploader">\
-            <button \
-            v-if="type !== \'local\'" \
-            class="remote-type positive-3"\
-            @click="toggleType()"\
-            v-text="\'Toggle Media Type - Current type is \'+(remoteType === \'db\'? \'Database\' : \'Link\')"\
-             ></button>\
-            <div :style="remoteType === \'link\' ? \'display:none\' : \'\'" class="image-container">\
-                <img class="upload-preview" :src="imageURL(\'general/upload-image.png\')">\
-                <input class="upload-address" name="upload" type="file" style="display:none">\
-            </div>\
-            <div :style="remoteType !== \'link\' ? \'display:none\' : \'\'" class="link-container properties">\
-                    <label for="link" v-text="\'Image Link\'"></label>\
-                    <textarea name="link" class="link property" type="string" v-model:value="newImageInfo.link"></textarea>\
-                    <img class="link-preview" :src="newImageInfo.link">\
-            </div>\
-            <div class="info-container">\
-                <div class="properties">\
-                    <label v-if="type === \'remote\' && remoteType === \'db\'" for="identifier" v-text="\'Item Identifier\'"></label>\
-                    <input v-if="type === \'remote\' && remoteType === \'db\'" identifier="identifier" class="identifier property" type="text" v-model:value="newImageInfo.identifier" placeholder="Image identifier">\
-                    <label for="name" v-text="\'Name\'"></label>\
-                    <input name="name" class="name property" type="text" v-model:value="newImageInfo.name" placeholder="Image name">\
-                    <label for="alt" v-text="\'ALT Tag\'"></label>\
-                    <input name="alt" class="alt property" type="text" v-model:value="newImageInfo.alt" placeholder="Image ALT">\
-                    <label for="description" v-text="\'Description\'"></label>\
-                    <textarea name="description" class="description property" v-model:value="newImageInfo.caption" placeholder="Image caption"></textarea>\
-                </div>\
-                <div class="properties" v-if="type !== \'remote\' || remoteType === \'db\'">\
-                    <label for="quality" v-text="\'Quality %\'"></label>\
-                    <input name="quality" class="quality property" type="number" min="1" max="100" v-model:value="newImageInfo.quality">\
-                    <label for="size" v-text="\'Size\'"></label>\
-                    <div name="size"" class="size property"  v-text="uploadedInfo.size"></div>\
-                    <label for="dimensions" v-text="\'Dimensions (W x H)\'"></label>\
-                    <div name="dimensions" class="dimensions property"  v-text="uploadedInfo.W + \' x \' + uploadedInfo.H"></div>\
-                </div>\
-                <div class="galleries-container">\
-                </div>\
-            </div>\
-            <div class="operations" v-if="uploaded && (type !== \'remote\' || remoteType === \'db\') || (type === \'remote\' && remoteType === \'link\'  && newImageInfo.link)"">\
-                <button class="update positive-1" @click="uploadImage"">\
-                    <div v-text="\'Upload\'"></div>\
-                    <img :src="imageURL(\'icons/confirm-icon.svg\')">\
-                </button>\
-                <button class="reset cancel-1" @click="resetImage">\
-                    <div v-text="\'Reset\'"></div>\
-                    <img :src="imageURL(\'icons/cancel-icon.svg\')">\
-                </button>\
-            </div>\
-        </div>\
-        ',
+    template: `
+        <div class="image-uploader">
+            <button
+            v-if="type !== 'local'"
+            class="remote-type positive-3"
+            @click.prevent="toggleType()"
+            v-text="'Toggle Media Type - Current type is '+(remoteType === 'db'? 'Database' : 'Link')"
+             ></button>
+            <div :style="remoteType === 'link' ? 'display:none' : ''" class="image-container">
+                <img class="upload-preview" :src="imageURL('general/upload-image.png')">
+                <input class="upload-address" name="upload" type="file" style="display:none">
+            </div>
+            <div :style="remoteType !== 'link' ? 'display:none' : ''" class="link-container properties">
+                    <label for="link" v-text="'Image Link'"></label>
+                    <textarea name="link" class="link property" type="string" v-model:value="newImageInfo.link"></textarea>
+                    <img class="link-preview" :src="newImageInfo.link">
+            </div>
+            <div class="info-container">
+                <div class="properties">
+                    <label v-if="type === 'remote' && remoteType === 'db'" for="identifier" v-text="">
+                        <div v-text="'Item Identifier'"></div>
+                    <input name="identifier" class="identifier property" type="text" v-model:value="newImageInfo.identifier" placeholder="Image identifier">
+                    </label>
+
+                    <label v-for="(itemArr, item) in expectedMeta"
+                    >
+                        <div v-text="itemArr.text"></div>
+                        <input
+                        v-if="itemArr.type === 'input'"
+                        :name="item"
+                        class="property"
+                        :class="[item]"
+                        type="text"
+                        v-model:value="newImageInfo[item]"
+                        :placeholder="itemArr.placeholder">
+
+                        <textarea
+                        v-if="itemArr.type === 'textarea'"
+                        :name="item"
+                        class="property"
+                        :class="[item]"
+                        v-model:value="newImageInfo[item]"
+                        :placeholder="itemArr.placeholder"
+                        ></textarea>
+                    </label>
+
+                </div>
+                <div class="properties" v-if="type !== 'remote' || remoteType === 'db'">
+                    <label for="quality" v-text="'Quality %'"></label>
+                    <input name="quality" class="quality property" type="number" min="1" max="100" v-model:value="newImageInfo.quality">
+                    <label for="size" v-text="'Size'"></label>
+                    <div name="size"" class="size property"  v-text="uploadedInfo.size"></div>
+                    <label for="dimensions" v-text="'Dimensions (W x H)'"></label>
+                    <div name="dimensions" class="dimensions property"  v-text="uploadedInfo.W + ' x ' + uploadedInfo.H"></div>
+                </div>
+                <div class="galleries-container">
+                </div>
+            </div>
+            <div class="operations" v-if="uploaded && (type !== 'remote' || remoteType === 'db') || (type === 'remote' && remoteType === 'link'  && newImageInfo.link)"">
+                <button class="update positive-1" @click.prevent="uploadImage"">
+                    <div v-text="'Upload'"></div>
+                    <img :src="imageURL('icons/confirm-icon.svg')">
+                </button>
+                <button class="reset cancel-1" @click.prevent="resetImage">
+                    <div v-text="'Reset'"></div>
+                    <img :src="imageURL('icons/cancel-icon.svg')">
+                </button>
+            </div>
+        </div>
+        `,
     methods: {
         //Gets the relative URL for an image
         imageURL: function(image){
@@ -175,20 +212,20 @@ Vue.component('media-uploader', {
             if(this.verbose)
                 console.log('Resetting image..');
 
-            this.newImageInfo = {
-                identifier: this.randomIdentifier(),
-                link: '',
-                name:'',
-                alt:'',
-                caption:'',
-                quality:100
-            };
+            for(let i in this.expectedMeta){
+                this.newImageInfo[i] = '';
+            }
+            this.newImageInfo['quality'] = 100;
+            this.newImageInfo['link'] = '';
+            this.newImageInfo['identifier'] = this.randomIdentifier();
+
             //Info of the uploaded image
             this.uploadedInfo = {
                 size:0,
                     W:0,
                     H:0
             };
+
             this.uploaded = false;
             const image = this.$el.querySelector('.image-uploader .upload-preview');
             image.onload = function(){};
@@ -320,12 +357,12 @@ Vue.component('media-uploader', {
                     data.append('address', this.url);
                 data.append('imageQualityPercentage', this.newImageInfo.quality);
                 let imageInfo = {};
-                if(this.newImageInfo.alt !== '')
-                    imageInfo.alt = this.newImageInfo.alt;
-                if(this.newImageInfo.caption !== '')
-                    imageInfo.caption = this.newImageInfo.caption;
-                if(this.newImageInfo.name !== '')
-                    imageInfo.name = this.newImageInfo.name;
+
+                for(let i in this.expectedMeta){
+                    if(this.newImageInfo[i] !== '')
+                        imageInfo[i] = this.newImageInfo[i];
+                }
+
                 data.append('items', JSON.stringify(
                     {
                         upload:imageInfo
@@ -347,12 +384,11 @@ Vue.component('media-uploader', {
 
                     data.append('imageQualityPercentage', this.newImageInfo.quality);
                     let imageInfo = {};
-                    if(this.newImageInfo.alt !== '')
-                        imageInfo.alt = this.newImageInfo.alt;
-                    if(this.newImageInfo.caption !== '')
-                        imageInfo.caption = this.newImageInfo.caption;
-                    if(this.newImageInfo.name !== '')
-                        imageInfo.name = this.newImageInfo.name;
+
+                    for(let i in this.expectedMeta){
+                        if(this.newImageInfo[i] !== '')
+                            imageInfo[i] = this.newImageInfo[i];
+                    }
                     let payload = { };
                     payload[this.newImageInfo.identifier] = imageInfo;
                     data.append('items', JSON.stringify(payload));
@@ -370,12 +406,11 @@ Vue.component('media-uploader', {
                         return;
                     }
                     imageInfo.filename = this.newImageInfo.link;
-                    if(this.newImageInfo.alt !== '')
-                        imageInfo.alt = this.newImageInfo.alt;
-                    if(this.newImageInfo.caption !== '')
-                        imageInfo.caption = this.newImageInfo.caption;
-                    if(this.newImageInfo.name !== '')
-                        imageInfo.name = this.newImageInfo.name;
+
+                    for(let i in this.expectedMeta){
+                        if(this.newImageInfo[i] !== '')
+                            imageInfo[i] = this.newImageInfo[i];
+                    }
                     let payload = { };
                     payload['link'] = imageInfo;
                     data.append('items', JSON.stringify(payload));
@@ -403,7 +438,8 @@ Vue.component('media-uploader', {
             var result = '';
             var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             var charactersLength = characters.length;
-            for (var i = 0; i < 64; i++) {
+            result += characters.charAt(Math.floor(Math.random() * (charactersLength - 10)));
+            for (var i = 0; i < 63; i++) {
                 result += characters.charAt(Math.floor(Math.random() * charactersLength));
             }
             return result;
@@ -435,8 +471,25 @@ Vue.component('media-uploader', {
         );
     },
     created: function(){
-        eventHub.$on('imageUploadedToBrowser',this.updateImageDetailsWhenLoaded);
-        eventHub.$on('imageUploadedToServer',this.imageUploaded);
-        eventHub.$on('imageInitiated',this.updateImageDetails);
+        this.registerHub(eventHub);
+        this.registerEvent('imageUploadedToBrowser',this.updateImageDetailsWhenLoaded);
+        this.registerEvent('imageUploadedToServer',this.imageUploaded);
+        this.registerEvent('imageInitiated',this.updateImageDetails);
+        //Add all right properties depending on languages
+        for(let i in this.languages){
+            let lang = this.languages[i];
+            Vue.set(this.newImageInfo,lang+'_caption','');
+            Vue.set(this.newImageInfo,lang+'_name','');
+            Vue.set(this.expectedMeta,lang+'_name',{
+                text:'Name ['+lang+']',
+                placeholder:'Image '+lang+' name',
+                type:'input'
+            });
+            Vue.set(this.expectedMeta,lang+'_caption',{
+                text:'Caption ['+lang+']',
+                placeholder:'Image '+lang+' caption',
+                type:'textarea'
+            });
+        }
     }
 });

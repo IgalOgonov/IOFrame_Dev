@@ -33,6 +33,8 @@ CONST GALLERY_UPDATE_AUTH = 'GALLERY_UPDATE_AUTH';
 CONST GALLERY_DELETE_AUTH = 'GALLERY_DELETE_AUTH';
 //Allow image upload
 CONST MEDIA_FOLDER_CREATE_AUTH = 'MEDIA_FOLDER_CREATE_AUTH';
+/*Object Auth object type for media*/
+CONST OBJECT_AUTH_TYPE = 'media';
 
 /* Validation */
 //Allowed Regex filter regex

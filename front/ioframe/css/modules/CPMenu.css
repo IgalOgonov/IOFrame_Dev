@@ -1,13 +1,13 @@
 /*** Back Menu ***/
 #menu{
     min-height: 100vh;
-    background: rgb(236, 251, 255);
+    background: var(--main-color-2);
     font-size: 1.25em;
     margin-right: 5px;
     position: relative;
     transition: 0.5s linear;
     min-width: 200px;
-    box-shadow: 1px 0px 5px 0px black;
+    box-shadow: 1px 0px 5px 0px var(--main-color-4);
 }
 /* Logo */
 #menu > .logo,
@@ -31,13 +31,15 @@
     font-weight: 800;
 }
 #menu > a:not(.logo){
-    background: rgb(236, 251, 255);
+    display: flex;
+    justify-content: start;
+    background: var(--main-color-2);
     padding: 5px;
     font-size: 1em;
     width: 100%;
     text-align: left;
     transition: all 0.2s, color 0s;
-    border: 1px solid rgb(163, 171, 207);
+    border: 1px solid var(--secondary-color-2);
     border-left: none;
     border-right: none;
     border-top: none;
@@ -47,10 +49,16 @@
 }
 #menu > a:not(.logo).selected,
 #menu > a:not(.logo):hover{
-    background: rgb(161,233,246);
+    background: var(--main-color-5);
 }
 #menu > a:not(.logo):visited{
     color: black!important;
+}
+/*Image*/
+#menu > a:not(.logo) > img {
+    height: 30px;
+    width: 30px;
+    margin-right: 5px;
 }
 
 /*Toggle wrapper / button*/
@@ -65,7 +73,7 @@
 }
 #menu > .button-wrapper > button{
     padding: 20px;
-    background: rgb(236, 251, 255);
+    background: var(--main-color-2);
     border-radius: 20px;
     margin: 10px 0px 0px 10px;
     border: rgb(28 119 134) 1px solid;
@@ -73,17 +81,30 @@
 }
 #menu.open > .button-wrapper > button{
     border-radius: 0px 0px 20px 0px;
-    border-left: none;
-    border-top: none;
+    border: none;
     padding: 40px 20px;
     margin: 0px;
-    box-shadow: 3px 1px 2px 1px rgba(0,0,0,0.4);
+    box-shadow: 3px 1px 1px 1px var(--main-color-3);
+}
+#menu > .button-wrapper > button::after {
+    content: '';
+    width: 10px;
+    height: 20px;
+    background: var(--secondary-color-6);
+    clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+    transition: 0.25s linear;
+}
+#menu > .button-wrapper > button::after:hover {
+    background: var(--secondary-color-4);
+}
+#menu > .button-wrapper > button.open::after {
+    clip-path: polygon(0 50%, 100% 100%, 100% 0);
 }
 
 /* Disabled */
 #menu > a.disabled {
-    background: rgba(0,0,0,0.1) !important;
-    color: rgb(150,150,150) !important;
+    background: var(--shadow-dark-1) !important;
+    color:  var(--gray-2) !important;
     cursor: no-drop;
 }
 

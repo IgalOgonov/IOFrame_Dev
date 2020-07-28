@@ -195,6 +195,7 @@ namespace IOFrame\Handlers{
                         if($verbose)
                             echo 'Writing PNG image to temp directory'.EOL;
                         $img = imagecreatefrompng( $uploaded_tmp );
+                        imagesavealpha($img, TRUE);
                         imagepng( $img, $temp_file, 9*(1-$imageQualityPercentage/100));
                     }
                     //Anything bellow this cannot be safely uploaded (at least for now)

@@ -39,3 +39,16 @@ foreach(['js','css'] as $resourceType){
 
 $JSResources = $FrontEndResourceHandler->getJS($JS,$JSOptions);
 $CSSResources = $FrontEndResourceHandler->getCSS($CSS,$CSSOptions);
+
+if(!defined('frontEndResourceTemplateManager'))
+    require $rootFolder.'IOFrame/Util/frontEndResourceTemplateManager.php';
+
+$frontEndResourceTemplateManager = new IOFrame\Util\frontEndResourceTemplateManager(
+    [
+        'JSResources' => $JSResources,
+        'CSSResources' => $CSSResources,
+        'dirToRoot' => $dirToRoot,
+        'JSResourceRoot' => $IOFrameJSRoot,
+        'CSSResourceRoot' => $IOFrameCSSRoot
+    ]
+);

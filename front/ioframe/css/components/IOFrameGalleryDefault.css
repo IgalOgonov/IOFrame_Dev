@@ -1,0 +1,192 @@
+
+/** Gallery **/
+.ioframe-gallery{
+    flex: 2.5;
+    margin: 10px;
+}
+/** Caption **/
+.ioframe-gallery figcaption{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    margin: 5px 0px;
+    color: var(--secondary-color-5);
+}
+
+/* Preview */
+.ioframe-gallery .gallery-preview{
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: var(--secondary-color-1);
+    transition: all 0s, background-color 0.5s ease-in-out;
+}
+.ioframe-gallery .gallery-preview:hover{
+    background-color: var(--secondary-color-2);
+}
+.ioframe-gallery .preview-container {
+    transition: all 0s, opacity 0.5s ease-in-out;
+    position: absolute;
+    opacity: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 800px;
+}
+.ioframe-gallery .preview-container.selected {
+    opacity: 1;
+    height: auto;
+}
+.ioframe-gallery .preview-container img{
+    max-width: 100%;
+    max-height: 400px;
+}
+
+/* Slider */
+.ioframe-gallery .slider{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 15px;
+}
+
+.ioframe-gallery .slider button{
+    position: relative;
+    padding: 7px 0px;
+    border-radius: 100%;
+    transition: all 0.2s ease-in-out, top 0s;
+}
+.ioframe-gallery .slider button > div{
+    height: 25px;
+    padding: 10px;
+    transition: 0.2s ease-in-out;
+    z-index: 2;
+    background-color: var(--shadow-dark-2);
+}
+.ioframe-gallery .slider button:first-of-type > div{
+    clip-path: polygon(30% 50%, 100% 100%, 100% 0%);
+    margin-right: 10px;
+}
+.ioframe-gallery .slider button:not(:first-of-type) > div{
+    clip-path: polygon(0 0, 0% 100%, 70% 50%);
+    margin-left: 10px;
+}
+.ioframe-gallery .slider button:hover {
+    background-color: var(--shadow-gray-5);
+}
+.ioframe-gallery .slider button:hover > div{
+    background-color: var(--gray-1);
+}
+.ioframe-gallery .slider.no-gallery{
+    justify-content: space-between;
+    height: 0;
+}
+.ioframe-gallery .slider.on-top button{
+    top: -359px; /*(100+38-39/2) + (500-39/2)/2*/
+}
+.ioframe-gallery .slider.on-top.no-gallery button{
+    top: -240px; /*(500-39/2)/2*/
+}
+
+.ioframe-gallery .gallery-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+.ioframe-gallery .out-of-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-weight: 800;
+}
+.ioframe-gallery .gallery-container .image-container {
+    margin: 15px;
+    border: 1px var(--main-color-1) solid;
+    transition: 0.5s ease-in-out;
+}
+/* Handle even number of images*/
+.ioframe-gallery.even .gallery-container .image-container{
+    position: relative;
+    right: 145px;
+}
+.ioframe-gallery .gallery-container .image-container.selected img,
+.ioframe-gallery .gallery-container .image-container:hover img{
+    border: 1px var(--dark-1) solid;
+}
+.ioframe-gallery .gallery-container .image-container img{
+    width: 200px;
+    height: 100px;
+}
+
+/***Responsiveness***/
+@media only screen and (max-width: 1250px) {
+    /** Gallery **/
+    .ioframe-gallery .gallery-preview{
+        height: 400px;
+    }
+    .ioframe-gallery .slider.on-top button{
+        top: -284px; /*(75+38-39/2) + (400-39/2)/2*/
+    }
+    .ioframe-gallery .slider.on-top.no-gallery button{
+        top: -190px; /*(400-39/2)/2*/
+    }
+    .ioframe-gallery .preview-container img{
+        max-width: 700px;
+        max-height: 350px;
+    }
+    .ioframe-gallery .gallery-container .image-container img{
+        width: 150px;
+        height: 75px;
+    }
+}
+@media only screen and (max-width: 1000px) {
+
+    /* Gallery */
+    .ioframe-gallery {
+        margin: 10px 0px 10px 0px;
+        max-width: 90vw;
+    }
+    .ioframe-gallery .gallery-preview{
+        height: 350px;
+    }
+    .ioframe-gallery .slider.on-top button{
+        top: -259px; /*(75+38-39/2) + (350-39/2)/2*/
+    }
+    .ioframe-gallery .slider.on-top.no-gallery button{
+        top: -165px; /*(350-39/2)/2*/
+    }
+    .ioframe-gallery .preview-container img{
+        max-width: 600px;
+        max-height: 300px;
+    }
+}
+
+@media only screen and (max-width: 750px) {
+
+    /* Gallery */
+    .ioframe-gallery .gallery-preview{
+        height: 250px;
+    }
+    .ioframe-gallery .slider.on-top button{
+        top: -209px; /*(75+38-39/2) + (250-39/2)/2*/
+    }
+    .ioframe-gallery .slider.on-top.no-gallery button{
+        top: -115px; /*(250-39/2)/2*/
+    }
+    .ioframe-gallery .preview-container img{
+        max-width: 400px;
+        max-height: 200px;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    /* Gallery */
+    .ioframe-gallery .preview-container img{
+        max-width: min(300px,70vw);
+        max-height: 150px;
+    }
+}

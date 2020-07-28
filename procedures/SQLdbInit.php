@@ -76,13 +76,10 @@ namespace IOFrame{
                                                               Title varchar(255) NOT NULL,
                                                               Content TEXT,
                                                               Created_On varchar(14) NOT NULL DEFAULT 0,
-                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-
-            $makeIndex1 = $conn->prepare("CREATE INDEX IF NOT EXISTS Created_On ON ".$prefix.
-                "MAIL_TEMPLATES (Created_On);");
-            $makeIndex2 = $conn->prepare("CREATE INDEX IF NOT EXISTS Last_Updated ON ".$prefix.
-                "MAIL_TEMPLATES (Last_Updated);");
 
             $updateTB1 = $conn->prepare("INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
                                       VALUES( 'Account Activation Default Template', :Content)");
@@ -101,8 +98,6 @@ namespace IOFrame{
 
             try{
                 $makeTB->execute();
-                $makeIndex1->execute();
-                $makeIndex2->execute();
                 echo "MAIL TEMPLATES table and indexes created.".EOL;
                 $updateTB1->execute();
                 $updateTB2->execute();
@@ -132,12 +127,10 @@ namespace IOFrame{
                                                               Active BOOLEAN NOT NULL,
                                                               Auth_Rank int,
                                                               SessionID varchar(255),
-                                                              authDetails TEXT
+                                                              authDetails TEXT,
+                                                              INDEX (loginIndex)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //Index Creation
-            //When logging in, you usually search by mail.
-            $makeLoginIndex = $conn->prepare("CREATE INDEX IF NOT EXISTS loginIndex ON ".$prefix.
-                "USERS (Email);");
+
             try{
                 $makeTB->execute();
                 echo "USERS table created.".EOL;
@@ -145,13 +138,6 @@ namespace IOFrame{
             catch(\Exception $e){
                 echo "USERS table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
-            }
-
-            try{
-                $makeLoginIndex->execute();
-            }
-            catch(\Exception $e){
-                echo "USERS table indexing failed, error is: ".$e->getMessage().EOL;
             }
 
             // INITIALIZE USER LOGIN HISTORY
@@ -164,11 +150,13 @@ namespace IOFrame{
                                                               Username varchar(16) NOT NULL,
                                                               IP varchar(45) NOT NULL,
                                                               Country varchar(20) NOT NULL,
-                                                              Login_History longtext NOT NULL,
-                                                              PRIMARY KEY (Username, IP),
+                                                              Login_Time int NOT NULL,
+                                                              PRIMARY KEY (Username, IP,Login_Time),
                                                               FOREIGN KEY (Username)
                                                                 REFERENCES ".$prefix."USERS(Username)
-                                                                ON DELETE CASCADE ON UPDATE CASCADE
+                                                                ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              INDEX(Country),
+                                                              INDEX(Login_Time)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
             try{
                 $makeTB->execute();
@@ -192,18 +180,12 @@ namespace IOFrame{
                                                               Suspicious_Until varchar(14),
                                                                 FOREIGN KEY (ID)
                                                                 REFERENCES ".$prefix."USERS(ID)
-                                                                ON DELETE CASCADE
+                                                                ON DELETE CASCADE,
+                                                              INDEX (Banned_Until),
+                                                              INDEX (Suspicious_Until)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //We will often try to find a list of banned users
-            $makeIndex1 = $conn->prepare("CREATE INDEX IF NOT EXISTS Banned ON ".$prefix.
-                "USERS_EXTRA (Banned_Until);");
-            //We will often filter by Suspicious Activity
-            $makeIndex2 = $conn->prepare("CREATE INDEX IF NOT EXISTS Suspicious ON ".$prefix.
-                "USERS_EXTRA (Suspicious_Until);");
             try{
                 $makeTB->execute();
-                $makeIndex1->execute();
-                $makeIndex2->execute();
                 echo "USERS_EXTRA table created.".EOL;
             }
             catch(\Exception $e){
@@ -253,32 +235,17 @@ namespace IOFrame{
                                                               Extra_Info TEXT,
                                                               Created_On varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
-    														  PRIMARY KEY(Contact_Type,Identifier)
+    														  PRIMARY KEY(Contact_Type,Identifier),
+                                                              INDEX (Contact_Name),
+                                                              INDEX (Email),
+                                                              INDEX (Country),
+                                                              INDEX (City),
+                                                              INDEX (Company),
+                                                              INDEX (Created_On),
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //Indexes
-            $makeIndex1 = $conn->prepare("CREATE INDEX IF NOT EXISTS Contact_Name ON ".$prefix.
-                "CONTACTS (First_Name,Last_Name);");
-            $makeIndex2 = $conn->prepare("CREATE INDEX IF NOT EXISTS Email ON ".$prefix.
-                "CONTACTS (Email);");
-            $makeIndex3 = $conn->prepare("CREATE INDEX IF NOT EXISTS Country ON ".$prefix.
-                "CONTACTS (Country);");
-            $makeIndex4 = $conn->prepare("CREATE INDEX IF NOT EXISTS City ON ".$prefix.
-                "CONTACTS (City);");
-            $makeIndex5 = $conn->prepare("CREATE INDEX IF NOT EXISTS Company ON ".$prefix.
-                "CONTACTS (Company_Name,Company_ID);");
-            $makeIndex6 = $conn->prepare("CREATE INDEX IF NOT EXISTS Created_On ON ".$prefix.
-                "CONTACTS (Created_On);");
-            $makeIndex7 = $conn->prepare("CREATE INDEX IF NOT EXISTS Last_Updated ON ".$prefix.
-                "CONTACTS (Last_Updated);");
             try{
                 $makeTB->execute();
-                $makeIndex1->execute();
-                $makeIndex2->execute();
-                $makeIndex3->execute();
-                $makeIndex4->execute();
-                $makeIndex5->execute();
-                $makeIndex6->execute();
-                $makeIndex7->execute();
                 echo "CONTACTS table created.".EOL;
             }
             catch(\Exception $e){
@@ -297,14 +264,11 @@ namespace IOFrame{
                                                               Last_Changed varchar(11),
                                                                 FOREIGN KEY (ID)
                                                                 REFERENCES ".$prefix."USERS(ID)
-                                                                ON DELETE CASCADE
+                                                                ON DELETE CASCADE,
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //We will often filter by Last_Changed
-            $makeIndex = $conn->prepare("CREATE INDEX IF NOT EXISTS LastChangedIndex ON ".$prefix.
-                "USERS_AUTH (Last_Changed);");
             try{
                 $makeTB->execute();
-                $makeIndex->execute();
                 echo "USER AUTH table created.".EOL;
             }
             catch(\Exception $e){
@@ -321,14 +285,11 @@ namespace IOFrame{
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."GROUPS_AUTH (
                                                               Auth_Group varchar(256) PRIMARY KEY,
                                                               Last_Changed varchar(11) NOT NULL DEFAULT '0',
-                                                              Description TEXT
+                                                              Description TEXT,
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //We will often filter by Last_Changed
-            $makeIndex = $conn->prepare("CREATE INDEX IF NOT EXISTS LastChangedIndex ON ".$prefix.
-                "GROUPS_AUTH (Last_Changed);");
             try{
                 $makeTB->execute();
-                $makeIndex->execute();
                 echo "GROUPS AUTH table created.".EOL;
             }
             catch(\Exception $e){
@@ -466,14 +427,11 @@ namespace IOFrame{
                                                               IP_Type BOOLEAN NOT NULL,
                                                               Expires varchar(14) NOT NULL,
                                                               Meta varchar(10000) DEFAULT NULL,
-                                                              PRIMARY KEY (IP)
+                                                              PRIMARY KEY (IP),
+                                                              INDEX (IP_Type,Expires)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //We will often filter by Expires
-            $makeIndex = $conn->prepare("CREATE INDEX IF NOT EXISTS ExpiresIndex ON ".$prefix.
-                "IP_LIST (IP_Type,Expires);");
             try{
                 $makeTB->execute();
-                $makeIndex->execute();
                 echo "IP_LIST table created.".EOL;
             }
             catch(\Exception $e){
@@ -495,14 +453,11 @@ namespace IOFrame{
                                                               IP_From TINYINT UNSIGNED NOT NULL,
                                                               IP_To TINYINT UNSIGNED NOT NULL,
                                                               Expires varchar(14) NOT NULL,
-                                                              PRIMARY KEY (Prefix, IP_From, IP_To)
+                                                              PRIMARY KEY (Prefix, IP_From, IP_To),
+                                                              INDEX (Expires)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
-            //We will often filter by Expires
-            $makeIndex = $conn->prepare("CREATE INDEX IF NOT EXISTS ExpiresIndex ON ".$prefix.
-                "IPV4_RANGE (Expires);");
             try{
                 $makeTB->execute();
-                $makeIndex->execute();
                 echo "IPV4_RANGE table created.".EOL;
             }
             catch(\Exception $e){
@@ -721,14 +676,12 @@ namespace IOFrame{
                                                               Min_View_Rank int DEFAULT -1,
                                                               CHECK( IF( Min_View_Rank IS NOT NULL, Min_View_Rank>=-1, FALSE ) ),
                                                               Object MEDIUMTEXT NOT NULL,
-                                                              Meta varchar(255) DEFAULT NULL
+                                                              Meta varchar(255) DEFAULT NULL,
+                                                              INDEX (Ob_Group)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $indexGroups = "ALTER TABLE ".$prefix."OBJECT_CACHE ADD INDEX (Ob_Group);";
-            $indexGroups = $conn->prepare($indexGroups);
             try{
                 $makeTB->execute();
-                $indexGroups->execute();
                 echo "Object Cache table created.".EOL;
             }
             catch(\Exception $e){
@@ -808,11 +761,10 @@ namespace IOFrame{
                                                               Method varchar(256) NOT NULL,
                                                               Route varchar(1024) NOT NULL,
                                                               Match_Name varchar(64) NOT NULL,
-                                                              Map_Name varchar(256)
+                                                              Map_Name varchar(256),
+                                                              INDEX (Match_Name)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $indexRoutes = "ALTER TABLE ".$prefix."ROUTING_MAP ADD INDEX (Match_Name);";
-            $indexRoutes = $conn->prepare($indexRoutes);
 
             try{
                 $makeTB->execute();
@@ -820,15 +772,6 @@ namespace IOFrame{
             }
             catch(\Exception $e){
                 echo "Routing Map table couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
-            try{
-                $indexRoutes->execute();
-                echo "Routing Map table index created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Routing Map table index couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
 
@@ -936,13 +879,11 @@ namespace IOFrame{
                                                               Uses_Left int NOT NULL,
                                                               Expires varchar(14) NOT NULL,
                                                               Session_Lock varchar(256) DEFAULT NULL,
-                                                              Locked_At varchar(14) DEFAULT NULL
+                                                              Locked_At varchar(14) DEFAULT NULL,
+                                                              INDEX (Expires),
+                                                              INDEX (Token_Action)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."IOFRAME_TOKENS ADD INDEX (Expires);";
-            $indexTB1 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."IOFRAME_TOKENS ADD INDEX (Token_Action);";
-            $indexTB2 = $conn->prepare($query);
 
             try{
                 $makeTB->execute();
@@ -953,23 +894,12 @@ namespace IOFrame{
                 $res = false;
             }
 
-            try{
-                $indexTB1->execute();
-                $indexTB2->execute();
-                echo "Default Token table indexes created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Default Token table indexes couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
 
             // INITIALIZE RESOURCES Table
             /* This table stores resource information.
-             *
+             * Resource_Type-   Varchar(64), should be 'image', 'js', 'css', 'text' or 'blob' currently.
              * Address      -   Varchar(512), Address of the resource - from relevant folder root if local, or full URI if
              *                  not local. By default it should include file extension for local files.
-             * Resource_Type-   Varchar(64), should be 'image', 'js', 'css', 'text' or 'blob' currently.
              * Resource_Local -   Boolean, default true - whether the resource should be treated as a local one.
              * Minified_Version - Boolean, default false - Whether you can get a minified version of the resource.
              *                    Rules of how to handle it are defined by the handler.
@@ -991,15 +921,12 @@ namespace IOFrame{
                                                               Text_Content TEXT,
                                                               Blob_Content LONGBLOB,
                                                               Data_Type varchar(512) DEFAULT NULL,
-                                                               PRIMARY KEY(Resource_Type, Address)
+                                                               PRIMARY KEY(Resource_Type, Address),
+                                                              INDEX (Resource_Local),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Changed)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."RESOURCES ADD INDEX (Resource_Local);";
-            $indexTB1 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."RESOURCES ADD INDEX (Created);";
-            $indexTB2 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."RESOURCES ADD INDEX (Last_Changed);";
-            $indexTB3 = $conn->prepare($query);
 
             try{
                 $makeTB->execute();
@@ -1009,18 +936,6 @@ namespace IOFrame{
                 echo "Resource table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
-
-            try{
-                $indexTB1->execute();
-                $indexTB2->execute();
-                $indexTB3->execute();
-                echo "Resource table indexes created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Resource table indexes couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
 
 
             // INITIALIZE RESOURCE_COLLECTIONS Table
@@ -1039,13 +954,11 @@ namespace IOFrame{
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Changed varchar(14) NOT NULL DEFAULT 0,
                                                               Meta TEXT,
-                                                               PRIMARY KEY(Resource_Type, Collection_Name)
+                                                               PRIMARY KEY(Resource_Type, Collection_Name),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Changed)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."RESOURCE_COLLECTIONS ADD INDEX (Created);";
-            $indexTB1 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."RESOURCE_COLLECTIONS ADD INDEX (Last_Changed);";
-            $indexTB2 = $conn->prepare($query);
 
             try{
                 $makeTB->execute();
@@ -1053,16 +966,6 @@ namespace IOFrame{
             }
             catch(\Exception $e){
                 echo "Resource collection table couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
-            try{
-                $indexTB1->execute();
-                $indexTB2->execute();
-                echo "Resource collection table indexes created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Resource collection table indexes couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
 
@@ -1139,17 +1042,13 @@ namespace IOFrame{
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
                                                               Session_Lock varchar(256) DEFAULT NULL,
-                                                              Locked_At varchar(14) DEFAULT NULL
+                                                              Locked_At varchar(14) DEFAULT NULL,
+                                                              INDEX (Order_Type),
+                                                              INDEX (Order_Status),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Changed)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Created);";
-            $indexTB1 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Last_Updated);";
-            $indexTB2 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Order_Type);";
-            $indexTB3 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_ORDERS ADD INDEX (Order_Status);";
-            $indexTB4 = $conn->prepare($query);
 
             try{
                 $makeTB->execute();
@@ -1159,17 +1058,6 @@ namespace IOFrame{
                 echo "Default Orders table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
-
-            try{
-                $indexTB1->execute();
-                $indexTB2->execute();
-                echo "Default Orders table indexes created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Default Orders table indexes couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
 
 
             // INITIALIZE DEFAULT_USERS_ORDERS Table
@@ -1200,13 +1088,11 @@ namespace IOFrame{
                                                               ON DELETE CASCADE,
                                                               FOREIGN KEY (Order_ID)
                                                               REFERENCES ".$prefix."DEFAULT_ORDERS(ID)
-                                                              ON DELETE CASCADE
+                                                              ON DELETE CASCADE,
+                                                              INDEX (Created),
+                                                              INDEX (Last_Changed)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_USERS_ORDERS ADD INDEX (Created);";
-            $indexTB1 = $conn->prepare($query);
-            $query = "ALTER TABLE ".$prefix."DEFAULT_USERS_ORDERS ADD INDEX (Last_Updated);";
-            $indexTB2 = $conn->prepare($query);
 
             try{
                 $makeTB->execute();
@@ -1217,16 +1103,6 @@ namespace IOFrame{
                 $res = false;
             }
 
-            try{
-                $indexTB1->execute();
-                $indexTB2->execute();
-                echo "Default Users<=>Orders table indexes created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "Default Users<=>Orders table indexes couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
             /* ------------------------------------------------------------
              * ObjectAuth related tables - quite a few
              * ------------------------------------------------------------
@@ -1234,13 +1110,13 @@ namespace IOFrame{
 
             /* INITIALIZE OBJECT_AUTH_CATEGORIES Table
              *
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Title        - varchar(1024), title of the category.
              * Created   -   varchar(14), UNIX timestamp of when the order was created.
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_CATEGORIES (
-                                                              Object_Auth_Category int PRIMARY KEY AUTO_INCREMENT,
+                                                              Object_Auth_Category varchar(128) PRIMARY KEY,
                                                               Title varchar(1024) DEFAULT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
@@ -1260,7 +1136,7 @@ namespace IOFrame{
             }
 
             /* INITIALIZE OBJECT_AUTH_OBJECTS Table
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Object       - varchar(1024), identifier of object.
              * Title        - varchar(1024), title of the object.
              * Is_Public       - bool, default null - whether the object is public. NULL is the default, and depends on business logic.
@@ -1268,7 +1144,7 @@ namespace IOFrame{
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECTS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Object varchar(256) NOT NULL,
                                                               Title varchar(1024) DEFAULT NULL,
                                                               Is_Public BOOLEAN DEFAULT FALSE,
@@ -1295,14 +1171,14 @@ namespace IOFrame{
             }
 
             /* INITIALIZE OBJECT_AUTH_ACTIONS Table
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Action       - varchar(1024), identifier of object.
              * Title        - varchar(1024), title of the object.
              * Created   -   varchar(14), UNIX timestamp of when the order was created.
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_ACTIONS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Action varchar(256) NOT NULL,
                                                               Title varchar(1024) DEFAULT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
@@ -1328,7 +1204,7 @@ namespace IOFrame{
 
             /* INITIALIZE OBJECT_AUTH_GROUPS Table
              *
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Object       - varchar(1024), identifier of object.
              * Object_Auth_Group        - int, Auto incrementing ID.
              * Title        - varchar(1024), title of the category.
@@ -1336,7 +1212,7 @@ namespace IOFrame{
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_GROUPS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Object varchar(256) NOT NULL,
                                                               Object_Auth_Group int AUTO_INCREMENT,
                                                               Title varchar(1024) DEFAULT NULL,
@@ -1364,14 +1240,14 @@ namespace IOFrame{
 
             /* INITIALIZE OBJECT_AUTH_OBJECT_USERS Table
              *
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Object       - varchar(1024), identifier of object.
              * ID           - int, Auto incrementing ID.
              * Created   -   varchar(14), UNIX timestamp of when the order was created.
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECT_USERS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Object varchar(256) NOT NULL,
                                                               ID int NOT NULL,
                                                               Object_Auth_Action varchar(256) NOT NULL,
@@ -1387,6 +1263,7 @@ namespace IOFrame{
                                                               FOREIGN KEY (ID)
                                                               REFERENCES ".$prefix."USERS(ID)
                                                               ON DELETE CASCADE,
+                                                              INDEX (ID,Object_Auth_Object),
                                                               INDEX (Created),
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
@@ -1403,14 +1280,14 @@ namespace IOFrame{
 
             /* INITIALIZE OBJECT_AUTH_OBJECT_GROUPS Table
              *
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Object       - varchar(1024), identifier of object.
              * Object_Auth_Group           - int, Auto incrementing ID.
              * Created   -   varchar(14), UNIX timestamp of when the order was created.
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_OBJECT_GROUPS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Object varchar(256) NOT NULL,
                                                               Object_Auth_Group int NOT NULL,
                                                               Object_Auth_Action varchar(256) NOT NULL,
@@ -1426,6 +1303,7 @@ namespace IOFrame{
                                                               FOREIGN KEY (Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
                                                               REFERENCES ".$prefix."OBJECT_AUTH_GROUPS(Object_Auth_Category, Object_Auth_Object, Object_Auth_Group)
                                                               ON DELETE CASCADE,
+                                                              INDEX (Object_Auth_Group,Object_Auth_Object),
                                                               INDEX (Created),
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
@@ -1442,7 +1320,7 @@ namespace IOFrame{
 
             /* INITIALIZE OBJECT_AUTH_USERS_GROUPS Table
              *
-             * Object_Auth_Category     - int, Auto incrementing ID.
+             * Object_Auth_Category     - varchar(128), ID.
              * Object_Auth_Object       - varchar(1024), identifier of object.
              * Object_Auth_Group           - int, Auto incrementing ID.
              * ID           - int, Auto incrementing ID.
@@ -1450,7 +1328,7 @@ namespace IOFrame{
              * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_AUTH_USERS_GROUPS (
-                                                              Object_Auth_Category int NOT NULL,
+                                                              Object_Auth_Category varchar(128) NOT NULL,
                                                               Object_Auth_Object varchar(256) NOT NULL,
                                                               ID int NOT NULL,
                                                               Object_Auth_Group int NOT NULL,
@@ -1478,6 +1356,127 @@ namespace IOFrame{
             }
             catch(\Exception $e){
                 echo "OBJECT_AUTH_USERS_GROUPS table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* ------------------------------------------------------------
+             * Articles related tables - quite a few
+             * ------------------------------------------------------------
+            */
+
+            /* INITIALIZE ARTICLES Table
+             *
+             * Article_ID   - int, Auto incrementing ID.
+             * Creator_ID   - int, ID of the user who created the article
+             * Article_Title        - varchar(512), title of the article.
+             * Article_Address      - varchar(512), address of the article - used in many things, such as tying an article
+             *                to a page, or getting it via routing to help SEO.
+             * Article_View_Auth    - int, Authentication level required to view the article.
+             *                By default, the meanings are:
+             *                  0 - Public - anybody can view.
+             *                  1 - Restricted - Author and anybody with specific permissions can view
+             *                  2 - Private - Only author (and system admins) can view.
+             * Article_Text_Content - text, Space for general text content that isn't indexed and has no relational siginifance -
+             *                for example captions, sub-title, read duration, etc...
+             * Thumbnail_Resource_Type-   Varchar(64), 'img' default column needed for the foreign key.
+             * Thumbnail_Address - Varchar(512), Optional address of an image to serve as the thumbnail for an article.
+             *                     Properties such as caption/alt/name are also recovered, and can be used by the client.
+             * Article_Weight       - int, used to promote certain articles over others. Generally, at any given time only 1/2
+             *                different weights (like 1 and 0) should exist.
+             * Block_Order  - Order of the blocks to be displayed. Blocks not in the order should be piled in the end in random order.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."ARTICLES (
+                                                              Article_ID int PRIMARY KEY AUTO_INCREMENT,
+                                                              Creator_ID int NOT NULL,
+                                                              Article_Title varchar(512) NOT NULL,
+                                                              Article_Address varchar(512) NOT NULL,
+                                                              Article_Language varchar(32) DEFAULT NULL,
+                                                              Article_View_Auth int NOT NULL DEFAULT 0,
+                                                              Article_Text_Content TEXT,
+                                                              Thumbnail_Resource_Type varchar(64) DEFAULT 'img',
+                                                              Thumbnail_Address varchar(512) DEFAULT NULL,
+                                                              Article_Weight int NOT NULL DEFAULT 0,
+                                                              Block_Order varchar(2048) NOT NULL DEFAULT '',
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              FOREIGN KEY (Thumbnail_Resource_Type, Thumbnail_Address)
+                                                              REFERENCES ".$prefix."RESOURCES(Resource_Type, Address)
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              FOREIGN KEY (Creator_ID)
+                                                              REFERENCES ".$prefix."USERS(ID),
+                                                              INDEX (Article_Title),
+                                                              INDEX (Article_Address),
+                                                              INDEX (Article_Language),
+                                                              INDEX (Article_Weight),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "ARTICLES table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "ARTICLES table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+            /* INITIALIZE ARTICLE_BLOCKS Table
+             * Article_ID     - int, Article ID.
+             * Block_ID       - int, identifier of specific blocks.
+             * Block_Type     - varchar(64), block type (of the supported types)
+             * Text_Content   - text block. For a markdown block this could be MD text, for a youtube block this could be
+             *                  the video identifer (e.g. "dQw4w9WgXcQ"), etc.
+             * Other_Article_ID - int, Other article ID - used in article blocks.
+             * Image_Resource_Type -   Varchar(64), if this block links to a resource or a collection, this needs to be set.
+             * Resource_Address - Varchar(512), Optional address of a resource.
+             *                     Properties such as caption/alt/name are also recovered,
+             *                     and are used merged with Image_Meta (the latter has higher priority).
+             * Collection_Name - Varchar(128), Name of a resource collection name (such as a gallery)
+             * Meta           - text, optional meta information that overrides the one from resources if present.
+             * Created   -   varchar(14), UNIX timestamp of when the order was created.
+             * Last_Updated -   varchar(14), UNIX timestamp of when the order was last updated.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."ARTICLE_BLOCKS (
+                                                              Article_ID int NOT NULL,
+                                                              Block_ID BIGINT NOT NULL AUTO_INCREMENT,
+                                                              Block_Type varchar(64) NOT NULL,
+                                                              Text_Content TEXT DEFAULT NULL,
+                                                              Other_Article_ID int DEFAULT NULL,
+                                                              Resource_Type varchar(64) DEFAULT NULL,
+                                                              Resource_Address varchar(512) DEFAULT NULL,
+                                                              Collection_Name varchar(128) DEFAULT NULL,
+                                                              Meta TEXT DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              PRIMARY KEY(Article_ID, Block_ID),
+                                                              FOREIGN KEY (Article_ID)
+                                                              REFERENCES ".$prefix."ARTICLES(Article_ID)
+                                                              ON DELETE CASCADE,
+                                                              FOREIGN KEY (Other_Article_ID)
+                                                              REFERENCES ".$prefix."ARTICLES(Article_ID)
+                                                              ON DELETE CASCADE,
+                                                              FOREIGN KEY (Resource_Type, Resource_Address)
+                                                              REFERENCES ".$prefix."RESOURCES(Resource_Type, Address)
+                                                              ON UPDATE CASCADE,
+                                                              FOREIGN KEY (Resource_Type, Collection_Name)
+                                                              REFERENCES ".$prefix."RESOURCE_COLLECTIONS(Resource_Type, Collection_Name)
+                                                              ON UPDATE CASCADE,
+                                                              INDEX (Block_ID),
+                                                              INDEX (Created),
+                                                              INDEX (Last_Updated)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "ARTICLE_BLOCKS table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "ARTICLE_BLOCKS table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
 

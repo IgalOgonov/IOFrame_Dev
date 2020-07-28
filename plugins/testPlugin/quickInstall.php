@@ -11,6 +11,8 @@ else
 if(!$local){
     //Create a PDO connection
     $sqlSettings = new IOFrame\Handlers\SettingsHandler($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/sqlSettings/');
+    $siteSettings = new IOFrame\Handlers\SettingsHandler($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/siteSettings/');
+
     $conn = IOFrame\Util\prepareCon($sqlSettings);
     // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -166,6 +168,247 @@ if(!$local){
             ['test'=>$test]
         );
 
+        // ------------------ IP TEST -------------------
+        require_once __DIR__.'/../../IOFrame/Handlers/IPHandler.php';
+        $IPHandler = new IOFrame\Handlers\IPHandler(
+            $settings,
+            array_merge($this->defaultSettingsParams, ['siteSettings'=>$siteSettings])
+        );
+
+        $IPHandler->addIP('10.213.234.0',true,['ttl'=>600000000,'reliable'=>false,'override'=>true,'test'=>$test]);
+        $IPHandler->addIPRange('10.10',0,21,true,600000000,['override'=>true,'test'=>$test]);
+
+        // ------------------ CONTATCTS TEST -------------------
+        require_once __DIR__.'/../../IOFrame/Handlers/ContactHandler.php';
+        $ContactHandler = new \IOFrame\Handlers\ContactHandler(
+            $settings,
+            'test',
+            array_merge($this->defaultSettingsParams, ['siteSettings'=>$siteSettings])
+        );
+        $ContactHandler->setContacts(
+            [
+                [
+                    'Test Contact 1',
+                    [
+                        'firstName' => 'Test',
+                        'lastName' => 'Testov',
+                        'email' => 'test@test.com',
+                        'phone' => '+972542354678',
+                        'fax' => '+972542354679',
+                        'contactInfo' => '{"testParam":"test1"}',
+                        'country' => 'Israel',
+                        'state' => 'North',
+                        'city' =>  'Haifa',
+                        'street' =>  'Street',
+                        'zipCode' => '1234566',
+                        'address' =>  '{"testParam":"test2"}',
+                        'companyName' => 'Company',
+                        'companyID' => '345454654',
+                        'extraInfo' => '{"testParam":"test3"}',
+                    ]
+                ],
+                [
+                    'Test Contact 2',
+                    [
+                        'firstName' => 'Tester',
+                        'lastName' => 'Testovov',
+                        'email' => 'test2@test.com',
+                        'phone' => '+972542354678',
+                        'fax' => '+972542354679',
+                        'contactInfo' => null,
+                        'country' => 'Israel',
+                        'state' => 'North',
+                        'city' =>  'Haifa',
+                        'street' =>  'Street',
+                        'zipCode' => '1234567',
+                        'address' =>  '{"testParam":"test1"}',
+                        'companyName' => 'Company',
+                        'companyID' => '345454654',
+                        'extraInfo' => null,
+                    ]
+                ],
+                [
+                    'Test Contact 3',
+                    [
+                        'firstName' => 'Mr',
+                        'lastName' => 'Glass',
+                    ]
+                ],
+            ],
+            ['test'=>$test,'override'=>true]
+        );
+
+        // ------------------ ORDERS TEST -------------------
+        require_once __DIR__.'/../../IOFrame/Handlers/PurchaseOrderHandler.php';
+        $PurchaseOrderHandler = new \IOFrame\Handlers\PurchaseOrderHandler(
+            $settings,
+            array_merge($this->defaultSettingsParams, ['siteSettings'=>$siteSettings])
+        );
+        $PurchaseOrderHandler->setOrders(
+            [
+                [
+                    -1,
+                    [
+                        'orderInfo'=>json_encode(['test1'=>true,'test2'=>false])
+                    ]
+                ],
+                [
+                    -1,
+                    [
+                        'orderInfo'=>json_encode(['test1'=>false,'test2'=>false])
+                    ]
+                ],
+            ],
+            ['test'=>$test,'createNew'=>true]
+        );
+
+        // ------------------ OBJECTS AUTH TEST -------------------
+        require_once __DIR__.'/../../IOFrame/Handlers/ObjectAuthHandler.php';
+        $ObjectAuthHandler = new IOFrame\Handlers\ObjectAuthHandler($settings,$this->defaultSettingsParams);
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+                    'Title' => 'test'
+                ],
+            ],
+            'categories',
+            ['test'=>$test,'override'=>false]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'Title' => 'test',
+                    'Is_Public' => true
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_2'
+                ],
+            ],
+            'objects',
+            ['test'=>$test]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Action' => 'test_1',
+                    'Title' => 'test'
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Action' => 'test_2',
+                ],
+            ],
+            'actions',
+            ['test'=>$test]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'Title' => 'test group'
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'Title' => 'test group 2'
+                ],
+            ],
+            'groups',
+            ['test'=>$test,'override'=>false]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => 1,
+                    'Object_Auth_Action' => 'test_1'
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => 1,
+                    'Object_Auth_Action' => 'test_2'
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => $secondId,
+                    'Object_Auth_Action' => 'test_2'
+                ],
+            ],
+            'objectUsers',
+            ['test'=>$test]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'Object_Auth_Group' => 1,
+                    'Object_Auth_Action' => 'test_1'
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'Object_Auth_Group' => 2,
+                    'Object_Auth_Action' => 'test_2'
+                ],
+            ],
+            'objectGroups',
+            ['test'=>$test]
+        );
+
+        $ObjectAuthHandler->setItems(
+            [
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => 1,
+                    'Object_Auth_Group' => 1
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => 1,
+                    'Object_Auth_Group' => 2
+                ],
+                [
+
+                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Object' => 'test_1',
+                    'ID' => $secondId,
+                    'Object_Auth_Group' => 1
+                ],
+            ],
+            'userGroups',
+            ['test'=>$test]
+        );
+
         // ------------------ TREE TEST -------------------
         //To be added later - fuck this shit
 
@@ -214,9 +457,15 @@ if(!$local){
         // ------------------ MEDIA TEST -------------------
         $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$this->defaultSettingsParams);
         $FrontEndResourceHandler->setGallery('Test Gallery',json_encode(['name'=>'Awesome Gallery']),['test'=>$test]);
+        $FrontEndResourceHandler->setGallery('Another Gallery',json_encode(['name'=>'Another Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->addImagesToGallery(
-            ['docs/Euler.png','docs/installScreenshots'],
+            ['docs/Euler.png','docs/installScreenshots/1.png'],
             'Test Gallery',
+            ['test'=>$test]
+        );
+        $FrontEndResourceHandler->addImagesToGallery(
+            ['docs/installScreenshots/1.png','docs/installScreenshots/2.png'],
+            'Another Gallery',
             ['test'=>$test]
         );
     }

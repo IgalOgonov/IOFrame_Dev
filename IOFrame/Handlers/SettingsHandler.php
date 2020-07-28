@@ -811,7 +811,8 @@ namespace IOFrame\Handlers{
                 $urlWithoutSlash = substr($url,0, -1);
                 try{
                     //Try to create directory
-                    mkdir($urlWithoutSlash);
+                    if(!is_dir($urlWithoutSlash))
+                        mkdir($urlWithoutSlash);
                 }
                 catch(\Exception $e){
                     //Hopefully it only fails if directory already existed
@@ -849,8 +850,9 @@ namespace IOFrame\Handlers{
                 $params['deleteDifferent'] = false;
 
             //Since we can only rewrite local files completely anyway, syncing is the same as initiating from scratch in this case
-            if(!$params['localToDB'])
-                return $this->initLocal(['test'=>$test,'verbose'=>$verbose]);
+            if(!$params['localToDB']){
+                return $this->updateSettings(['mode'=>SETTINGS_OP_MODE_DB,'test'=>$test,'verbose'=>$verbose]);
+            }
             //If we are deleting new settings, we are essentially doing the same thing as recreating the table.
             if($params['deleteDifferent'])
                 return $this->initDB(['test'=>$test,'verbose'=>$verbose]);

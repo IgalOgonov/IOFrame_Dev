@@ -13,7 +13,7 @@
 }
 
 #doc header{
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 2px 2px 4px 0px var(--dark-5);
 }
 
 #doc   header >*:first-child{
@@ -50,7 +50,7 @@
 }
 
 #doc button:hover{
-    color: rgb(124, 124, 124);
+    color: var(--gray-1);
 }
 #doc button.selected {
     text-decoration-line: underline;

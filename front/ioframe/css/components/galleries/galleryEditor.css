@@ -13,7 +13,7 @@
 /*Hover / Dragged over*/
 .gallery-editor .gallery-viewer .media-object-container:hover,
 .gallery-editor .gallery-viewer .media-object-container.draggedOver {
-    background: rgba(0,0,0,0.1);
+    background: var(--shadow-dark-1);
 }
 
 /* Types */
@@ -29,7 +29,7 @@
 }
 
 .gallery-editor .types > button.selected  {
-    border-bottom: 3px black solid;
+    border-bottom: 3px var(--dark-1) solid;
 }
 
 .gallery-editor .types > button:first-child {
@@ -63,7 +63,7 @@
 .gallery-editor .search-list .search-item span:not(.image) .search-item-title {
     display: inherit !important;
     padding: 0px 3px;
-    background: rgba(0,0,0,0.1);
+    background: var(--shadow-dark-1);
 }
 .gallery-editor .search-list .search-results > * > * {
     flex:0;
@@ -91,6 +91,54 @@
     width: 100%;
     margin: 5px 0px;
     padding: 5px;
-    border: 1px rgb(163, 171, 207) solid;
-    background: rgb(204,240,253);
+    border: 1px var(--secondary-color-4) solid;
+    background: var(--main-color-4);
+}
+
+/*Info container and all within*/
+
+/*Information container*/
+.gallery-editor .info-container{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Properties */
+.gallery-editor .properties{
+    flex: 1;
+    min-width: 300px;
+}
+.gallery-editor .properties > *:not(img){
+    font-size: 1.25em;
+    border-radius: 2px;
+    min-width: 70%;
+}
+.gallery-editor .properties .property{
+    display: block;
+    border: 1px var(--secondary-color-4) solid;
+    margin: 5px;
+    padding: 5px;
+}
+.gallery-editor .properties label > span{
+    font-weight: 800;
+    color: var(--gray-1);
+}
+.gallery-editor .properties .property.changed {
+    background: var(--main-color-2);
+}
+/*Buttons*/
+.gallery-editor .operations > button{
+    text-transform: uppercase;
+    margin: 5px 5px 5px 5px;
+    font-weight: 800;
+    display: inline-flex;
+    transition: all 0.5s, color 0s;
+    font-size: 1.25em;
+    padding: 10px 20px;
+}
+
+.gallery-editor .operations > button >img {
+    height: 20px;
+    margin: 0px 0px 0px 10px;
+    align-self: center;
 }

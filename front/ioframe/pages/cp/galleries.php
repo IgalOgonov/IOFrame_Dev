@@ -17,13 +17,7 @@ require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'headers_g
 
 echo '<title>Galleries</title>';
 
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['animations.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/galleries.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/searchList.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/media/mediaViewer.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/galleries/galleryEditor.css']['relativeAddress'] . '"">';
+$frontEndResourceTemplateManager->printResources('CSS');
 ?>
 
 
@@ -54,17 +48,12 @@ $siteConfig = array_merge($siteConfig,
 
 </body>
 
-<?php require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'footers_start.php'; ?>
-
-
 <?php
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['mixins/sourceURL.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['mixins/eventHubManager.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['components/searchList.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['components/media/mediaViewer.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['components/gallery/galleryEditor.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/CPMenu.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/galleries.js']['relativeAddress'].'"></script>';
-?>
 
-<?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'footers_end.php';?>
+require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'footers_start.php';
+
+$frontEndResourceTemplateManager->printResources('JS');
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'footers_end.php';
+
+?>

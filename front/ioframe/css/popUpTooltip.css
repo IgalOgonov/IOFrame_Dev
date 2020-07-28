@@ -4,9 +4,9 @@
        padding : 0.5em;
        max-width : 30em;
        border-radius : 0.7em;
-       background: rgb(236, 251, 255);
-       color: rgb(10 10 10);
-       border: 1px rgb(163, 171, 207) solid;
+       background: var(--main-color-2);
+       color: var(--dark-1);
+       border: 1px var(--secondary-color-4) solid;
        font-size: 0.8em;
        font-weight: 800;
        z-index : 1;

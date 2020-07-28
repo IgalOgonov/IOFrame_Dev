@@ -10,17 +10,18 @@ if(!defined('coreInit'))
 
 
 echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
-echo '<script src="'.$dirToRoot.'front/ioframe/js/docs/highlight.js/highlight.pack.js"></script>';
+echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/highlight.js/highlight.pack.js"></script>';
 echo '<script src="'.$dirToRoot.'front/ioframe/js/ezPopup.js"></script>';
 echo '<script>hljs.initHighlightingOnLoad();</script>';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/standard.css">';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/global.css">';
-echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/docs/ioframe-highlight.css">';
+echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/ext/highlight.js/ioframe-highlight.css">';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/docs/main.css">';
 echo '<link rel="stylesheet" href="'.$dirToRoot.'front/ioframe/css/docs/docs.css">';
 if($auth->isAuthorized(0))
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';
+    echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.js"></script>';
 else
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.min.js"></script>';
+    echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.min.js"></script>';
 
 echo '<title>IOFrame - Overview</title>';
 ?>

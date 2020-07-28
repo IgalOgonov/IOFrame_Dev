@@ -18,8 +18,12 @@ namespace IOFrame\Handlers{
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
      * */
     class MailHandler extends IOFrame\abstractDBWithCache{
-        protected $mail;          //PHP Mailer
-        protected $template=null; //Loads a template to serve as the body, using sendMailTemplate
+        //PHP Mailer
+        protected $mail;
+        //Loads a template to serve as the body, using sendMailTemplate
+        protected $template=null;
+        //Default alias to send system mails with
+        protected $defaultAlias=null;
         protected $mailTokenCachePrefix = 'mail_auth_token_';
         protected $mailTemplateCachePrefix = 'mail_template_';
 
@@ -68,8 +72,11 @@ namespace IOFrame\Handlers{
                 $this->mail->Username = $this->mailSettings->getSetting('mailUsername');        // SMTP username
                 $this->mail->Password = $this->mailSettings->getSetting('mailPassword');        // SMTP password
                 $this->mail->Port = $this->mailSettings->getSetting('mailPort');                // TCP port to connect to
+
+                $this->defaultAlias = $this->mailSettings->getSetting('defaultAlias') ? $this->mailSettings->getSetting('defaultAlias'): $this->mail->Username;
+
                 if($verbose)
-                    $this->mail->SMTPDebug = 2;
+                    $this->mail->SMTPDebug = 3;
                 if(!$secure){
                     $this->mail->SMTPOptions = array(
                         'ssl' => array(
@@ -290,8 +297,7 @@ namespace IOFrame\Handlers{
          * bccs       = array of BCC recipients
          * replies    = array of people you want to send this mail to as a reply
          * */
-        function sendMail( $addresses, $subject, $body, $mailerName =['',''], $altBody='', $async=false,
-                           $attachments =[[]], $ccs=[[]], $bccs =[[]], $replies=[[]] ){
+        function sendMail( $addresses, $subject, $body, $mailerName =['',''], $altBody='', $attachments =[[]], $ccs=[[]], $bccs =[[]], $replies=[[]] ){
 
             //Handle who we set this as, first
             if($mailerName[0]!='')
@@ -301,9 +307,9 @@ namespace IOFrame\Handlers{
                     $this->mail->setFrom($mailerName[0]);
             else
                 if($mailerName[1]!='')
-                    $this->mail->setFrom($this->mail->Username, $mailerName[1]);
+                    $this->mail->setFrom($this->defaultAlias, $mailerName[1]);
                 else
-                    $this->mail->setFrom($this->mail->Username);
+                    $this->mail->setFrom($this->defaultAlias);
 
 
             $this->mail->Subject = $subject;

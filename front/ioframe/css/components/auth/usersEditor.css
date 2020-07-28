@@ -12,15 +12,15 @@
     min-width: 200px;
     margin: 5px 10px;
     padding: 5px;
-    background: rgb(236, 251, 255);
-    color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color:  var(--dark-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 .auth-users-editor .actions .action.remove {
-    background-color: rgb(255, 230, 235);
+    background-color: var(--soft-red-1);
 }
 .auth-users-editor .actions .action.add {
-    background-color: rgb(106 255 170);
+    background-color: var(--soft-green-1);
 }
 .auth-users-editor .actions .action > * {
     width: 100%;
@@ -43,15 +43,15 @@
     min-width: 300px;
     margin: 5px 10px;
     padding: 5px;
-    background: rgb(236, 251, 255);
-    color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color:  var(--dark-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 .auth-users-editor .groups .group.remove {
-    background-color: rgb(255, 230, 235);
+    background-color: var(--soft-red-1);
 }
 .auth-users-editor .groups .group.add {
-    background-color: rgb(106 255 170);
+    background-color: var(--soft-green-1);
 }
 .auth-users-editor .groups .group > * {
     width: 100%;
@@ -68,7 +68,7 @@
     justify-content: center;
 }
 .auth-users-editor .groups .actions .action{
-    background-color: rgb(204,240,253);
+    background-color:  var(--main-color-4);
 }
 .auth-users-editor .groups h4{
     text-decoration: underline;

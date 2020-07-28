@@ -10,7 +10,7 @@
 
 .tokens-editor .info .value{
     padding: 2px 5px;
-    background-color: rgba(0,0,0 ,0.1);
+    background-color: var(--shadow-dark-1);
 }
 
 .tokens-editor .info .title{
@@ -31,7 +31,7 @@
     max-width: max-content;
 }
 .tokens-editor form >div.changed{
-    background-color: rgba(204,240,253 ,0.5);
+    background-color: var(--main-color-3);
 }
 .tokens-editor form > div button.item-param{
     padding: 2px 7px;

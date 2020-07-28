@@ -1,66 +1,66 @@
 /***Container***/
-.media-container{
+.media-viewer{
     margin: 0px 10px 0px 0px;
 }
 
 /*** URL ***/
-.media-container > .media-url-container{
+.media-viewer > .media-url-container{
     display: flex;
     padding: 10px;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.media-container > .media-url-container > .media-url-icon,
-.media-container > .media-url-container > .media-url-up-arrow{
+.media-viewer > .media-url-container > .media-url-icon,
+.media-viewer > .media-url-container > .media-url-up-arrow{
     margin: 5px;
     width: 22px;
     height: 22px;
     cursor: pointer;
 }
-.media-container > .media-url-container > *:not(.media-url):hover{
-    filter: drop-shadow(0px 0px 1px black)
+.media-viewer > .media-url-container > *:not(.media-url):hover{
+    filter: drop-shadow(0px 0px 1px var(--dark-1))
 }
 
-.media-container .media-url{
+.media-viewer .media-url{
     flex: 1;
     border-radius: 2px;
-    background: white;
+    background: var(--main-color-1);
     padding: 3px;
     margin-left: 5px;
     font-size: 1.25em;
     max-width: 950px;
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
 }
 
-.media-container .media-url > div{
+.media-viewer .media-url > div{
     margin-left: 5px;
 }
 
 /* URL\Arrow */
-.media-container .media-url-up-arrow{
+.media-viewer .media-url-up-arrow{
     display: flex;
     flex-direction: column-reverse;
     justify-content: center;
 }
-.media-container .up-arrow {
-    border-bottom: 10px rgb(163, 171, 207) solid;
+.media-viewer .up-arrow {
+    border-bottom: 10px var(--secondary-color-4) solid;
     border-left: 14px solid transparent;
     border-right: 14px solid transparent;
 }
 
 /*URL Change button*/
-.media-container .media-url-change {
+.media-viewer .media-url-change {
     margin: 0px 5px;
     border-radius: 2px;
     padding: 3px;
     min-width: 50px;
-    background: rgb(163, 171, 207);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--secondary-color-4);
+    border: 1px var(--secondary-color-4) solid;
 }
 
 /*** Display ***/
-.media-container .media-display{
+.media-viewer .media-display{
     display: flex;
     min-height: 600px;
     flex-wrap: wrap;
@@ -68,7 +68,7 @@
 }
 
 /***Media Objects***/
-.media-container .media-object-container {
+.media-viewer .media-object-container {
     display: inline-flex;
     flex-direction: column;
     max-width: 200px;
@@ -76,34 +76,34 @@
     padding: 25px;
     cursor: pointer;
 }
-.media-container .media-object-container:hover {
+.media-viewer .media-object-container:hover {
     filter: brightness(110%);
 }
-.media-container .media-object-container.selected{
-    background: rgba(0,0,0,0.1);
+.media-viewer .media-object-container.selected{
+    background: var(--shadow-dark-1);
 }
 
 /* Image Related*/
-.media-container .media-object-container > .thumbnail-container > img {
+.media-viewer .media-object-container > .thumbnail-container > img {
     max-height: 150px;
     max-width: 150px;
 }
-.media-container .media-object-container.mediaFolder > .thumbnail-container > img {
+.media-viewer .media-object-container.mediaFolder > .thumbnail-container > img {
     height: auto;
     width: auto;
 }
 
 /* Image Caption*/
-.media-container .media-object-container > figcaption {
+.media-viewer .media-object-container > figcaption {
     max-width: 150px;
     font-size: 0.9em;
     font-weight: 600;
     overflow: auto;
-    color: rgb(120,120,120);
+    color: var(--gray-1);
 }
 
 /* Image Thumbnail Container*/
-.media-container .media-object-container > .thumbnail-container{
+.media-viewer .media-object-container > .thumbnail-container{
     height: 150px;
     width: 150px;
     display: flex;
@@ -112,38 +112,38 @@
 }
 
 /*Cropping*/
-.media-container .media-object-container > .thumbnail-container.horizontalCrop{
+.media-viewer .media-object-container > .thumbnail-container.horizontalCrop{
     flex-direction: column;
 }
-.media-container .media-object-container > .thumbnail-container.verticalCrop{
+.media-viewer .media-object-container > .thumbnail-container.verticalCrop{
     flex-direction: row;
 }
-.media-container .media-object-container > .thumbnail-container.centerCrop{
+.media-viewer .media-object-container > .thumbnail-container.centerCrop{
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
 }
-.media-container .media-object-container > .thumbnail-container.centerCrop > img{
+.media-viewer .media-object-container > .thumbnail-container.centerCrop > img{
     justify-self: center;
     align-self: center;
 }
 
 /* Image Size Bar*/
-.media-container .media-object-container .image-size-wrapper{
+.media-viewer .media-object-container .image-size-wrapper{
     height: 0;
 }
 
-.media-container .media-object-container .image-size{
+.media-viewer .media-object-container .image-size{
     position: relative;
-    background: rgba(0,0,0,0.5);
+    background: var(--shadow-dark-5);
     width: 150px;
     text-align: left;
-    color: white;
+    color: var(--main-color-1);
     font-weight: 700;
     font-size: 1em;
     transition: 0.5s;
 }
-.media-container .media-object-container:hover .image-size{
+.media-viewer .media-object-container:hover .image-size{
     transition: 0.5s;
     opacity: 0;
     width: 0;

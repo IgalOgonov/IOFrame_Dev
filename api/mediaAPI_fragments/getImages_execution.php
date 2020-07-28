@@ -55,13 +55,16 @@ foreach($result as $address => $infoArray){
     unset($result[$address]['meta']);
     if(\IOFrame\Util\is_json($meta)){
         $meta = json_decode($meta,true);
-        if(isset($meta['name']))
-            $result[$address]['name'] = $meta['name'];
-        if(isset($meta['alt']))
-            $result[$address]['alt'] = $meta['alt'];
-        if(isset($meta['caption']))
-            $result[$address]['caption'] = $meta['caption'];
-        if(isset($meta['size']))
-            $result[$address]['size'] = $meta['size'];
+
+        $expected = ['name','alt','caption','size'];
+        foreach($languages as $lang){
+            array_push($expected,$lang.'_name');
+            array_push($expected,$lang.'_caption');
+        }
+
+        foreach($expected as $attr){
+            if(isset($meta[$attr]))
+                $result[$address][$attr] = $meta[$attr];
+        }
     }
 }

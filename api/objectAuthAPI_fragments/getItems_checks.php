@@ -54,6 +54,7 @@ if($inputs['keys'] === null){
                 $validArray = [];
                 break;
         }
+        $validArray = array_merge($validArray,['created','updated']);
         if(!in_array($inputs['orderBy'],$validArray)){
             if($test)
                 echo 'orderBy must be one of the following: '.implode(',',$validArray).EOL;

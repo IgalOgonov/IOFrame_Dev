@@ -511,7 +511,7 @@ function createPage(array $config ,$params = []){
             '\';',
         'TEMPLATE_ID' => $config['attributes']['id'],
         'TEMPLATE_TITLE' => $config['attributes']['title'],
-        'TEMPLATE_HEADER_RESOURCES' => $header,
+        //'TEMPLATE_HEADER_RESOURCES' => $header,
         'TEMPLATE_HEADERS_END' =>
             'require $settings->getSetting(\'absPathToRoot\').'.
             $config['attributes']['templatesRootVar'].' . \''.$config['attributes']['templates']['headersEndTemplate'].
@@ -522,7 +522,7 @@ function createPage(array $config ,$params = []){
             'require $settings->getSetting(\'absPathToRoot\').'.
             $config['attributes']['templatesRootVar'].' . \''.$config['attributes']['templates']['footersStartTemplate'].
             '\';',
-        'TEMPLATE_FOOTER_RESOURCES' => $footer,
+        //'TEMPLATE_FOOTER_RESOURCES' => $footer,
         'TEMPLATE_FOOTERS_END' =>
             'require $settings->getSetting(\'absPathToRoot\').'.
             $config['attributes']['templatesRootVar'].' . \''.$config['attributes']['templates']['footersEndTemplate'].

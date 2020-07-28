@@ -2,13 +2,13 @@
 
 /*Css of body*/
 body{
-    background-color: rgb(250, 252, 255);
+    background-color: var(--main-color-1);
     scroll-behavior: smooth;
 }
 
 body, button{
     font-family: 'DM Serif Display', serif;
-    color: rgb(25,25,25);
+    color: var(--dark-1);
 }
 /*Css of headers*/
 header{
@@ -17,7 +17,7 @@ header{
 
 h1,h2,h3,h4,h5,h6{
     margin: 0;
-    background-color: rgba(217, 246, 255, 0.5);
+    background-color: var(--main-color-2);
 }
 
 h1{

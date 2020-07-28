@@ -176,6 +176,7 @@ var %%VARIABLE_NAME%% = new Vue({
         this.registerHub(eventHub);
         this.registerEvent('requestSelection', this.selectElement);
         this.registerEvent('searchResults', this.parseSearchResults);
+        this.registerEvent('operationRequest', this.handleOperationResponse);
         this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
         this.registerEvent('searchAgain', this.searchAgain);
         this.registerEvent('returnToMainApp', this.returnToMainApp);
@@ -255,7 +256,6 @@ var %%VARIABLE_NAME%% = new Vue({
                 console.log('Searching again!');
             this.items = [];
             this.total = 0;
-            this.page = 0;
             this.selected = -1;
             this.initiated = false;
         },
@@ -283,6 +283,50 @@ var %%VARIABLE_NAME%% = new Vue({
                 this.items.push(response.content[k]);
             }
         },
+        //Handles operation response
+        handleOperationResponse: function(request){
+            if(this.verbose)
+                console.log('Received response',request);
+
+            if(!request.from)
+                return;
+
+            let content = request.content;
+
+            //Common contents
+            if(content === 'INPUT_VALIDATION_FAILURE'){
+                alertLog('Operation input validation failed!','error',this.$el);
+            }
+            else if(content === 'AUTHENTICATION_FAILURE'){
+                alertLog('Operation not authorized! Check if you are logged in.','error',this.$el);
+            }
+            else if(content === 'OBJECT_AUTHENTICATION_FAILURE'){
+                alertLog('Not authorized to view/modify object!','error',this.$el);
+            }
+            else if(content === 'WRONG_CSRF_TOKEN'){
+                alertLog('CSRF token wrong. Try refreshing the page if this continues.','warning',this.$el);
+            }
+            else if(content === 'SECURITY_FAILURE'){
+                alertLog('Security related operation failure.','warning',this.$el);
+            }
+
+            switch (request.from){
+                case 'delete':
+                    switch (content){
+                        case -1:
+                            alertLog('Deletion failed due to server error!','error',this.$el);
+                            break;
+                        case 0:
+                            alertLog('Deletion successful!','success',this.$el);
+                            break;
+                        default:
+                            alertLog('Unknown response to deletion, '+content,'error',this.$el);
+                    }
+                    break;
+                default:
+                    alertLog('Unknown operation '+this.from+' response, '+content,'error',this.$el);
+            }
+        }
         //Goes to relevant page  TODO Remove if no searchlist
         goToPage: function(page){
             if(!this.initiating && page.from == 'search'){
@@ -380,6 +424,7 @@ var %%VARIABLE_NAME%% = new Vue({
             if(this.currentMode === 'search'){
                 switch (currentOperation){
                     case 'delete':
+                        operation = currentOperation;
                         data.append('action','%%DELETE_ACTION_NAME%%'); //TODO Add what's needed
                         break;
                     default:
@@ -399,10 +444,11 @@ var %%VARIABLE_NAME%% = new Vue({
                  this.apiRequest(
                      data,
                       '%%API_URL%%',
-                      operation,
+                      'operationRequest',
                       {
                          verbose: this.verbose,
-                         parseJSON: true
+                         parseJSON: true,
+                         identifier: operation
                       }
                  );
 
@@ -419,8 +465,6 @@ var %%VARIABLE_NAME%% = new Vue({
                     break;
                 case 'cancel':
                     this.cancelOperation();
-                    this.selected = -1;
-                    this.currentOperation = '';
                     break;
                 default:
                     this.currentOperation = operation;

@@ -160,7 +160,7 @@ switch($action){
         require 'tokensAPI_fragments/getTokens_checks.php';
         require 'tokensAPI_fragments/getTokens_execution.php';
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;

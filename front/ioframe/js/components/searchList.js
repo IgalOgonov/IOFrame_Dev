@@ -25,6 +25,21 @@ Vue.component('search-list', {
         items: {
             type: Array
         },
+        //The name of the event to emit on getting results
+        eventName: {
+            type: String,
+            default: 'searchResults'
+        },
+        //The name of the event to emit on selection
+        selectionEventName: {
+            type: String,
+            default: 'requestSelection'
+        },
+        //The name of the event to emit on selection
+        goToPageEventName: {
+            type: String,
+            default: 'goToPage'
+        },
         //Constant extra parameters to include in the search
         extraParams: {
             type: Object,
@@ -129,7 +144,7 @@ Vue.component('search-list', {
          *    validator: function that takes the current value as its first input and returns true/false on whether it
          *                 is valid. Defaults to function(){ return true; }
          *    parser: function that takes the current value as its first input, and parses it before sending the request.
-         *              Defaults to function(value){ return value; }
+         *              Defaults to function(value){ return value; },
          * ]
          *
          * For example, if you want to allow a user to filter by date creationDate, but only between 2018.01.01 and 2018.12.31,
@@ -203,22 +218,22 @@ Vue.component('search-list', {
          <div class="search-list">\
             <div class="filter-container" v-if="filters.length>0">\
                 <div v-html="filterList" class="filters"></div>\
-                <button @click="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="\'Search\'" ></div></button>\
+                <button @click.prevent.prevent="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="\'Search\'" ></div></button>\
             </div>\
             \
             <div class="pagination" v-if="pagesArray.length > 1">\
                 <span class="buttons-container">\
-                    <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click="goToPage(0)"></button>\
-                    <button v-if="page > 0" @click="goToPage(-1)" v-text="\'<\'">  </button>\
+                    <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click.prevent="goToPage(0)"></button>\
+                    <button v-if="page > 0" @click.prevent="goToPage(-1)" v-text="\'<\'">  </button>\
                     <span v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'...\'"></span>\
                     <button v-for="(item,index) in currentPages"\
                         v-text="item"\
                         :class="{selected:(page===item-1)}"\
-                        @click="goToPage(item-1)"\
+                        @click.prevent="goToPage(item-1)"\
                        ></button>\
                     <span v-if="pagesArray.length - (page+1) > 5" v-text="\'...\'"></span>\
-                    <button  v-if="pagesArray.length - (page+1) > 0" @click="goToPage(page+1)"  v-text="\'>\'"></button>\
-                    <button  v-if="pagesArray.length - (page+1) > 5" @click="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
+                    <button  v-if="pagesArray.length - (page+1) > 0" @click.prevent="goToPage(page+1)"  v-text="\'>\'"></button>\
+                    <button  v-if="pagesArray.length - (page+1) > 5" @click.prevent="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
                 </span>\
                 <span class="total-pages"> \
                     <span v-text="\'Total Pages:\'"></span> \
@@ -228,7 +243,7 @@ Vue.component('search-list', {
                 <span class="go-to-page"> \
                     <span v-text="\'Go To Page:\'"></span>\
                     <input type="number" v-model:value="pageToGoTo" :min="1" :max="pagesArray.length"> \
-                    <button @click="goToPage(\'goto\')" class="go-to"> Go </button>\
+                    <button @click.prevent="goToPage(\'goto\')" class="go-to"> Go </button>\
                 </span>\
             </div>\
             \
@@ -236,23 +251,23 @@ Vue.component('search-list', {
                 <div class="search-titles" v-html="renderTitles"></div>\
                 <div v-for="(item,index) in items"\
                 v-html="renderItem(index)"\
-                @click="requestSelection(index)"\
+                @click.prevent="requestSelection(index)"\
                 :class="calculateItemClasses(index)"></div>\
             </div>\
             \
             <div class="pagination" v-if="pagesArray.length > 1 && items.length > 9">\
                 <span class="buttons-container">\
-                    <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click="goToPage(0)"></button>\
-                    <button v-if="page > 0" @click="goToPage(-1)" v-text="\'<\'">  </button>\
+                    <button v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'<<\'" @click.prevent="goToPage(0)"></button>\
+                    <button v-if="page > 0" @click.prevent="goToPage(-1)" v-text="\'<\'">  </button>\
                     <span v-if="pagesArray.length > 6 && (page+1) > 6" v-text="\'...\'"></span>\
                     <button v-for="(item,index) in currentPages"\
                         v-text="item"\
                         :class="{selected:(page===item-1)}"\
-                        @click="goToPage(item-1)"\
+                        @click.prevent="goToPage(item-1)"\
                        ></button>\
                     <span v-if="pagesArray.length - (page+1) > 5" v-text="\'...\'"></span>\
-                    <button  v-if="pagesArray.length - (page+1) > 0" @click="goToPage(page+1)"  v-text="\'>\'"></button>\
-                    <button  v-if="pagesArray.length - (page+1) > 5" @click="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
+                    <button  v-if="pagesArray.length - (page+1) > 0" @click.prevent="goToPage(page+1)"  v-text="\'>\'"></button>\
+                    <button  v-if="pagesArray.length - (page+1) > 5" @click.prevent="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
                 </span>\
                 <span class="total-pages"> \
                     <span v-text="\'Total Pages:\'"></span> \
@@ -262,7 +277,7 @@ Vue.component('search-list', {
                 <span class="go-to-page"> \
                     <span v-text="\'Go To Page:\'"></span>\
                     <input type="number" v-model:value="pageToGoTo" :min="1" :max="pagesArray.length"> \
-                    <button @click="goToPage(\'goto\')" class="go-to"> Go </button>\
+                    <button @click.prevent="goToPage(\'goto\')" class="go-to"> Go </button>\
                 </span>\
             </div>\
          </div>\
@@ -282,7 +297,7 @@ Vue.component('search-list', {
                 :
                 index;
 
-            eventHub.$emit('requestSelection',request);
+            eventHub.$emit(this.selectionEventName,request);
         },
 
         //Goes to a page. index -1 returns you to the previous page.
@@ -310,9 +325,9 @@ Vue.component('search-list', {
                 newPage;
 
             if(this.verbose)
-                console.log('Emitting goToPage',request);
+                console.log('Emitting '+this.goToPageEventName,request);
 
-            eventHub.$emit('goToPage',request)
+            eventHub.$emit(this.goToPageEventName,request)
         },
 
         //Validates all filter variables.
@@ -532,15 +547,16 @@ Vue.component('search-list', {
                 data.append(key, filterArray[key]);
             }
 
-            //Add extra params
+            //Add extra params - do not override filters!
             for(let key in this.extraParams){
-                data.append(key, this.extraParams[key]);
+                if(filterArray[key] === undefined)
+                    data.append(key, this.extraParams[key]);
             }
 
             this.apiRequest(
                 data,
                 this.apiUrl,
-                'searchResults',
+                this.eventName,
                 {
                     'verbose': this.verbose,
                     'parseJSON':true,
@@ -812,12 +828,21 @@ Vue.component('search-list', {
             return result;
         }
     },
+    watch:{
+        //If the items changed, it means we are 100% done initiating
+        items:{
+            handler:function(){
+                this.initiating = false;
+            },
+            deep:true
+        }
+    },
     created:function(){
         if(this.verbose)
             console.log('Search list ',this.identifier,' created');
         this.registerHub(eventHub);
         this.registerEvent('refreshSearchResults', this.search);
-        this.registerEvent('searchResults', this.gotSearchResults);
+        this.registerEvent(this.eventName, this.gotSearchResults);
 
     },
     beforeMount:function(){

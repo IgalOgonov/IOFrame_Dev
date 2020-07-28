@@ -364,7 +364,6 @@ var contacts = new Vue({
         searchAgain: function(){
             this.items = [];
             this.total = 0;
-            this.page = 0;
             this.selected = -1;
             this.initiated = false;
         },

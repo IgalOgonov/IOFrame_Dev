@@ -5,9 +5,9 @@
 
 .contacts-editor .types .type{
     padding: 5px 10px;
-    background-color: rgb(236, 251, 255);
+    background-color: var(--main-color-2);
     color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
     margin: 0px 5px;
 }
 
@@ -23,7 +23,7 @@
 
 .contacts-editor .info .value{
     padding: 2px 5px;
-    background-color: rgba(0,0,0 ,0.1);
+    background-color:  var(--shadow-dark-1);
 }
 
 .contacts-editor .info .title{
@@ -44,7 +44,7 @@
     max-width: max-content;
 }
 .contacts-editor form >div.changed{
-    background-color: rgba(204,240,253 ,0.5);
+    background-color:  var(--main-color-3);
 }
 
 /*Control buttons*/

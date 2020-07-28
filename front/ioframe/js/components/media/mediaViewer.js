@@ -113,14 +113,14 @@ Vue.component('media-viewer', {
         }
     },
     template: '\
-         <div class="media-container">\
+         <div class="media-viewer">\
             <div class="media-url-container" v-if="allowSearching">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\')" @click="goToRoot">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\')" @click="folderUp">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\')" @click="changeURLRequest(url)">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\')" @click="toggleEditing">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\')" @click.prevent="goToRoot">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\')" @click.prevent="folderUp">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\')" @click.prevent="changeURLRequest(url)">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\')" @click.prevent="toggleEditing">\
                 <input class="media-url" type="text" :value="url" placeholder="Media Folder" :disabled="!editing">\
-                <button v-if="editing" class="media-url-change" @click="changeURL">Go</button>\
+                <button v-if="editing" class="media-url-change" @click.prevent="changeURL">Go</button>\
             </div>\
             <div class="media-display">\
                 <figure\
@@ -129,7 +129,7 @@ Vue.component('media-viewer', {
                 :media-identifier="item.local? item.relativeAddress : item.identifier"\
                 :class="{mediaFolder:item.folder, selected:shouldBeSelected(key), draggedOver:isDraggedOver(key)}"\
                 :item-identifier="key"\
-                @click="requestSelection(key)"\
+                @click.prevent="requestSelection(key)"\
                 >\
                     <div class="image-size-wrapper">\
                         <div class="image-size" v-if="item.size > 0 && showSizes"> {{readableSize(item.size)}} </div>\
@@ -156,13 +156,25 @@ Vue.component('media-viewer', {
                             ondragover="event.preventDefault()"\
                         >\
                     </div>\
-                     <figcaption v-if="item.name && showNames">{{item.name}}</figcaption>\
-                     <figcaption v-if="!item.name && showNames">{{item.local? createDisplayName(item.relativeAddress) : item.identifier}}</figcaption>\
+                     <figcaption v-if="showNames" v-text="extractName(item)"></figcaption>\
                 </figure>\
             </div>\
          </div>\
         ',
     methods: {
+        //Extracts the name of an item
+        extractName: function(item){
+            if(document.selectedLanguage && (item[document.selectedLanguage+'_name'] !== undefined) )
+                return item[document.selectedLanguage+'_name'];
+            else if(item.name){
+                return item.name;
+            }
+            else if(item.local){
+                return this.createDisplayName(item.relativeAddress);
+            }
+            else
+                return item.identifier;
+        },
         viewInitiated: function(){
             this.initiatingView = false;
         },

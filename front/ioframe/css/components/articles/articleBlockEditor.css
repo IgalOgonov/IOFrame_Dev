@@ -1,0 +1,359 @@
+/** All blocks **/
+.article-block{
+
+}
+/*Controls*/
+.article-block > .controls{
+    margin: 5px 0px;
+    display: flex;
+}
+.article-block > .controls > button{
+    padding: 7px 10px;
+    border: 1px var(--main-color-5) solid;
+}
+.article-block > .controls > button.view::after{
+    content: 'View Block';
+}
+.article-block > .controls > button.update::after{
+    content: 'Edit Block';
+}
+.article-block > .controls > button.reset::after{
+    content: 'Reset';
+}
+.article-block > .controls > button.set::after{
+    content: 'Save';
+}
+.article-block > .controls > button.hide::after{
+    content: 'Hide';
+}
+.article-block > .controls > button.delete::after{
+    content: 'Delete';
+}
+.article-block > .controls > button.selected{
+    background: var(--main-color-3);
+}
+.article-block > .controls > button:not(:first-of-type){
+    border-left: 0px;
+}
+.article-block > .controls > button:not(:last-of-type){
+    border-right: 0px;
+}
+.article-block > .controls > button:first-of-type{
+    border-radius: 5px 0px 0px 5px;
+}
+.article-block > .controls > button:last-of-type{
+    border-radius: 0px 5px 5px 0px;
+}
+.article-block > .controls > button.reset{
+    filter: brightness(95%);
+}
+.article-block > .controls > button.set{
+    filter: brightness(105%);
+}
+
+
+/** Creation/Editing blocks **/
+.article-block.edit,
+.article-block.create{
+    margin: 20px 0px;
+    padding: 5px;
+    border-radius: 5px;
+    background: var(--main-color-4);
+}
+.article-block.edit > form,
+.article-block.create > form{
+    display: flex;
+    flex-direction: column;
+}
+.article-block.edit > form > div,
+.article-block.create > form > div{
+    display: flex;
+    flex-direction: column;
+}
+.article-block.edit > form > div.boolean,
+.article-block.create > form > div.boolean{
+    flex-direction: row;
+}
+.article-block.edit > form > div > textarea,
+.article-block.create > form > div > textarea{
+    min-height: 55px;
+    max-width: 100%;
+    min-width: 100px;
+}
+.article-block.edit > form > div > button,
+.article-block.create > form > div > button{
+    margin: 0px 10px;
+}
+.article-block.edit > form > div.static,
+.article-block.create > form > div.static{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.article-block.edit > form > div.static > *,
+.article-block.create > form > div.static > *{
+    margin: 0px 5px 0px 0px;
+}
+.article-block.edit > form > div.static > .item-param,
+.article-block.create > form > div.static > .item-param{
+    padding: 0px 5px;
+    transition: 0.2s ease-in-out;
+    background: var(--shadow-dark-1);
+}
+/* Preview */
+/*Gallery/Article Selector*/
+.article-block.edit form > .selector-container:not(.image-selector) > button{
+    align-self: center;
+    padding: 5px 10px;
+}
+.article-block.edit form > .selector-container:not(.image-selector) > button > *{
+    margin: 5px;
+    padding: 5px;
+}
+.article-block.edit form > .selector-container:not(.image-selector) > button > :last-child{
+    background: var(--shadow-dark-1);
+}
+.article-block.edit form > .selector-container:not(.image-selector) > .selector-sub-container{
+    background: var(--main-color-3);
+    max-width: 800px;
+}
+.article-block.edit form > .selector-container:not(.image-selector) > .selector-sub-container > .search-list{
+    background: var(--main-color-3);
+    padding: 5px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+.article-block.edit form > .selector-container:not(.image-selector) > button.changed{
+    background: var(--main-color-3);
+    color: var(--button-positive-2-bg-1);
+    border: 1px  var(--main-color-5) solid;
+}
+/*Article search lists*/
+.article-block.edit form > .selector-container.article-selector > .selector-sub-container > .search-list .search-titles {
+    display: none;
+}
+.article-block.edit form > .selector-container.article-selector > .selector-sub-container > .search-list .search-item {
+    flex-direction: column;
+    max-width: calc(100vw - 100px);
+}
+.article-block.edit form > .selector-container.article-selector > .selector-sub-container > .search-list .search-item .search-item-title {
+    display: inherit !important;
+    padding: 0px 3px;
+    background: var(--shadow-dark-1);
+}
+.article-block.edit form > .selector-container.article-selector > .selector-sub-container > .search-list .search-item .search-item-property.image span{
+    display: flex;
+    justify-content: center;
+    margin: 10px;
+}
+.article-block.edit form > .selector-container.article-selector > .selector-sub-container > .search-list .search-item .search-item-property.image span img {
+    max-width: 100%;
+    height: auto;
+}
+
+/*Image Selector*/
+.article-block.edit form > .selector-container.image-selector > .image-preview{
+    min-height: 100px;
+    padding: 10px 0px;
+    cursor: pointer;
+}
+.article-block.edit form > .selector-container.image-selector > .image-preview:hover {
+    background: var(--shadow-dark-1);
+}
+.article-block.edit form > .selector-container.image-selector > .image-preview.changed {
+    background: var(--main-color-3);
+}
+.article-block.edit form > .selector-container.image-selector > .image-preview img{
+    max-width: 200px;
+    height: auto;
+    margin: auto;
+    max-height: 200px;
+    display: flex;
+}
+.article-block.edit form > .selector-container.image-selector .media-selector {
+    background: var(--main-color-3);
+    border: 1px var(--main-color-5) solid;
+    border-radius: 0px 0px 5px 5px;
+    overflow-y: auto;
+    max-width: 90vw;
+    max-height: 85vh;
+    width: 100%;
+}
+/*Container*/
+.article-block.edit form > .selector-container > .selector-sub-container{
+    position: fixed;
+    top: 5vh;
+    width: calc(100vw - 275px);
+    box-shadow: 0px 0px 6px var(-dark-1);
+    border-radius: 5px;
+    z-index: 1;
+}
+/*Control buttons*/
+.article-block.edit form > .selector-container > .selector-sub-container > .control-buttons {
+    background: var(--main-color-2);
+    text-align: end;
+    border-radius: 5px 5px 0px 0px;
+}
+.article-block.edit form > .selector-container > .selector-sub-container > .control-buttons img{
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+    margin: 5px 5px 0px 0px;
+}
+
+/*Changed article*/
+.article-block.view.changed{
+    background-color: var(--main-color-3);
+    transition: background-color 0.2s;
+}
+.article-block.view.changed:hover{
+    background-color: var(--main-color-4);
+}
+
+/** View blocks **/
+/* common */
+.article-block.view > p{
+    display: flex;
+    flex-direction: column;
+}
+.article-block.view > p > figcaption{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    margin: 5px 0px;
+    color: var(--secondary-color-5);
+}
+
+/*Markdown*/
+.article-block.view > .markdown{
+    padding: 10px;
+}
+.article-block.view > .markdown pre {
+    margin: 5px 0px;
+}
+.article-block.view > .markdown a {
+    color: var(--secondary-color-5) !important;
+}
+.article-block.view > .markdown a:visited {
+    color: var(--secondary-color-3) !important;
+}
+
+/*Youtube*/
+.article-block.view > .youtube{
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    margin: 0px 5px;
+    flex-direction: column;
+    align-items: center;
+}
+
+/*image & cover*/
+/*Image*/
+.article-block.view > .image > .image-container{
+    display: flex;
+    padding: 5px 0px;
+    justify-content: center;
+}
+.article-block.view > .image > .image-container > img{
+    max-width: 100%;
+}
+/*Cover*/
+.article-block.view > .cover{
+    display: flex;
+    justify-content: center;
+    padding: 5px 0px;
+}
+.article-block.view > .cover > *{
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 5px 0px;
+}
+
+/*Gallery*/
+.article-block.view > .gallery > .no-gallery-preview{
+    display: flex;
+    justify-content: center;
+}
+.article-block.view > .gallery > .no-gallery-preview::after {
+    content: 'No Gallery Preview Available!';
+    margin: 5px;
+    padding: 5px 20px;
+    background: var(--shadow-dark-1);
+}
+
+/* Article */
+.article-block.view > .article {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.article-block.view > .article > a {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background: var(--main-color-2);
+    transition: 0.2s ease-in-out;
+    border: 1px var(--main-color-5) solid;
+    border-radius: 5px;
+    min-width: 300px;
+    min-height: 200px;
+}
+.article-block.view > .article > a:hover {
+    background: var(--main-color-3);
+}
+.article-block.view > .article > a  > .title{
+    color: var(--secondary-color-8);
+}
+
+.article-block.view > .article > a  > .author > *{
+    margin: 0px 5px 0px 0px;
+    color: var(--secondary-color-6);
+}
+.article-block.view > .article > a  > .author::before{
+    content: 'Author: ';
+    color: var(--secondary-color-8);
+}
+
+.article-block.view > .article > a  > .thumbnail{
+    display: flex;
+    justify-content: center;
+    padding: 5px 0px;
+    max-width: 300px;
+    max-height: 200px;
+}
+.article-block.view > .article > a  > .thumbnail > img{
+    max-width: 100%;
+}
+
+/* Responsiveness */
+
+@media (max-width: 1000px) {
+    .article-block.edit form > .selector-container > .selector-sub-container{
+        width: calc(100vw - 150px);
+    }
+}
+
+@media (max-width: 600px) {
+    /*block search lists*/
+    .article-block.edit form > .selector-container.gallery-selector > .selector-sub-container > .search-list .search-titles {
+        display: none;
+    }
+    .article-block.edit form > .selector-container.gallery-selector > .selector-sub-container > .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    .article-block.edit form > .selector-container.gallery-selector > .selector-sub-container > .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: var(--shadow-dark-1);
+    }
+    .article-block.edit form > .selector-container.gallery-selector > .selector-sub-container > .search-list .search-item img {
+        max-width: 100%;
+        height: auto;
+    }
+}

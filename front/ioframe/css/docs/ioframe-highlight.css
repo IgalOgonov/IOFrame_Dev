@@ -8,18 +8,18 @@ IOFrame docs - Igal Ogonov (igal1333@hotmail.com)
     display: block;
     overflow-x: auto;
     padding: 0.5em;
-    color: #000;
-    background: rgb(247, 250, 255);
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.5);
+    color: var(--dark-1);
+    background: var(--main-color-2);
+    box-shadow: 2px 2px 4px 0px var(--shadow-dark-3);
 }
 
 .hljs::selection , .hljs *::selection {
-    background:rgba(0, 255, 0, 0.1);
+    background:var(--secondary-color-2);
 }
 
 .hljs-comment,
 .hljs-quote {
-    color: rgb(149, 162, 194);
+    color: var(--secondary-color-2);
     font-style: italic;
 }
 
@@ -83,16 +83,16 @@ IOFrame docs - Igal Ogonov (igal1333@hotmail.com)
 }
 
 .hljs-meta {
-    color: rgb(138, 138, 138);
+    color: var(--gray-2);
     font-weight: bold;
 }
 
 .hljs-deletion {
-    background: #fdd;
+    background: var(--soft-red-1);
 }
 
 .hljs-addition {
-    background: #dfd;
+    background: var(--soft-green-1);
 }
 
 .hljs-emphasis {

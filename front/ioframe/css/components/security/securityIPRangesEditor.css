@@ -16,7 +16,7 @@
 .security-ip-ranges-editor .info .value,
 .security-ip-ranges-editor form .value{
     padding: 2px 5px;
-    background-color: rgba(0,0,0 ,0.1);
+    background-color: var(--shadow-dark-1);
 }
 
 .security-ip-ranges-editor .info .title{
@@ -38,28 +38,24 @@
     align-items: center;
     padding: 5px 20px 5px 10px;
     margin: 5px;
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
     border-radius: 5px;
     transition: 0.2s ease-in-out;
     max-width: max-content;
 }
-.security-ip-ranges-editor form > div.changed {
-    background-color: rgba(204,240,253 ,0.5);
-}
 
 .security-ip-ranges-editor form > div.add-new {
     margin: 15px 0px;
-    background: rgba(26, 255, 140, 0.5);
+    background: var(--soft-green-1);
 }
-
-.security-ip-ranges-editor form > div.changed{
-    background-color: rgba(204, 240, 253, 0.5);
+.security-ip-ranges-editor form > div.changed {
+    background-color: var(--main-color-3);
 }
 .security-ip-ranges-editor form > div.add {
-    background: rgba(0, 179, 64, 0.2);
+    background: var(--soft-green-1);
 }
 .security-ip-ranges-editor form > div.remove {
-    background: rgba(204, 24, 0, 0.2);
+    background: var(--soft-red-1);
 }
 .security-ip-ranges-editor form > div .title {
     margin: 5px;
@@ -70,13 +66,10 @@
     border-radius: 5px;
 }
 .security-ip-ranges-editor form > div > button.remove {
-    background: rgb(204 24 0);
+    background: var(--message-error-bg-1);
 }
 .security-ip-ranges-editor form > div > button.add {
-    background: rgb(40 200 70);
-}
-.security-ip-ranges-editor form > div > button:hover{
-    filter:brightness(110%);
+    background: var(--message-success-bg-1);
 }
 
 /*Control buttons*/

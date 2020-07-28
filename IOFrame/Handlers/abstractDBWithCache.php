@@ -92,7 +92,7 @@ namespace IOFrame{
          *                                      ...
          *                                       'AND'(Default) / 'OR'
          *                                      ]
-         *                                      where possible conditions are '>','<','=', '!=', 'IN', 'INREV', 'RLIKE' and 'NOT RLIKE'.
+         *                                      where possible conditions are '>','<','>=','<=','=', '!=', 'IN', 'INREV', 'RLIKE' and 'NOT RLIKE'.
          *                                      The difference between IN and INREV is that in the first, the 1st parameter is
          *                                      the name of the column that matches one of the strings in the 2nd parameter, while
          *                                      with INREV (REV is reverse) the 1st parameter is a string that matches one of the
@@ -107,6 +107,9 @@ namespace IOFrame{
          *                  'useCache'  - Whether to use cache at all
          *                  'getFromCache' - Whether to try to get items from cache
          *                  'updateCache' - Whether to try to update cache with DB results
+         *                  'extendTTL' - Whether to extend TTL when finding items - defaults to updateCache, but should be set
+         *                                to false for items that can be deleted from the DB without direct calls (lke sub-items).
+         *                                Note that when correct state is important, it's better to disable cache for such keys alltogether.
          *                  'extraKeyColumns' - a getFromTableByKey parameter, but if present, will discard normal identifier results.
          *                  'groupByFirstNKeys' => getFromTableByKey() parameter - if present, will only use up to the
          *                                         N first keys to identify the item. Read the getFromTableByKey() docs to
@@ -183,6 +186,8 @@ namespace IOFrame{
             }
             else
                 $groupByFirstNKeys = 0;
+
+            $extendTTL = isset($params['extendTTL'])? $params['extendTTL'] : $updateCache;
 
             $cacheResults = [];
             $results = [];
@@ -283,6 +288,14 @@ namespace IOFrame{
                                 foreach ($columnConditions as $condition) {
                                     if(isset($cachedResult2[$condition[0]]))
                                         switch($condition[2]){
+                                            case '>=':
+                                                if($cachedResult2[$condition[0]]>=$condition[1])
+                                                    $resultPasses++;
+                                                break;
+                                            case '<=':
+                                                if($cachedResult2[$condition[0]]<=$condition[1])
+                                                    $resultPasses++;
+                                                break;
                                             case '>':
                                                 if($cachedResult2[$condition[0]]>$condition[1])
                                                     $resultPasses++;
@@ -360,10 +373,12 @@ namespace IOFrame{
                         $cacheResults[$indexMap[$index]] = $cachedResultIsDBObject? $cachedResultArray[0] : $cachedResultArray;
 
                         //Add TTL to the object that was requested
-                        if(!$test)
-                            $this->RedisHandler->call('expire',[$indexMap[$index],$cacheTTL]);
-                        if($verbose)
-                            echo 'Extending '.$type.' '.$indexMap[$index].' TTL by '.$cacheTTL.' seconds'.EOL;
+                        if($extendTTL){
+                            if(!$test)
+                                $this->RedisHandler->call('expire',[$indexMap[$index],$cacheTTL]);
+                            if($verbose)
+                                echo 'Refreshing '.$type.' '.$indexMap[$index].' TTL to '.$cacheTTL.EOL;
+                        }
                     }
 
                 }
@@ -433,6 +448,29 @@ namespace IOFrame{
                         $results[$target] = $missingErrorCode;
                 }
             return $results;
+        }
+
+        /** Deletes all specified redis keys.
+         * @param string[] $keys - redis keys
+         * @param array $params
+         * @return bool true - success, false - failure
+         *
+         */
+        function deleteCacheKeys(array $keys, array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+
+            if(count($keys) === 0)
+                return false;
+
+            if($verbose)
+                echo 'Deleting cache of '.json_encode($keys).EOL;
+            if(!$test)
+                $res = $this->RedisHandler->call( 'del', [$keys] );
+            else
+                $res = true;
+            return $res;
         }
 
     }

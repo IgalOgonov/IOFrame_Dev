@@ -1,0 +1,37 @@
+
+/** SearchList **/
+/* Hidden Items */
+#articles > .search-list .search-item.hidden {
+    background: var(--shadow-dark-1);
+}
+/*Image*/
+#articles > .search-list .search-item img {
+    max-width: 50px;
+    height: 35px;
+    margin: 5px;
+}
+#articles > .search-list .search-item-property.image span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 1200px) {
+    /*All search lists*/
+    #articles > .search-list .search-titles {
+        display: none;
+    }
+    #articles > .search-list .search-item {
+        flex-direction: column;
+        max-width: calc(100vw - 100px);
+    }
+    #articles > .search-list .search-item .search-item-title {
+        display: inherit !important;
+        padding: 0px 3px;
+        background: var(--shadow-dark-1);
+    }
+    #articles > .search-list .search-item img {
+        max-width: 100%;
+        height: auto;
+    }
+}

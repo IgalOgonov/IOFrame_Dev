@@ -25,7 +25,7 @@
 #media .search-list .search-item span:not(.image) .search-item-title {
     display: inherit !important;
     padding: 0px 3px;
-    background: rgba(0,0,0,0.1);
+    background: var(--shadow-dark-1);
 }
 #media .search-list .search-results > * > * {
     flex:0;
@@ -53,8 +53,8 @@
     width: 100%;
     margin: 5px 0px;
     padding: 5px;
-    border: 1px rgb(163, 171, 207) solid;
-    background: rgb(204,240,253);
+    border: 1px var(--secondary-color-4) solid;
+    background: var(--main-color-4);
 }
 
 /* Component specific CSS*/
@@ -75,10 +75,15 @@
 }
 .image-uploader .image-container:hover,
 .image-editor .image-container:hover{
-    background: rgba(0,0,0,0.1);
+    background: var(--shadow-dark-1);
 }
 .image-uploader .image-container > img,
 .image-editor .image-container > img{
+    max-width: 100%;
+}
+
+/*Link container*/
+.image-uploader > .link-container > .link-preview {
     max-width: 100%;
 }
 
@@ -101,24 +106,24 @@
     border-radius: 2px;
     min-width: 70%;
 }
-.image-uploader .properties > .property,
-.image-editor .properties > .property{
+.image-uploader .properties .property,
+.image-editor .properties .property{
     display: block;
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
     margin: 5px;
     padding: 5px;
 }
-.image-uploader .properties > label,
-.image-editor .properties > label{
+.image-uploader .properties label > span,
+.image-editor .properties label > span{
     font-weight: 800;
-    color: rgb(120, 120, 120);
+    color: var(--gray-1);
 }
 /*Divs are for static properties*/
-.image-uploader .properties > div.property,
-.image-editor .properties > div.property {
+.image-uploader .properties div.property,
+.image-editor .properties div.property {
     max-width: max-content;
     border: none;
-    background: rgb(218, 221, 239);
+    background: var(--secondary-color-2);
 }
 
 /*Buttons*/
@@ -156,8 +161,8 @@
 }
 .image-editor .initiate-galleries,
 .image-uploader .initiate-galleries{
-    background: rgb(224,244,255);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-3);
+    border: 1px var(--secondary-color-4) solid;
     color:black;
 }
 .image-editor .initiate-galleries:hover,
@@ -173,7 +178,7 @@
 .image-uploader .gallery-title{
     width: 100%;
     padding: 0px 10px;
-    background: rgb(136, 146, 191);
+    background: var(--secondary-color-5);
 }
 .image-editor .gallery,
 .image-uploader .gallery{
@@ -182,11 +187,11 @@
 }
 .image-editor .gallery:nth-child(2n),
 .image-uploader .gallery:nth-child(2n) {
-    background: rgb(236, 251, 255);
+    background: var(--main-color-2);
 }
 .image-editor .gallery:nth-child(2n+1),
 .image-uploader .gallery:nth-child(2n+1) {
-    background: rgb(224,244,255);
+    background:  var(--main-color-3);
 }
 
 

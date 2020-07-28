@@ -3,7 +3,7 @@
     position: sticky;
     width: 100%;
     top: 0px;
-    box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 2px 2px 4px 0px var(--shadow-dark-5);
 }
 
 #toc{
@@ -29,14 +29,12 @@
     text-align: left;
     background: none;
     margin: 0;
-    padding-right: 0;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px 0px 10px 5px;
 }
 
 #toc .toc-menu-div.selected > .button-container > button{
     font-weight: 600;
-    background-color: rgba(125,125,125,0.1);
+    background-color: var(--shadow-gray-2);
 }
 
 #toc .button-container{
@@ -48,18 +46,18 @@
     flex: 4;
 }
 #toc .button-container > button:nth-of-type(1):hover{
-    background-color: rgba(255,255,255,0.35);
+    background-color: var(--shadow-gray-4);
 }
 #toc .button-container > button:nth-of-type(2){
     text-align: center;
     flex: 1;
 }
 #toc .button-container > button:nth-of-type(2):hover{
-    background-color: rgba(0,0,0,0.1);
+    background-color: var(--shadow-dark-1);
 }
 #toc div > .button-container > button:nth-of-type(2)::after {
     content: "";
-    border: solid black;
+    border: solid var(--dark-1);
     border-width: 0 3px 3px 0;
     display: inline-block;
     padding: 3px;
@@ -70,6 +68,18 @@
 #toc div.open > .button-container > button:nth-of-type(2)::after {
     transform: rotate(-135deg);
     -webkit-transform: rotate(-135deg);
+}
+/*Handle the corner rounding on each type of button*/
+#toc .toc-menu-div > div .button-container button{
+    border-radius: 5px 0px 0px 5px;
+}
+
+#toc .toc-menu-div > div:nth-of-type(2) .button-container button{
+    border-radius: 0px 0px 0px 5px;
+}
+
+#toc .toc-menu-div > div:last-of-type .button-container button{
+    border-radius: 5px 0px 0px 0px;
 }
 
 #toc div{
@@ -100,7 +110,7 @@
 }
 
 #toc .toc-wrapper > div > div.open{
-    background: rgba(255,255,255,0.3);
+    background:rgba(217, 246, 255,0.5);
 }
 
 #toc .toc-wrapper > div.open{
@@ -109,7 +119,7 @@
 }
 
 #toc .toc-wrapper div.open > .button-container{
-    background: rgba(255,255,255,0.3);
+    background: var(--shadow-gray-4);
 }
 
 /* Open sub menus*/
@@ -132,9 +142,7 @@
 }
 
 #toc .open > .button-container > button {
-
-    color: rgb(0, 35, 185);
-
+    var(--main-color-10);
 }
 
 /*Responsiveness*/
@@ -143,6 +151,6 @@
     #toc{
         position: fixed;
         left: -300px;
-        border: 1px black solid;
+        border: 1px var(--dark-1) solid;
     }
 }

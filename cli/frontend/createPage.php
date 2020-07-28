@@ -4,8 +4,8 @@
  * If you are looking to create different pages, you might consider using a different template handler.
  *
  * Examples:
- *      php pageCreator.php -h
- *      php pageCreator.php -t -f example.json
+ *      php createPage.php -h
+ *      php createPage.php -t -f example.json
  *
  * ------- JSON Files & Templates -------
  * A template file is what defines how a page is created.

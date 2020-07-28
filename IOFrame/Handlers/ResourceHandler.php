@@ -915,7 +915,6 @@ namespace IOFrame\Handlers{
             $getMembers = isset($params['getMembers'])? $params['getMembers'] : false;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
 
-
             //If there are no names, show the user everything in the DB
             if($names ===[]){
                 if($verbose)
@@ -1231,7 +1230,7 @@ namespace IOFrame\Handlers{
                 if(isset($params['existingCollections']))
                     $existing = $params['existingCollections'];
                 else
-                    $existing = $this->getResourceCollections($names, $type,array_merge($params,['getMembers'=>false]));
+                    $existing = $this->getResourceCollections($names, $type,array_merge($params,['getMembers'=>false,'updateCache'=>false]));
 
                 //If a collection exists, and override and update are false, unset the input and update the result.
                 if(!$override)
@@ -1308,11 +1307,21 @@ namespace IOFrame\Handlers{
                 array_merge($params, ['onDuplicateKey'=>true])
             );
 
-            if($res)
+            if($res){
+                $cacheAddresses = [];
+
                 foreach($results as $index => $result){
-                    if($result == -1)
+                    if($result == -1){
                         $results[$index] = 0;
+                        array_push($cacheAddresses, $type.'_'.$this->resourceCollectionCacheName.$index);
+                    }
                 }
+
+                if(!$test)
+                    $this->RedisHandler->call('del',[$cacheAddresses]);
+                if($verbose)
+                    echo 'Deleting '.json_encode($cacheAddresses).' from cache!'.EOL;
+            }
 
             return $results;
         }

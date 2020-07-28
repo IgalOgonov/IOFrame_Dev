@@ -107,3 +107,17 @@ var_dump(
     $FrontEndResourceHandler->getGallery('fake Gallery',['test'=>true,'verbose'=>true,'includeGalleryInfo'=>true,'rootFolder'=>$IOFrameIMGRoot])
 );
 echo EOL;
+
+
+echo 'Getting fake gallery:'.EOL;
+var_dump(
+    $FrontEndResourceHandler->getGallery('fake Gallery',['test'=>true,'verbose'=>true,'includeGalleryInfo'=>true,'rootFolder'=>$IOFrameIMGRoot])
+);
+echo EOL;
+
+
+echo 'Getting two real galleries AND their members:'.EOL;
+var_dump(
+    $FrontEndResourceHandler->getGalleries(['Test Gallery','Another Gallery'],['test'=>true,'verbose'=>true,'includeGalleryInfo'=>true,'rootFolder'=>$IOFrameIMGRoot])
+);
+echo EOL;

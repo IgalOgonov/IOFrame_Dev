@@ -12,7 +12,7 @@ body > .wrapper {
 
 /* Loading */
 .main-app .loading-cover {
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--shadow-dark-5);
     position: absolute;
     width: 100%;
     height: 100%;
@@ -32,14 +32,14 @@ body > .wrapper {
 .main-app .modes > button.selected,
 .main-app .operations > button.selected {
     font-weight: 800;
-    box-shadow: 0px 3px 6px #00000029;
+    box-shadow: 0px 3px 6px var(--shadow-dark-3);
 }
 
 /*Operations menu alone*/
 .main-app .operations-container {
     display: flex;
-    border-top: rgb(203, 203, 203) 1px solid;
-    border-bottom: rgb(203, 203, 203) 1px solid;
+    border-top: var(--gray-3) 1px solid;
+    border-bottom: var(--gray-3) 1px solid;
     margin: 10px 0px 10px 0px;
 }
 
@@ -52,7 +52,7 @@ body > .wrapper {
 
 .main-app .operations > input {
     width: 100%;
-    border: 1px #808080 solid;
+    border: 1px var(--gray-1) solid;
     font-size: 1.25em;
     padding: 5px;
 }
@@ -105,32 +105,47 @@ body > .wrapper {
 }
 .main-app .search-list .pagination button{
     box-shadow: none;
-    color: rgb(10 10 10);
+    color: var(--dark-1);
     border: 1px transparent solid;
 }
 .main-app .search-list .pagination button.selected,
 .main-app .search-list .pagination button:not([class="go-to"]):hover{
     box-shadow: none;
-    background: rgb(236, 251, 255);
+    background: var(--main-color-2);
 }
 .main-app .search-list .pagination button.selected,
 .main-app .search-list .pagination button[class="go-to"]{
-    border: 1px rgb(163, 171, 207) solid;
+    border: 1px var(--secondary-color-4) solid;
 }
 .main-app .search-list .pagination button[class="go-to"]{
-    background-color: rgb(218, 221, 239);
+    background-color: var(--secondary-color-2);
 }
 .main-app .search-list .pagination button[class="go-to"]:hover{
-    background-color: rgb(163, 171, 207);
+    background-color: var(--secondary-color-4);
 }
 
 .main-app .search-list .pagination .go-to-page input,
 .main-app .search-list .pagination .total-pages span:nth-child(2){
-    background-color: rgb(218, 221, 239);
+    background-color: var(--secondary-color-2);
 }
 
 /*Titles*/
 .title{
+    font-weight: 800;
+}
+h1 {
+    font-size: 2em;
+    font-weight: 800;
+}
+h2 {
+    font-size: 1.66em;
+    font-weight: 800;
+}
+h3 {
+    font-size: 1.33em;
+    font-weight: 800;
+}
+h4 {
     font-size: 1em;
     font-weight: 800;
 }

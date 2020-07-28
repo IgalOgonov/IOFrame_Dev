@@ -2,39 +2,6 @@
 
 namespace IOFrame\Util{
     define('safeSTR',true);
-    /**
-     * Returns an array given an hArray
-     * @param string|hArray $hArr hArray to convert
-     * @returns string[]|bool Actual array, or false on bad input
-     */
-    function hArray2Array($hArr){
-        if(gettype($hArr) == 'string'){
-            $res = new hArray($hArr);
-            return $res->toArray();
-        }
-        else if (gettype($hArr) == 'object'){
-            if($hArr instanceof hArray)
-                return $hArr->toArray();
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
-    /**
-     * Returns an hArray given an array
-     * @param array $arr hArray to convert
-     * @returns hArray|bool Newly created hArray, or false on bad input
-     */
-    function array2hArray(array $arr){
-        if(gettype($arr) == 'array'){
-            $res = new hArray($arr);
-            return $res;
-        }
-        else
-            return false;
-    }
 
     /**
      * Returns a normal string given a Safe String
@@ -42,9 +9,15 @@ namespace IOFrame\Util{
      * @param string $str Normal string
      * @returns string safeString
      */
-    function safeStr2Str($str){
+    function safeStr2Str($str, $params = []){
+        $legacyMode = isset($params['legacyMode'])? $params['legacyMode'] : false;
+
+        if(!$legacyMode)
+            return base64_decode($str);
+
         if($str === null)
             return $str;
+
         $curVal = '';
         $tempVal = '';
         $repeat = '1';
@@ -102,7 +75,15 @@ namespace IOFrame\Util{
      * @param string $str safeString
      * @returns string Normal string
      */
-    function str2SafeStr($str){
+    function str2SafeStr($str, $params = []){
+        if($str === null)
+            return $str;
+
+        $legacyMode = isset($params['legacyMode'])? $params['legacyMode'] : false;
+
+        if(!$legacyMode)
+            return base64_encode($str);
+
         $res=$str;
         $repeats = 1;
         if($str !== null)

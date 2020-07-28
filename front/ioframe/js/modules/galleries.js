@@ -31,13 +31,16 @@ var galleries = new Vue({
             edit:{
                 operations:{
                     'remove':{
-                        title:'Remove From Gallery'
+                        title:'Remove From Gallery',
+                        button:'negative-1'
                     },
                     'cancel':{
-                        title:'Cancel'
+                        title:'Cancel',
+                        button:'cancel-1'
                     },
                     'add':{
-                        title:'Add Image To Gallery'
+                        title:'Add Image To Gallery',
+                        button:'positive-1'
                     },
                 },
                 title:'View/Edit Gallery'
@@ -112,8 +115,28 @@ var galleries = new Vue({
             {
                 id:'identifier',
                 title:'Gallery Name',
-                parser:function(name){
-                    return name;
+                custom:true,
+                parser:function(item){
+                    if(document.selectedLanguage && (item[document.selectedLanguage+'_name'] !== undefined) )
+                        return item[document.selectedLanguage+'_name'];
+                    return item.identifier;
+                }
+            },
+            {
+                id:'isNamed',
+                title:'Other Names?',
+                custom:true,
+                parser:function(item){
+                    let possibleNames = JSON.parse(JSON.stringify(document.languages));
+                    possibleNames =possibleNames.map(function(x) {
+                        return x+'_name';
+                    });
+                    possibleNames.push('name');
+                    for(let i in possibleNames){
+                        if(item[possibleNames[i]] !== undefined)
+                            return 'Yes';
+                    }
+                    return 'No';
                 }
             },
             {
@@ -333,7 +356,7 @@ var galleries = new Vue({
         moveTargets:[],
         //Whether we are currently loading
         isLoading:false,
-        verbose:true,
+        verbose:false,
         test:false
     },
     created:function(){
@@ -348,6 +371,7 @@ var galleries = new Vue({
         eventHub.$on('select', this.selectElement);
         eventHub.$on('drop', this.moveGalleryElement);
         eventHub.$on('resizeImages',this.resizeImages);
+        eventHub.$on('searchAgain', this.searchAgain);
     },
     computed:{
         //Gets the selected gallery
@@ -423,6 +447,12 @@ var galleries = new Vue({
         }
     },
     methods:{
+        //Searches again (meant to be invoked after relevant changes)
+        searchAgain: function(){
+            if(this.verbose)
+                console.log('Searching again!');
+            this.galleriesInitiated = false;
+        },
         //Parses search results returned from a search list
         parseSearchResults: function(response){
             if(this.verbose)

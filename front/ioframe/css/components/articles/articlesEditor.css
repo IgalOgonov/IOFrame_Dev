@@ -1,0 +1,248 @@
+
+.articles-editor .wrapper{
+    max-width: 1000px;
+}
+
+/*Types*/
+.articles-editor > .wrapper > .types{
+    display: flex;
+    background: var(--secondary);
+}
+.articles-editor > .wrapper > .types > button{
+    padding: 5px 10px;
+    font-size: 1em;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out, border 0s;
+    margin: 5px;
+}
+.articles-editor > .wrapper > .types > button.selected{
+    font-weight: 800;
+    box-shadow: 0px 3px 6px var(--shadow-dark-3);
+}
+
+/* Thumbnail Preview */
+.articles-editor .article-info-editor .thumbnail-preview {
+    min-height: 100px;
+    padding: 10px 0px;
+}
+.articles-editor form.article-info-editor > .thumbnail-preview:hover {
+    background: var(--shadow-dark-1);
+    cursor: pointer;
+}
+.articles-editor .article-info-editor .thumbnail-preview img {
+    max-width: 200px;
+    height: auto;
+    margin: auto;
+    max-height: 200px;
+}
+
+/*Form*/
+.articles-editor form{
+    padding: 5px;
+    transition: 0.2s ease-in-out;
+}
+.articles-editor form > div{
+    padding: 5px 20px 5px 10px;
+    margin: 5px 0px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+}
+.articles-editor form >div.changed{
+    background-color: var(--main-color-3);
+}
+.articles-editor form > div button.item-param{
+    padding: 2px 7px;
+}
+
+/*Editor*/
+.articles-editor form.article-info-editor{
+    display: flex;
+    flex-direction: column;
+}
+.articles-editor form.article-info-editor > div{
+    display: flex;
+    flex-direction: column;
+}
+.articles-editor form.article-info-editor >div.changed{
+}
+.articles-editor form.article-info-editor > div button.item-param{
+}
+/*Specific Elements*/
+.articles-editor form.article-info-editor > div textarea{
+    min-height: 55px;
+}
+/*Required*/
+.articles-editor form.article-info-editor > div.required > .title::after {
+    content: ' *';
+    color: var(--button-negative-color-2);
+}
+
+/*Static stuff*/
+.articles-editor form.article-info-editor > div.static {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.articles-editor form.article-info-editor > div.static > * {
+    margin: 0px 5px 0px 0px;
+}
+.articles-editor form.article-info-editor > div.static > .item-param {
+    padding: 0px 5px;
+    transition: 0.2s ease-in-out;
+    background: var(--shadow-dark-1);
+}
+.articles-editor form.article-info-editor > div.static > .item-param:hover {
+    background: var(--shadow-dark-2);
+}
+
+/*Control buttons*/
+.articles-editor .wrapper > .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.articles-editor .wrapper > .control-buttons  button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}
+
+/* Media Selector */
+.articles-editor .media-selector-container{
+    position: fixed;
+    top: 5vh;
+    width: calc(100vw - 250px);
+    box-shadow: 0px 0px 6px var(--dark-1);
+    border-radius: 5px;
+}
+
+.articles-editor .media-selector-container > .control-buttons {
+    background: rgb(236, 251, 255);
+    text-align: end;
+    border-radius: 5px 5px 0px 0px;
+}
+.articles-editor .media-selector-container > .control-buttons img{
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+    margin: 5px 5px 0px 0px;
+}
+
+.articles-editor .media-selector {
+    background: var(--main-color-3);
+    border: 1px var(--main-color-5) solid;
+    border-top: none;
+    border-radius: 0px 0px 5px 5px;
+    overflow-y: auto;
+    max-width: 90vw;
+    max-height: 85vh;
+    width: 100%;
+
+}
+
+/** Blocks **/
+.articles-editor .main-article .article-block-container{
+    margin: 5px;
+}
+
+/*Block controls*/
+.articles-editor .main-article .block-controls{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+    margin: 5px;
+    min-height: 40px;
+    background: var(--secondary-color-1);
+}
+.articles-editor .main-article .block-controls button{
+    display: flex;
+    padding: 5px;
+    margin: 0px 5px 0px 0px;
+}
+.articles-editor .main-article.passed-controls .block-controls.detach{
+    position: fixed;
+    top: 6px;
+    border: 1px var(--secondary-color-5) solid;
+    border-radius: 5px;
+    z-index: 10;
+}
+.articles-editor .main-article:not(.passed-controls) .block-controls.placeholder{
+    display: none;
+}
+.articles-editor .main-article:not(.allow-modifying) .block-controls{
+    display: none;
+}
+
+/*Back to top button*/
+.articles-editor .main-article .back-to-top{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 40px;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 5px;
+    z-index: 10;
+    transform: rotate3d(0,1,0,0deg);
+    transition: transform 0.5s ease-in-out;
+}
+.articles-editor .main-article .back-to-top::after {
+    content: '';
+    height: 15px;
+    width: 25px;
+    background: var(--main-color-6);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+.articles-editor .main-article:not(.passed-headline) .back-to-top{
+    transform: rotate3d(0,1,0,90deg);
+}
+
+/** Creation of blocks **/
+.articles-editor .add-block-here{
+    padding: 5px;
+    width: 100%;
+    margin: 5px 0px;
+}
+.articles-editor .add-block-here::after {
+    content: 'Add Block Here';
+}
+
+/** Block Movement **/
+.articles-editor .move {
+    margin: 5px auto;
+    cursor: pointer;
+    background: var(--main-color-4);
+    display: flex;
+    justify-content: center;
+    height: 40px;
+    width: 100px;
+}
+.articles-editor .move:hover {
+    background: var(--main-color-3);
+}
+.articles-editor .move.up {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    border-bottom: 5px var(--main-color-7) solid;
+}
+.articles-editor .move.down{
+    clip-path: polygon(50% 100%, 100% 0%, 0% 0%);
+    border-top: 5px var(--main-color-7) solid;
+}
+
+/* Non existent blocks */
+.articles-editor  .article-block.non-existent {
+    background: var(--soft-red-1);
+    border-radius: 5px;
+    padding: 5px;
+    margin: 10px 0px;
+}
+
+/* Responsiveness */
+@media (max-width: 1000px) {
+    .articles-editor .media-selector-container{
+        width: calc(100vw - 100px);
+    }
+    .articles-editor .media-selector {
+        max-width: calc(100vw - 100px);
+    }
+}

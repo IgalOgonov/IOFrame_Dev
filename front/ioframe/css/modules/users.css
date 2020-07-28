@@ -29,6 +29,6 @@
     #users .search-list .search-item .search-item-title {
         display: inherit !important;
         padding: 0px 3px;
-        background: rgba(0,0,0,0.1);
+        background: var(--shadow-dark-1);
     }
 }

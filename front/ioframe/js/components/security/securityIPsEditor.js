@@ -250,44 +250,12 @@ Vue.component('security-ips-editor', {
         },
         //Sets main item
         setMainItem(item){
+
             for(let i in item){
-                if(!this.paramMap[i])
-                    this.paramMap[i] ={};
-                this.paramMap[i].ignore = this.paramMap[i].ignore !== undefined ? this.paramMap[i].ignore : false;
-                this.paramMap[i].title = this.paramMap[i].title !== undefined ? this.paramMap[i].title : i;
-                this.paramMap[i].edit = this.paramMap[i].edit !== undefined ? this.paramMap[i].edit: true;
-                this.paramMap[i].type = this.paramMap[i].type !== undefined ? this.paramMap[i].type : "text";
-                this.paramMap[i].display = this.paramMap[i].display !== undefined ?  this.paramMap[i].display: true;
-                this.paramMap[i].considerChanged = this.paramMap[i].considerChanged !== undefined ?  this.paramMap[i].considerChanged: false;
+                if(typeof item[i] === 'object')
+                    continue;
 
-                if(!this.paramMap[i].onUpdate)
-                    this.paramMap[i].onUpdate = {};
-                this.paramMap[i].onUpdate.ignore = this.paramMap[i].onUpdate.ignore !== undefined ? this.paramMap[i].onUpdate.ignore : false;
-                this.paramMap[i].onUpdate.parse = this.paramMap[i].onUpdate.parse !== undefined ? this.paramMap[i].onUpdate.parse : function(value){
-                    return value;
-                };
-                this.paramMap[i].onUpdate.validate = this.paramMap[i].onUpdate.validate !== undefined ? this.paramMap[i].onUpdate.validate : function(value){
-                    return true;
-                };
-                this.paramMap[i].onUpdate.validateFailureMessage = this.paramMap[i].onUpdate.validateFailureMessage !== undefined ? this.paramMap[i].onUpdate.validateFailureMessage : 'Parameter '+i+' failed validation!';
-                this.paramMap[i].onUpdate.setName = this.paramMap[i].onUpdate.setName !== undefined ? this.paramMap[i].onUpdate.setName : i;
-
-                this.paramMap[i].parseOnGet = this.paramMap[i].parseOnGet !== undefined ? this.paramMap[i].parseOnGet : function(value){
-                    return value;
-                };
-                this.paramMap[i].parseOnDisplay = this.paramMap[i].parseOnDisplay !== undefined ? this.paramMap[i].parseOnDisplay : function(value){
-                    return value;
-                };
-                this.paramMap[i].parseOnChange = this.paramMap[i].parseOnChange !== undefined ? this.paramMap[i].parseOnChange : function(value){
-                    return value;
-                };
-                this.paramMap[i].displayHTML = this.paramMap[i].displayHTML !== undefined ? this.paramMap[i].displayHTML : false;
-
-                if(!this.paramMap[i].button)
-                    this.paramMap[i].button = {};
-                this.paramMap[i].button.positive = this.paramMap[i].button.positive !== undefined ? this.paramMap[i].button.positive : 'Yes';
-                this.paramMap[i].button.negative = this.paramMap[i].button.negative !== undefined ? this.paramMap[i].button.negative : 'No';
-
+                this.setSingleParam(i);
 
                 if(!this.paramMap[i].ignore)
                     this.mainItem[i] =
@@ -299,6 +267,75 @@ Vue.component('security-ips-editor', {
                             :
                             this.paramMap[i].parseOnGet(item[i]);
             }
+
+            for(let i in this.paramMap){
+                if((item[i] === undefined || typeof item[i] === 'object') && !this.paramMap[i].ignore){
+                    this.setSingleParam(i);
+                    let prefixes = i.split('.');
+                    let itemClone = JSON.parse(JSON.stringify(item));
+                    let target = itemClone[prefixes[0]];
+                    if(target !== undefined){
+                        for(let j = 1; j < prefixes.length; j ++){
+                            if(target[j]!==undefined)
+                                target = target[j];
+                        }
+                    }
+                    let finalIdentifier = prefixes.pop();
+                    let newItem = target[finalIdentifier] !== undefined? target[finalIdentifier] : null;
+                    this.setSingleMainItem(i,newItem);
+                }
+            }
+        },
+        //Helper function for setMainItem
+        setSingleParam: function(i){
+            if(!this.paramMap[i])
+                this.paramMap[i] ={};
+            this.paramMap[i].ignore = this.paramMap[i].ignore !== undefined ? this.paramMap[i].ignore : false;
+            this.paramMap[i].title = this.paramMap[i].title !== undefined ? this.paramMap[i].title : i;
+            this.paramMap[i].edit = this.paramMap[i].edit !== undefined ? this.paramMap[i].edit: true;
+            this.paramMap[i].type = this.paramMap[i].type !== undefined ? this.paramMap[i].type : "text";
+            this.paramMap[i].display = this.paramMap[i].display !== undefined ?  this.paramMap[i].display: true;
+            this.paramMap[i].considerChanged = this.paramMap[i].considerChanged !== undefined ?  this.paramMap[i].considerChanged: false;
+            this.paramMap[i].required = this.paramMap[i].required !== undefined ?  this.paramMap[i].required: false;
+
+            if(!this.paramMap[i].onUpdate)
+                this.paramMap[i].onUpdate = {};
+            this.paramMap[i].onUpdate.ignore = this.paramMap[i].onUpdate.ignore !== undefined ? this.paramMap[i].onUpdate.ignore : false;
+            this.paramMap[i].onUpdate.parse = this.paramMap[i].onUpdate.parse !== undefined ? this.paramMap[i].onUpdate.parse : function(value){
+                return value;
+            };
+            this.paramMap[i].onUpdate.validate = this.paramMap[i].onUpdate.validate !== undefined ? this.paramMap[i].onUpdate.validate : function(value){
+                return true;
+            };
+            this.paramMap[i].onUpdate.validateFailureMessage = this.paramMap[i].onUpdate.validateFailureMessage !== undefined ? this.paramMap[i].onUpdate.validateFailureMessage : 'Parameter '+i+' failed validation!';
+            this.paramMap[i].onUpdate.setName = this.paramMap[i].onUpdate.setName !== undefined ? this.paramMap[i].onUpdate.setName : i;
+
+            this.paramMap[i].parseOnGet = this.paramMap[i].parseOnGet !== undefined ? this.paramMap[i].parseOnGet : function(value){
+                return value;
+            };
+            this.paramMap[i].parseOnDisplay = this.paramMap[i].parseOnDisplay !== undefined ? this.paramMap[i].parseOnDisplay : function(value){
+                return value;
+            };
+            this.paramMap[i].parseOnChange = this.paramMap[i].parseOnChange !== undefined ? this.paramMap[i].parseOnChange : function(value){
+                return value;
+            };
+            this.paramMap[i].displayHTML = this.paramMap[i].displayHTML !== undefined ? this.paramMap[i].displayHTML : false;
+
+            if(!this.paramMap[i].button)
+                this.paramMap[i].button = {};
+            this.paramMap[i].button.positive = this.paramMap[i].button.positive !== undefined ? this.paramMap[i].button.positive : 'Yes';
+            this.paramMap[i].button.negative = this.paramMap[i].button.negative !== undefined ? this.paramMap[i].button.negative : 'No';
+        },
+        //Helper functin for setMainItem
+        setSingleMainItem: function(i, item){
+            this.mainItem[i] =
+                this.paramMap[i].edit ?
+                {
+                    original:this.paramMap[i].parseOnGet(item),
+                    current:this.paramMap[i].parseOnGet(item)
+                }
+                    :
+                    this.paramMap[i].parseOnGet(item);
         },
         //Tries to update the item
         setItem: function(){

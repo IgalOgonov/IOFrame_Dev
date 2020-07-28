@@ -12,7 +12,7 @@ var_dump(
 );
 echo EOL;
 
-echo 'Syncing lcoal settings with DB (should fail):'.EOL;
+echo 'Syncing local settings with DB (should fail):'.EOL;
 var_dump(
     $settings->syncWithDB(['test'=>true,'verbose'=>true])
 );
@@ -29,8 +29,15 @@ $noMailSettings ->printAll();
 echo EOL;
 
 $mailSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/mailSettings/',$defaultSettingsParams);
+
 echo 'Initiating mail settings DB table:'.EOL;
 var_dump(
     $mailSettings->initDB(['test'=>true])
+);
+echo EOL;
+
+echo 'Syncing mail settings with DB (should succeed):'.EOL;
+var_dump(
+    $mailSettings->syncWithDB(['localToDB'=>false,'test'=>true,'verbose'=>true])
 );
 echo EOL;

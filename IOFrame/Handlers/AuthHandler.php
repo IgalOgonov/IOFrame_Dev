@@ -1130,7 +1130,6 @@ namespace IOFrame\Handlers{
             else
                 $offset = null;
 
-
             if(isset($params['safeStr']))
                 $safeStr = $params['safeStr'];
             else
@@ -1167,7 +1166,7 @@ namespace IOFrame\Handlers{
             if(is_array($response))
                 foreach($response as $row){
                     $res[$row['Auth_Action']] = [
-                        'description' => ( $safeStr ? IOFrame\Util\safeStr2Str($row['Description']) : $row['Description'] )
+                        'description' => isset($row['Description'])? ( $safeStr ? IOFrame\Util\safeStr2Str($row['Description']) : $row['Description'] ) : null
                     ];
                 }
 
@@ -1302,6 +1301,11 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+
+            if(isset($params['safeStr']))
+                $safeStr = $params['safeStr'];
+            else
+                $safeStr = true;
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $userTable = $prefix.'USERS_AUTH';
@@ -1546,7 +1550,7 @@ namespace IOFrame\Handlers{
                 $columns = [$groupTable.'.Auth_Group',$groupsActionsTable.'.Auth_Action'];
             }
             else{
-                $query = 'SELECT DISTINCT Auth_Group FROM (';
+                $query = 'SELECT DISTINCT Auth_Group,Description FROM '.$groupTable.' WHERE Auth_Group IN(';
                 $tables = $groupTable;
                 $columns = [$groupTable.'.Auth_Group'];
             }
@@ -1557,7 +1561,12 @@ namespace IOFrame\Handlers{
                 $columns,
                 ['justTheQuery'=>true,'test'=>false]
             );
-            $query .= ') as Meaningless_Alias ORDER BY '.$orderByExp;
+
+            $query .= ')';
+            if($includeActions)
+                $query .= 'as Meaningless_Alias';
+            $query .= ' ORDER BY '.$orderByExp;
+
 
             $queryWithoutLimit = $query;
 
@@ -1586,7 +1595,9 @@ namespace IOFrame\Handlers{
             }
             else{
                 foreach($response as $row){
-                    $result[$row['Auth_Group']] = [];
+                    $result[$row['Auth_Group']] = [
+                        'description'=> isset($row['Description'])? ( $safeStr ? IOFrame\Util\safeStr2Str($row['Description']) : $row['Description'] ) : null
+                    ];
                 }
             }
 

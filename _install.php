@@ -123,8 +123,8 @@ require_once 'procedures/SQLdbInit.php';
 
 echo '<head>
     <link rel="stylesheet" type="text/css" href="front/ioframe/css/install.css" media="all">
-    <script src="front/ioframe/js/jQuery_3_1_1/jquery.js"></script>
-    <script src="front/ioframe/css/bootstrap_3_3_7/js/bootstrap.js"></script>
+    <script src="front/ioframe/js/ext/jQuery_3_1_1/jquery.js"></script>
+    <script src="front/ioframe/css/ext/bootstrap_3_3_7/js/bootstrap.js"></script>
     </head>';
 //--------------------Initialize settings handler--------------------
 if(!is_dir('localFiles/userSettings')){
@@ -174,7 +174,7 @@ $metaSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/metaS
 if(!file_exists('localFiles/_installSes') && isset($_SERVER['REMOTE_ADDR'])){
     $myFile = fopen('localFiles/_installSes', 'w+');
     fwrite($myFile,$_SERVER['REMOTE_ADDR']);
-    install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,0,$baseUrl);
+    install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,0,$baseUrl);
 }
 else{
     $myFile = fopen('localFiles/_installSes', 'r+');
@@ -272,7 +272,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <span>Remember login for (seconds):</span>
                     <input type="number" name="userTokenExpiresIn" value="0" checked><br>
                     <small>Number of <b>seconds</b> tokens generated for auto-relog are valid for.</small><br>
-                    <small> If 0, tokens never expire. While login remembering is not allowed, has no effect.</small><br>
+                    <small> If 0, tokens never expire. While login remembering is not allowed, this has no effect.</small><br>
 
                     <span>Password Reset Validity:</span>
                     <input type="number" name="passwordResetTime" value="5" checked><br>
@@ -691,7 +691,15 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['ORDERS_VIEW_AUTH',\IOFrame\Util\str2SafeStr('Allows viewing all orders')],
                 ['ORDERS_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modyfing all orders')],
                 ['USERS_ORDERS_VIEW_AUTH',\IOFrame\Util\str2SafeStr('Allow viewing all user-order relations')],
-                ['USERS_ORDERS_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modifying all user-order relations')]
+                ['USERS_ORDERS_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modifying all user-order relations')],
+                ['OBJECT_AUTH_VIEW',\IOFrame\Util\str2SafeStr('Allows viewing all object action auth')],
+                ['OBJECT_AUTH_MODIFY',\IOFrame\Util\str2SafeStr('Allow modyfing all object action auth')],
+                ['ARTICLES_MODIFY_AUTH',\IOFrame\Util\str2SafeStr('Allow modyfing all articles')],
+                ['ARTICLES_VIEW_AUTH',\IOFrame\Util\str2SafeStr('Allows viewing all articles')],
+                ['ARTICLES_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allows creating new trees')],
+                ['ARTICLES_UPDATE_AUTH',\IOFrame\Util\str2SafeStr('Allows updating all articles')],
+                ['ARTICLES_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allows deleting all articles')],
+                ['ARTICLES_BLOCKS_ASSUME_SAFE',\IOFrame\Util\str2SafeStr('Allow inserting potentially "unsafe" conent into articles.')]
             ];
 
             foreach($assignments as $k=>$v){
@@ -707,6 +715,45 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             else{
                 echo EOL.'Default Actions NOT initiated properly! Please initiate the database properly.'.EOL;
                 die();
+            }
+
+            $SecurityHandler = new \IOFrame\Handlers\SecurityHandler($localSettings,$defaultSettingsParams);
+            $res = $SecurityHandler->setEventsMeta(
+                [
+                    [
+                        'category'=>0,
+                        'type'=>0,
+                        'meta'=>json_encode([
+                            'name'=>'IP Incorrect Login Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>1,
+                        'type'=>0,
+                        'meta'=>json_encode([
+                            'name'=>'User Incorrect Login Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>0,
+                        'meta'=>json_encode([
+                            'name'=>'IP Related Events'
+                        ])
+                    ],
+                    [
+                        'category'=>1,
+                        'meta'=>json_encode([
+                            'name'=>'User Related Events'
+                        ])
+                    ],
+                ],
+                []
+            );
+            if($res){
+                echo EOL.'Default security events meta information initiated!' . EOL;
+            }
+            else{
+                echo EOL.'Default security events meta information NOT initiated!'.EOL;
             }
 
             //Insert routing rules
@@ -800,6 +847,9 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <span>Mail Username:</span> <input type="text" name="mailUsername" placeholder="username@yourHostName.com"><br>
                     <span>Mail Password:</span>  <input type="text" name="mailPassword" placeholder="The password for the above user"><br>
                     <span>Mail Server Port:</span> <input type="text" name="mailPort" placeholder="465 - might be different, see host settings"><br>
+                    <span>System Alias*:</span> <input type="text" name="defaultAlias" placeholder="customAlias@yourHostName.com"><br>
+                    <small>Fill this in if you want to be sending system mails as a different alias (not your username).
+                           In most services, you\'ll need to set them manual, and at worst using an non-existent one will cause your emails not being sent.</small>;
                      <input type="submit" value="Next">
                      </form>';
 
@@ -838,6 +888,14 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'Setting mailPort set to '.$_REQUEST['mailPort'].EOL;
                 else{
                     echo 'Failed to set setting mailPort  to '.$_REQUEST['mailPort'].EOL.EOL;
+                }
+                if(isset($_REQUEST['defaultAlias'])
+                ){
+                    if($mailSettings->setSetting('defaultAlias',$_REQUEST['defaultAlias'],['createNew'=>true]))
+                        echo 'Setting defaultAlias set to '.$_REQUEST['defaultAlias'].EOL;
+                    else{
+                        echo 'Failed to set setting defaultAlias  to '.$_REQUEST['defaultAlias'].EOL.EOL;
+                    }
                 }
             }
 
@@ -1006,6 +1064,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($siteArgs,["maxUploadSize",4000000]);
             array_push($siteArgs,["tokenTTL",3600]);
             array_push($siteArgs,["CPMenu",json_encode([],JSON_FORCE_OBJECT)]);
+            array_push($siteArgs,["languages",'']);
 
             array_push($userArgs,["pwdResetExpires",72]);
             array_push($userArgs,["mailConfirmExpires",72]);

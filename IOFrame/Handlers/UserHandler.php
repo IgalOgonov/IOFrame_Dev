@@ -1160,43 +1160,26 @@ namespace IOFrame\Handlers{
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
 
-            //TODO Solve
-            $countryRes='Unkonwn';
 
-            //Check if the username-ip combo already exists
+            $query = 'INSERT INTO '.$this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY(Username, IP, Country, Login_Time)
+                                           VALUES (:Username, :IP, :Country, :Login_Time)';
+
+            //TODO Solve
+            $countryRes='Unknown';
             $u = $checkRes[0]["Username"];
-            $checkRes = $this->SQLHandler->selectFromTable($this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY',
-                [['Username', $u,'='],['IP', [$_SERVER['REMOTE_ADDR'],'STRING'],'='],'AND'],
-                [],
-                ['test'=>$test,'verbose'=>$verbose]
+            $now = strtotime(date("YmdHis"));
+            if(!defined('IPHandler'))
+                require 'IPHandler.php';
+            $IPHandler = new IPHandler($this->settings,$this->defaultSettingsParams);
+
+            return $this->SQLHandler->insertIntoTable(
+                $this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY',
+                ['Username','IP','Country','Login_Time'],
+                [
+                    [[$u,'STRING'],[$IPHandler->fullIP,'STRING'],[$countryRes,'STRING'],$now]
+                ],
+                $params
             );
-            //if yes update them
-            if (is_array($checkRes) && count($checkRes)>0) {
-                if(!defined('hArray'))
-                    require __DIR__ . '/../Util/hArray.php';
-                //Remember that we got the IP history until now as one of the results - update it!
-                $lHist= new IOFrame\Util\hArray($checkRes[0]['Login_History']);
-                $lHist->hArrPush(strtotime(date("YmdHis")));
-                $query = 'UPDATE '.$this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY SET Login_History=:Login_History
-                                           WHERE Username=:Username AND IP=:IP';
-                $params = [];
-                array_push($params,[':Login_History', $lHist->hArrGet()],[':Username', $u],[':IP', $_SERVER['REMOTE_ADDR']]);
-                if(!$test)
-                    $this->SQLHandler->exeQueryBindParam($query,$params);
-                if($verbose)
-                    echo 'Updating login history for User/IP '.$u.'/'.$_SERVER['REMOTE_ADDR'].EOL;
-            }
-            else{
-                $hInit = strtotime(date("YmdHis"));
-                $query = 'INSERT INTO '.$this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY(Username, IP, Country, Login_History)
-                                           VALUES (:Username, :IP, :Country, :Login_History)';
-                $params = [];
-                array_push($params,[':Login_History', $hInit.'#'],[':Username', $u],[':IP', $_SERVER['REMOTE_ADDR']],[':Country', $countryRes]);
-                if(!$test)
-                    $this->SQLHandler->exeQueryBindParam($query,$params);
-                if($verbose)
-                    echo 'Creating new login history for User/IP '.$u.'/'.$_SERVER['REMOTE_ADDR'].EOL;
-            }
         }
 
 
@@ -1290,10 +1273,6 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Query to send: '.$query.EOL;
             $tempRes = $this->SQLHandler->exeQueryBindParam($query,[],['fetchAll'=>true]);
-
-            if($verbose){
-                var_dump($tempRes);
-            }
 
             $res = 1;
             $userID = -1;

@@ -12,7 +12,7 @@
 }
 
 #%%ELEMENT_NAME%% .types > button.selected  {
-    border-bottom: 3px black solid;
+    border-bottom: 3px var(--dark-1) solid;
 }
 
 #%%ELEMENT_NAME%% .types > button:first-child {
@@ -46,6 +46,6 @@
     #%%ELEMENT_NAME%% .search-list .search-item .search-item-title {
         display: inherit !important;
         padding: 0px 3px;
-        background: rgba(0,0,0,0.1);
+        background: var(--shadow-dark-1);
     }
 }

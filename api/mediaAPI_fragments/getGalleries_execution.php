@@ -48,8 +48,18 @@ foreach($result as $galleryName => $infoArray){
     $meta = $infoArray['Meta'];
     if(\IOFrame\Util\is_json($meta)){
         $meta = json_decode($meta,true);
-        if(isset($meta['name']))
-            $parsedResults['name'] = $meta['name'];
+
+        $expected = ['name'];
+
+        foreach($languages as $lang){
+            array_push($expected,$lang.'_name');
+        }
+
+        foreach($expected as $attr){
+            if(isset($meta[$attr]))
+                $parsedResults[$attr] = $meta[$attr];
+        }
+
     }
 
     $result[$galleryName] = $parsedResults;

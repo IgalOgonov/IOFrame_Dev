@@ -16,9 +16,9 @@
     flex-direction: column;
     padding: 10px;
     margin: 5px 0px;
-    background: rgb(236, 251, 255);
-    color: rgb(10 10 10);
-    border: 1px rgb(163, 171, 207) solid;
+    background: var(--main-color-2);
+    color: var(--dark-1);
+    border: 1px var(--secondary-color-4) solid;
 }
 #login-register.main-app form input {
     margin: 5px 0px;
@@ -28,12 +28,12 @@
 /*Buttons in general*/
 #login-register.main-app button {
     padding: 5px 10px;
-    background: rgb(236, 251, 255);
-    color: rgb(54 145 160);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-2);
+    color: var(--main-color-8);
+    border: 1px var(--main-color-5) solid;
 }
 #login-register.main-app button:hover {
-    background: rgb(224,244,255);
-    color: rgb(105 196 211);
-    border: 1px rgb(161,233,246) solid;
+    background: var(--main-color-3);
+    color: var(--main-color-7);
+    border: 1px var(--main-color-5) solid;
 }

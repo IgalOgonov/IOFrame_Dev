@@ -1,11 +1,11 @@
 #userReg input.warning{
-    background: rgb(200,200,0);
+    background: var(--message-warning-bg-1);
 }
 #userReg input.error,
 #userReg input.danger{
-    background: rgb(255,0,0);
+    background: var(--message-error-bg-1);
 }
 
 #userReg input.success{
-    background: rgb(10,255,10);
+    background: var(--message-success-bg-1);
 }

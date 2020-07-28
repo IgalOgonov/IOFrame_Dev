@@ -7,7 +7,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_sta
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-array_push($JS,'ezPopup.js','modules/CPMenu.js','modules/plugins.js','modules/pluginList.js');
+array_push($JS,'ezPopup.js','mixins/sourceURL.js','modules/CPMenu.js','modules/plugins.js','modules/pluginList.js');
 
 array_push($CSS,'cp.css','popUpTooltip.css','modules/CPMenu.css','modules/plugins.css');
 
@@ -15,10 +15,7 @@ require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'headers_g
 
 echo '<title>Plugins</title>';
 
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['popUpTooltip.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/plugins.css']['relativeAddress'] . '"">';
+$frontEndResourceTemplateManager->printResources('CSS');
 
 echo '<title>Plugins</title>';
 ?>
@@ -53,14 +50,12 @@ $siteConfig = array_merge($siteConfig,
 
 </body>
 
-<?php require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'footers_start.php'; ?>
-
-
 <?php
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['ezPopup.js']['relativeAddress'].'\'></script>';
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/CPMenu.js']['relativeAddress'].'\'></script>';
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/plugins.js']['relativeAddress'].'\'></script>';
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/pluginList.js']['relativeAddress'].'\'></script>';
-?>
 
-<?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'footers_end.php';?>
+require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'footers_start.php';
+
+$frontEndResourceTemplateManager->printResources('JS');
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'footers_end.php';
+
+?>

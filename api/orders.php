@@ -273,7 +273,7 @@ switch($action){
         require 'ordersAPI_fragments/getOrder_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -288,7 +288,7 @@ switch($action){
         require 'ordersAPI_fragments/getOrders_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -323,7 +323,7 @@ switch($action){
         require 'ordersAPI_fragments/getOrders_validation_checks.php';
         require 'ordersAPI_fragments/archiveOrders_execution.php';
 
-        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
 
     case 'getUserOrders':

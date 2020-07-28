@@ -391,7 +391,7 @@ switch($action){
         require 'securityAPI_fragments/getRulebookRules_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;
@@ -408,7 +408,7 @@ switch($action){
         require 'securityAPI_fragments/setRulebookRules_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;
@@ -424,10 +424,7 @@ switch($action){
         require 'securityAPI_fragments/deleteRulebookRules_checks.php';
         require 'securityAPI_fragments/deleteRulebookRules_execution.php';
 
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo !$result? '0' : $result;
+        echo !$result? '0' : $result;
         break;
 
     case 'getEventsMeta':
@@ -442,7 +439,7 @@ switch($action){
         require 'securityAPI_fragments/getEventsMeta_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;
@@ -459,7 +456,7 @@ switch($action){
         require 'securityAPI_fragments/setEventsMeta_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;
@@ -475,10 +472,7 @@ switch($action){
         require 'securityAPI_fragments/deleteEventsMeta_checks.php';
         require 'securityAPI_fragments/deleteEventsMeta_execution.php';
 
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo !$result? '0' : $result;
+        echo !$result? '0' : $result;
         break;
 
     /*** IP Related ***/
@@ -495,7 +489,7 @@ switch($action){
         require 'securityAPI_fragments/getIPs_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;
@@ -512,7 +506,7 @@ switch($action){
         require 'securityAPI_fragments/getIPRanges_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo !$result? '0' : $result;
         break;

@@ -57,12 +57,14 @@ Vue.component('%%COMPONENT_NAME%%', {
                  title: 'paramName',
                  //bool, whether it can be edited, default true
                  edit: true,
-                 //string, type (if editable). Valid types are "text"(default), "textArea", "boolean", "date", "number" and "email"
+                 //string, type (if editable). Valid types are "text"(default), "boolean", "date", "number", "email", "textArea", "select"
                  type: "text",
                  //bool, whether the item should be displayed (if it's not editable), default true
                  display: true,
                  //bool, whether to consider the item changed even if it wasn't
                  considerChanged: false,
+                 //bool, will attempt to send the item even if it's not changed
+                 required: false,
                  //What to do on item update
                  onUpdate: {
                      //bool, default false - do no send this key on update
@@ -75,7 +77,23 @@ Vue.component('%%COMPONENT_NAME%%', {
                      validate: function(value){
                          return true;
                      }
+                     //Encodes the value to send in encodeURIComponent
+                     encodeURI: false
                  },
+                 //List, required in case of a "select" type
+                 list: [
+                    {
+                        <string, title> => <any, value>
+                    }
+                 ],
+                 //In case of numbers, min
+                 min: '',
+                 //In case of numbers, max
+                 max: '',
+                 //In case of text, pattern
+                 pattern: '',
+                 //placeholder
+                 placeholder: '',
                  //The name to send. Defaults to <paramName>
                  setName: 'paramName'
                  //Custom message on validation failure (if null, default message is "<paramName> failed validation")
@@ -150,44 +168,12 @@ Vue.component('%%COMPONENT_NAME%%', {
     methods:{
         //Sets main item
         setMainItem(item){
+
             for(let i in item){
-                if(!this.paramMap[i])
-                    this.paramMap[i] ={};
-                this.paramMap[i].ignore = this.paramMap[i].ignore !== undefined ? this.paramMap[i].ignore : false;
-                this.paramMap[i].title = this.paramMap[i].title !== undefined ? this.paramMap[i].title : i;
-                this.paramMap[i].edit = this.paramMap[i].edit !== undefined ? this.paramMap[i].edit: true;
-                this.paramMap[i].type = this.paramMap[i].type !== undefined ? this.paramMap[i].type : "text";
-                this.paramMap[i].display = this.paramMap[i].display !== undefined ?  this.paramMap[i].display: true;
-                this.paramMap[i].considerChanged = this.paramMap[i].considerChanged !== undefined ?  this.paramMap[i].considerChanged: false;
+                if(typeof item[i] === 'object')
+                    continue;
 
-                if(!this.paramMap[i].onUpdate)
-                    this.paramMap[i].onUpdate = {};
-                this.paramMap[i].onUpdate.ignore = this.paramMap[i].onUpdate.ignore !== undefined ? this.paramMap[i].onUpdate.ignore : false;
-                this.paramMap[i].onUpdate.parse = this.paramMap[i].onUpdate.parse !== undefined ? this.paramMap[i].onUpdate.parse : function(value){
-                    return value;
-                };
-                this.paramMap[i].onUpdate.validate = this.paramMap[i].onUpdate.validate !== undefined ? this.paramMap[i].onUpdate.validate : function(value){
-                    return true;
-                };
-                this.paramMap[i].onUpdate.validateFailureMessage = this.paramMap[i].onUpdate.validateFailureMessage !== undefined ? this.paramMap[i].onUpdate.validateFailureMessage : 'Parameter '+i+' failed validation!';
-                this.paramMap[i].onUpdate.setName = this.paramMap[i].onUpdate.setName !== undefined ? this.paramMap[i].onUpdate.setName : i;
-
-                this.paramMap[i].parseOnGet = this.paramMap[i].parseOnGet !== undefined ? this.paramMap[i].parseOnGet : function(value){
-                    return value;
-                };
-                this.paramMap[i].parseOnDisplay = this.paramMap[i].parseOnDisplay !== undefined ? this.paramMap[i].parseOnDisplay : function(value){
-                    return value;
-                };
-                this.paramMap[i].parseOnChange = this.paramMap[i].parseOnChange !== undefined ? this.paramMap[i].parseOnChange : function(value){
-                    return value;
-                };
-                this.paramMap[i].displayHTML = this.paramMap[i].displayHTML !== undefined ? this.paramMap[i].displayHTML : false;
-
-                if(!this.paramMap[i].button)
-                    this.paramMap[i].button = {};
-                this.paramMap[i].button.positive = this.paramMap[i].button.positive !== undefined ? this.paramMap[i].button.positive : 'Yes';
-                this.paramMap[i].button.negative = this.paramMap[i].button.negative !== undefined ? this.paramMap[i].button.negative : 'No';
-
+                this.setSingleParam(i);
 
                 if(!this.paramMap[i].ignore)
                     this.mainItem[i] =
@@ -199,6 +185,72 @@ Vue.component('%%COMPONENT_NAME%%', {
                             :
                             this.paramMap[i].parseOnGet(item[i]);
             }
+
+            for(let i in this.paramMap){
+                if((item[i] === undefined || typeof item[i] === 'object') && !this.paramMap[i].ignore){
+                    this.setSingleParam(i);
+                    let prefixes = i.split('.');
+                    let target = JSON.parse(JSON.stringify(item));
+                    let j = 0;
+                    while(target !== undefined && typeof target === 'object' && prefixes[j] && target[prefixes[j]]!== undefined){
+                        target = target[prefixes[j++]];
+                    }
+                    let newItem = (target !== undefined && typeof target !== 'object')? target : null;
+                    this.setSingleMainItem(i,newItem);
+                }
+            }
+        },
+        //Helper function for setMainItem
+        setSingleParam: function(i){
+            if(!this.paramMap[i])
+                this.paramMap[i] ={};
+            this.paramMap[i].ignore = this.paramMap[i].ignore !== undefined ? this.paramMap[i].ignore : false;
+            this.paramMap[i].title = this.paramMap[i].title !== undefined ? this.paramMap[i].title : i;
+            this.paramMap[i].edit = this.paramMap[i].edit !== undefined ? this.paramMap[i].edit: true;
+            this.paramMap[i].type = this.paramMap[i].type !== undefined ? this.paramMap[i].type : "text";
+            this.paramMap[i].display = this.paramMap[i].display !== undefined ?  this.paramMap[i].display: true;
+            this.paramMap[i].considerChanged = this.paramMap[i].considerChanged !== undefined ?  this.paramMap[i].considerChanged: false;
+            this.paramMap[i].required = this.paramMap[i].required !== undefined ?  this.paramMap[i].required: false;
+
+            if(!this.paramMap[i].onUpdate)
+                this.paramMap[i].onUpdate = {};
+            this.paramMap[i].onUpdate.ignore = this.paramMap[i].onUpdate.ignore !== undefined ? this.paramMap[i].onUpdate.ignore : false;
+            this.paramMap[i].onUpdate.encodeURI = this.paramMap[i].onUpdate.encodeURI !== undefined ? this.paramMap[i].onUpdate.encodeURI : false;
+            this.paramMap[i].onUpdate.parse = this.paramMap[i].onUpdate.parse !== undefined ? this.paramMap[i].onUpdate.parse : function(value){
+                return value;
+            };
+            this.paramMap[i].onUpdate.validate = this.paramMap[i].onUpdate.validate !== undefined ? this.paramMap[i].onUpdate.validate : function(value){
+                return true;
+            };
+            this.paramMap[i].onUpdate.validateFailureMessage = this.paramMap[i].onUpdate.validateFailureMessage !== undefined ? this.paramMap[i].onUpdate.validateFailureMessage : 'Parameter '+i+' failed validation!';
+            this.paramMap[i].onUpdate.setName = this.paramMap[i].onUpdate.setName !== undefined ? this.paramMap[i].onUpdate.setName : i;
+
+            this.paramMap[i].parseOnGet = this.paramMap[i].parseOnGet !== undefined ? this.paramMap[i].parseOnGet : function(value){
+                return value;
+            };
+            this.paramMap[i].parseOnDisplay = this.paramMap[i].parseOnDisplay !== undefined ? this.paramMap[i].parseOnDisplay : function(value){
+                return value;
+            };
+            this.paramMap[i].parseOnChange = this.paramMap[i].parseOnChange !== undefined ? this.paramMap[i].parseOnChange : function(value){
+                return value;
+            };
+            this.paramMap[i].displayHTML = this.paramMap[i].displayHTML !== undefined ? this.paramMap[i].displayHTML : false;
+
+            if(!this.paramMap[i].button)
+                this.paramMap[i].button = {};
+            this.paramMap[i].button.positive = this.paramMap[i].button.positive !== undefined ? this.paramMap[i].button.positive : 'Yes';
+            this.paramMap[i].button.negative = this.paramMap[i].button.negative !== undefined ? this.paramMap[i].button.negative : 'No';
+        },
+        //Helper functin for setMainItem
+        setSingleMainItem: function(i, item){
+            this.mainItem[i] =
+                this.paramMap[i].edit ?
+                {
+                    original:this.paramMap[i].parseOnGet(item),
+                    current:this.paramMap[i].parseOnGet(item)
+                }
+                    :
+                    this.paramMap[i].parseOnGet(item);
         },
         %%IF(PASS_ID)//Gets the info of the main item
         getItemInfo: function(){
@@ -257,12 +309,22 @@ Vue.component('%%COMPONENT_NAME%%', {
                 let param = this.paramMap[paramName];
                 let item = this.mainItem[paramName];
 
-                if(param.ignore || param.onUpdate.ignore || (item.current !== undefined && item.current === item.original && !param.considerChanged))
+                if(
+                    param.ignore ||
+                    param.onUpdate.ignore ||
+                    (item.current !== undefined && item.current === item.original && !param.considerChanged && !param.required)
+                  )
                     continue;
                 else if(item.current === undefined){
                     data.append(param.onUpdate.setName, item);
                     sendParams[param.onUpdate.setName] = item;
                     continue;
+                }
+
+                if(param.required && item.current === null){
+                    let title = param.title? param.title : paramName;
+                    alertLog(title+' must be set!','warning',this.$el);
+                    return;
                 }
 
                 let paramValue = param.onUpdate.parse(item.current);
@@ -271,6 +333,9 @@ Vue.component('%%COMPONENT_NAME%%', {
                     alertLog(param.onUpdate.validateFailureMessage,'warning',this.$el);
                     return;
                 }
+
+                if(param.onUpdate.encodeURI)
+                    paramValue = encodeURIComponent(paramValue);
 
                 data.append(param.onUpdate.setName, paramValue);
                 sendParams[param.onUpdate.setName] = paramValue;
@@ -367,13 +432,14 @@ Vue.component('%%COMPONENT_NAME%%', {
 
             if(typeof response === 'object'){
                 this.setMainItem(response);
+                this.initiating = false;
                 this.upToDate = true;
             }
         },%%
         //Resets inputs
         resetInputs: function(){
             for(let key in this.mainItem){
-                if(this.mainItem[key]['original'] !== undefined){
+                if(this.mainItem[key] && this.mainItem[key]['original'] !== undefined){
                     this.mainItem[key]['current'] = this.mainItem[key]['original'];
                 }
             }
@@ -383,7 +449,7 @@ Vue.component('%%COMPONENT_NAME%%', {
         //Saves inputs as the actual data (in case of a successful update or whatnot)
         setInputsAsCurrent: function(){
             for(let key in this.mainItem){
-                if(this.mainItem[key]['original'] !== undefined){
+                if(this.mainItem[key] && this.mainItem[key]['original'] !== undefined){
                     this.mainItem[key]['original'] = this.mainItem[key]['current'];
                 }
             }
@@ -410,39 +476,54 @@ Vue.component('%%COMPONENT_NAME%%', {
                 </div>
             </div>
 
-            <form>
-                <div
-                v-for="(item, key) in mainItem"
-                v-if="paramMap[key].edit"
-                :class="{changed:(item.current !== item.original || paramMap[key].considerChanged)}"
-                >
+           <form class="article-info-editor" v-if="currentMode !== 'view' && (currentMode === 'create' || initiated)">
+               <div
+               v-for="(item, key) in mainItem"
+               v-if="paramMap[key].edit"
+               :class="[{changed:(item.current !== item.original || paramMap[key].considerChanged)},key.replace('.','-'),paramMap[key].type]"
+               >
 
-                    <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
+                   <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
 
-                    <input
-                     v-if="!paramMap[key].type || ['text','date','number','email'].indexOf(paramMap[key].type) !== -1"
-                     class="item-param"
-                     :type="paramMap[key].type"
-                     v-model:value="item.current"
-                     @change="item.current = paramMap[key].parseOnChange($event.target.value);recompute.changed = ! recompute.changed"
+                   <input
+                    v-if="!paramMap[key].type || ['text','date','number','email'].indexOf(paramMap[key].type) !== -1"
+                    class="item-param"
+                    :class="item-param"
+                    :type="paramMap[key].type"
+                    :min="(['date','number'].indexOf(paramMap[key].type) !== -1) && (paramMap[key].min !== undefined) ? paramMap[key].min : false"
+                    :max="(['date','number'].indexOf(paramMap[key].type) !== -1) && (paramMap[key].max !== undefined)  ? paramMap[key].max : false"
+                    :pattern="(['text'].indexOf(paramMap[key].type) !== -1) && (paramMap[key].pattern !== undefined)  ? paramMap[key].pattern : false"
+                    :placeholder="paramMap[key].placeholder !== undefined  ? paramMap[key].placeholder : false"
+                    v-model:value="item.current"
+                    @change="item.current = paramMap[key].parseOnChange($event.target.value);recompute.changed = ! recompute.changed"
+                   >
+                   <button
+                   v-else-if="paramMap[key].type === 'boolean'"
+                   class="item-param"
+                   v-text="item.current?(paramMap[key].button.positive? paramMap[key].button.positive : 'Yes'):(paramMap[key].button.negative? paramMap[key].button.negative : 'No')"
+                    @click.prevent="item.current = paramMap[key].parseOnChange(!item.current);recompute.changed = ! recompute.changed"
+                    ></button>
+
+                   <textarea
+                   v-else-if="paramMap[key].type === 'textArea'"
+                   class="item-param"
+                    :placeholder="paramMap[key].placeholder !== undefined  ? paramMap[key].placeholder : false"
+                    v-model:value="item.current"
+                    @change="item.current = paramMap[key].parseOnChange($event.target.value);recompute.changed = ! recompute.changed"
+                    ></textarea>
+
+                   <select
+                   v-else-if="paramMap[key].type === 'select'"
+                   class="item-param"
+                    v-model:value="item.current"
+                    @change="item.current = paramMap[key].parseOnChange($event.target.value);recompute.changed = ! recompute.changed"
                     >
-                    <button
-                    v-else-if="paramMap[key].type === 'boolean'"
-                    class="item-param"
-                    :class="{'positive-1':item.current,'cancel-1':!item.current}"
-                    v-text="item.current?(paramMap[key].button.positive? paramMap[key].button.positive : 'Yes'):(paramMap[key].button.negative? paramMap[key].button.negative : 'No')"
-                     @click.prevent="item.current = paramMap[key].parseOnChange(!item.current);recompute.changed = ! recompute.changed"
-                     ></button>
+                       <option v-for="item in paramMap[key].list" :value="item.value" v-text="item.title? item.title: item.value"></option>
+                    </select>
 
-                    <textarea
-                    v-else-if="paramMap[key].type === 'textArea'"
-                    class="item-param"
-                     v-model:value="item.current"
-                     @change="itemChanged(key)"
-                     ></textarea>
+               </div>
 
-                </div>
-            </form>
+           </form>
 
             <div class="control-buttons" v-if="changed">
                 <button  v-text="this.mode === 'create' ? 'Create' :'Update'" @click.prevent="setItem()" class="positive-1"></button>

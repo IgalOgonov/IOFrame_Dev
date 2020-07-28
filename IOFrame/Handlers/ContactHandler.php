@@ -1,6 +1,8 @@
 <?php
 namespace IOFrame\Handlers{
     use IOFrame;
+    use PHPMailer\PHPMailer\Exception;
+
     define('ContactHandler',true);
     if(!defined('abstractDBWithCache'))
         require 'abstractDBWithCache.php';
@@ -16,7 +18,7 @@ namespace IOFrame\Handlers{
 
         /** @var string Contact type
          * */
-        protected $contactType;
+        protected $contactType = null;
 
         /** @var string Table name - defaults to 'CONTACTS'
          * */
@@ -30,12 +32,49 @@ namespace IOFrame\Handlers{
          * */
         protected $cacheName;
 
-        function __construct(IOFrame\Handlers\SettingsHandler $localSettings, string $type, $params = []){
+        function __construct(IOFrame\Handlers\SettingsHandler $localSettings, string $type = null, $params = []){
             parent::__construct($localSettings,$params);
             $this->contactType = $type;
             $this->tableName = isset($params['tableName'])? $params['tableName'] : 'CONTACTS';
             $this->cachePrefix = isset($params['cachePrefix'])? $params['cachePrefix'] : '';
             $this->cacheName = isset($params['cacheName'])? $params['cacheName'] : strtolower($this->tableName).'_'.$this->cachePrefix;
+        }
+
+        /** Changes current contact type
+         * @param string $newType New contact type
+         */
+        function setContactType(string $newType = null){
+            $this->contactType = $newType;
+        }
+
+        /** Gets all contact types
+         *
+         * @param string $identifier Identifier
+         * @param array $params
+         *
+         * @returns int code:
+         *             -1 - DB connection failed
+         *          OR
+         *              Array of all available types
+         *
+         */
+        function getContactTypes(array $params = []){
+            $prefix = $this->SQLHandler->getSQLPrefix();
+            $tableQuery = $prefix.$this->tableName;
+            $res = $this->SQLHandler->selectFromTable(
+                $tableQuery,
+                [],
+                ['DISTINCT Contact_Type'],
+                $params
+            );
+            $tempRes = [];
+            if(is_array($res) && count($res) > 0){
+                foreach($res as $resultArray){
+                    array_push($tempRes,$resultArray['Contact_Type']);
+                }
+            }
+
+            return $tempRes;
         }
 
         /** Gets one contact.
@@ -48,7 +87,11 @@ namespace IOFrame\Handlers{
          *              1 - Contact does not exist
          */
         function getContact(string $identifier,  array $params = []){
-            return $this->getContacts([$identifier], $params)[$this->contactType.'/'.$identifier];
+            $contactType = isset($params['contactType'])? $params['contactType'] : $this->contactType;
+            return $contactType ?
+                $this->getContacts([$identifier], $params)[$contactType.'/'.$identifier] :
+                $this->getContacts([$identifier], $params)[$identifier]
+                ;
         }
 
         /** Gets either multiple contacts, or all existing contacts.
@@ -56,17 +99,18 @@ namespace IOFrame\Handlers{
          * @param array $identifiers Array of contact names. If it is [], will return all contacts up to the max query limit.
          *
          * @param array $params getFromCacheOrDB() params, as well as:
+         *          'contactType' => String, defaults to current contact type - overrides current contact type if provided
          *          'firstNameLike' => String, default null - returns results where first name  matches a regex.
          *          'emailLike' => String, email, default null - returns results where email matches a regex.
-         *          'countryLike' => String, Unix timestamp, default null - returns results where country matches a regex.
-         *          'cityLike' => String, Unix timestamp, default null - returns results where city matches a regex.
+         *          'countryLike' => String, default null - returns results where country matches a regex.
+         *          'cityLike' => String, default null - returns results where city matches a regex.
          *          'companyNameLike' => String, Unix timestamp, default null - returns results where company name matches a regex.
          *          'createdBefore' => String, Unix timestamp, default null - only returns results created before this date.
          *          'createdAfter' => String, Unix timestamp, default null - only returns results created after this date.
          *          'changedBefore' => String, Unix timestamp, default null - only returns results changed before this date.
          *          'changedAfter' => String, Unix timestamp, default null - only returns results changed after this date.
-         *          'includeRegex' => String, default null - only includes results containing this regex.
-         *          'excludeRegex' => String, default null - only includes results excluding this regex.
+         *          'includeRegex' => String, default null - only includes identifiers containing this regex.
+         *          'excludeRegex' => String, default null - only includes identifiers excluding this regex.
          *          'extraDBFilters'    - array, default [] - Do you want even more complex filters than the ones provided?
          *                                This array will be merged with $extraDBConditions before the query, and passed
          *                                to getFromCacheOrDB() as the 'extraConditions' param.
@@ -116,6 +160,7 @@ namespace IOFrame\Handlers{
             $orderType = isset($params['orderType'])? $params['orderType'] : null;
             $limit = isset($params['limit'])? $params['limit'] : null;
             $offset = isset($params['offset'])? $params['offset'] : null;
+            $contactType = isset($params['contactType'])? $params['contactType'] : $this->contactType;
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $retrieveParams = $params;
@@ -123,7 +168,7 @@ namespace IOFrame\Handlers{
             $extraCacheConditions = [];
             $keyDelimiter = '/';
             $colPrefix = $this->SQLHandler->getSQLPrefix().$this->tableName.'.';
-            $columns = ['Contact_Type','Identifier'];
+            $columns = ($contactType) ? ['Contact_Type','Identifier'] : ['Identifier'];
 
             //If we are using any of this functionality, we cannot use the cache
             if($offset || $limit ||  $orderBy || $orderType || $fullNameLike || $companyNameIDLike){
@@ -135,6 +180,9 @@ namespace IOFrame\Handlers{
             }
 
             //Create all the conditions for the db/cache
+            if($contactType){
+                array_push($extraDBConditions,[$colPrefix.'Contact_Type',[$contactType,'STRING'],'=']);
+            }
 
             if($firstNameLike!== null){
                 array_push($extraCacheConditions,['First_Name',$firstNameLike,'RLIKE']);
@@ -239,11 +287,14 @@ namespace IOFrame\Handlers{
                     array_merge($retrieveParams,['limit'=>0])
                 );
                 if(is_array($res)){
-                    $resCount = count($res[0]);
+                    $resCount = $res ? count($res[0]) : 0;
                     foreach($res as $resultArray){
                         for($i = 0; $i<$resCount/2; $i++)
                             unset($resultArray[$i]);
-                        $results[$resultArray['Contact_Type'].$keyDelimiter.$resultArray['Identifier']] = $resultArray;
+                        if($contactType)
+                            $results[$resultArray['Contact_Type'].$keyDelimiter.$resultArray['Identifier']] = $resultArray;
+                        else
+                            $results[$resultArray['Identifier']] = $resultArray;
                     }
                     $results['@'] = array('#' => $count[0][0]);
                 }
@@ -251,8 +302,10 @@ namespace IOFrame\Handlers{
             }
             else{
                 $retrieveParams['keyDelimiter'] = $keyDelimiter;
+                if(!$contactType)
+                    $retrieveParams['useCache'] = false;
                 foreach($identifiers as $index => $identifier){
-                    $identifiers[$index] = [$this->contactType,$identifier];
+                    $identifiers[$index] = $contactType ? [$contactType,$identifier] : [$identifier] ;
                 }
                 $results = $this->getFromCacheOrDB(
                     $identifiers,
@@ -312,6 +365,7 @@ namespace IOFrame\Handlers{
          *          3 - trying to update the contact with no new info.
          *          4 - trying to create a new contact with missing inputs
          *
+         * @throws \Exception If you try to set contacts without having a type.
          */
         function setContacts(array $inputs, array $params = []){
 
@@ -319,6 +373,9 @@ namespace IOFrame\Handlers{
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
             $update = isset($params['update'])? $params['update'] : false;
+            $contactType = isset($params['contactType'])? $params['contactType'] : $this->contactType;
+            if(!$contactType)
+                throw new \Exception('Cannot set contacts without a specific type!');
             //If we are updating, then by default we allow overwriting
             if(!$update)
                 $override = isset($params['override'])? $params['override'] : false;
@@ -351,7 +408,7 @@ namespace IOFrame\Handlers{
             //Parse all existing contacts.
             foreach($inputs as $index => $inputArray){
                 $identifier = $inputArray[0];
-                $dbIdentifier = implode($keyDelimiter,[$this->contactType,$inputArray[0]]);
+                $dbIdentifier = implode($keyDelimiter,[$contactType,$inputArray[0]]);
                 $contactInputs = isset($inputArray[1])? $inputArray[1] : [];
                 //Initiate each input
                 $contactInputs['firstName'] = isset($contactInputs['firstName'])? $contactInputs['firstName'] : null;
@@ -398,7 +455,9 @@ namespace IOFrame\Handlers{
                         foreach($arr as $attrPair){
                             $inputName = $attrPair[0];
                             $dbName = $attrPair[1];
-                            if($contactInputs[$inputName]!==null)
+                            if($contactInputs[$inputName] === '@')
+                                $contactToSet[$inputName] = null;
+                            elseif($contactInputs[$inputName]!==null)
                                 $contactToSet[$inputName] = $contactInputs[$inputName];
                             else
                                 $contactToSet[$inputName] = $existing[$dbIdentifier][$dbName];
@@ -409,7 +468,7 @@ namespace IOFrame\Handlers{
                             $inputName = $attrPair[0];
                             $dbName = $attrPair[1];
                             if($contactInputs[$attrPair[0]]!==null){
-                                if($contactInputs[$inputName] === '')
+                                if($contactInputs[$inputName] === '@')
                                     $contactToSet[$inputName] = null;
                                 else{
                                     $inputJSON = json_decode($inputs[$index][1][$inputName],true);
@@ -470,7 +529,7 @@ namespace IOFrame\Handlers{
             $insertArray = [];
             foreach($contactsToSet as $contactToSet){
                 array_push($insertArray,[
-                    [$this->contactType,'STRING'],
+                    [$contactType,'STRING'],
                     [$contactToSet['identifier'],'STRING'],
                     [$contactToSet['firstName'],'STRING'],
                     [$contactToSet['lastName'],'STRING'],
@@ -509,7 +568,7 @@ namespace IOFrame\Handlers{
                 foreach($identifiers as $index => $identifier){
                     if($results[$identifiers[$index]] === -1)
                         $results[$identifiers[$index]] = 0;
-                    $identifiers[$index] = $this->cacheName.$this->contactType.'/'.$identifiers[$index];
+                    $identifiers[$index] = $this->cacheName.$contactType.'/'.$identifiers[$index];
                 }
                 if(count($identifiers)>0){
                     if($verbose)
@@ -524,7 +583,7 @@ namespace IOFrame\Handlers{
 
         /** Deletes a single contact
          *
-         * @param mixed $identifier Name of the contact, or in case of 'styles' - array of the form [<system name>, <style name>]
+         * @param mixed $identifier Name of the contact
          * @param array $params same as deleteContacts
          *
          * @returns  Array of the form:
@@ -538,19 +597,25 @@ namespace IOFrame\Handlers{
          * @param array $identifiers
          * @param array $params
          *
-         * @returns Array of the form:
+         * @returns Int
+         *         -1 - failed to connect to server
+         *          0 - success
          *
+         * @throws \Exception If you try to delete contacts without having a type.
          */
         function deleteContacts(array $identifiers, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $contactType = isset($params['contactType'])? $params['contactType'] : $this->contactType;
+            if(!$contactType)
+                throw new \Exception('Cannot set contacts without a specific type!');
 
             $dbNames = [];
 
             foreach($identifiers as $identifier){
-                array_push($dbNames,[ [$this->contactType,'STRING'],[$identifier,'STRING'], 'CSV']);
+                array_push($dbNames,[[$contactType,'STRING'],[$identifier,'STRING'], 'CSV']);
             }
 
             $columns = ['Contact_Type','Identifier','CSV'];
@@ -569,13 +634,13 @@ namespace IOFrame\Handlers{
                 //delete the collection cache
                 foreach($identifiers as $identifier){
 
-                    $identifier = implode('/',[$this->contactType,$identifier]);
+                    $identifier = implode('/',[$contactType,$identifier]);
 
                     if($verbose)
-                        echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
+                        echo 'Deleting '.$contactType.' cache of '.$identifier.EOL;
 
                     if(!$test)
-                        $this->RedisHandler->call( 'del', [ $this->cacheName.$this->contactType.'/'.$identifier ] );
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$contactType.'/'.$identifier ] );
                 }
 
                 //Ok we're done
@@ -591,17 +656,22 @@ namespace IOFrame\Handlers{
          * @param mixed $newIdentifier Name of the contact, or in case of 'styles' - array of the form [<system name>, <style name>]
          * @param array $params
          *
-         * @returns  Array of the form:
+         * @returns  Int of the form:
          *          -1 - db connection failure
          *           0 - success
          *           1 - new identifier already exists
-         *           2 - tried to rename a colour
+         *
+         * @throws \Exception If you try to rename a contact without having a type.
          */
         function renameContact(string $identifier, string $newIdentifier , array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $contactType = isset($params['contactType'])? $params['contactType'] : $this->contactType;
+            if(!$contactType)
+                throw new \Exception('Cannot set contacts without a specific type!');
+
             $existing = $this->getContact($newIdentifier, $params);
             if($existing === -1)
                 return -1;
@@ -613,7 +683,7 @@ namespace IOFrame\Handlers{
                 $conditions = [
                     [
                         'Contact_Type',
-                        [$this->contactType,'STRING'],
+                        [$contactType,'STRING'],
                         '='
                     ],
                     [
@@ -632,13 +702,13 @@ namespace IOFrame\Handlers{
                 );
 
                 if($res){
-                    $identifier = implode('/',[$this->contactType,$identifier]);
+                    $identifier = implode('/',[$contactType,$identifier]);
 
                     if($verbose)
-                        echo 'Deleting '.$this->contactType.' cache of '.$identifier.EOL;
+                        echo 'Deleting '.$contactType.' cache of '.$identifier.EOL;
 
                     if(!$test)
-                        $this->RedisHandler->call( 'del', [ $this->cacheName.$this->contactType.'/'.$identifier ] );
+                        $this->RedisHandler->call( 'del', [ $this->cacheName.$contactType.'/'.$identifier ] );
                 }
 
                 return ($res)? 0 : -1;

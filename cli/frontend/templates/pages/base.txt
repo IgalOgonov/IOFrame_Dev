@@ -13,7 +13,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redire
 
 echo '<title>%%TEMPLATE_TITLE%%</title>';
 
-%%TEMPLATE_HEADER_RESOURCES%%
+$frontEndResourceTemplateManager->printResources('CSS');
 ?>
 
 
@@ -48,7 +48,7 @@ $siteConfig = array_merge($siteConfig,
 
 %%TEMPLATE_FOOTERS_START%%
 
-%%TEMPLATE_FOOTER_RESOURCES%%
+$frontEndResourceTemplateManager->printResources('JS');
 
 %%TEMPLATE_FOOTERS_END%%
 

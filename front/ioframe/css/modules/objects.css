@@ -23,7 +23,7 @@
 }
 
 #object-manager .types > button.selected  {
-    border-bottom: 3px black solid;
+    border-bottom: 3px  var(--dark-1) solid;
 }
 
 #object-manager .types > button:first-child {
@@ -50,7 +50,7 @@
     }
 
     #object-manager .types > button.selected  {
-        border-bottom: 1px rgb(161,233,246) solid;
+        border-bottom: 1px  var(--main-color-5) solid;
         box-shadow: 1px 1px 1px 1px black;
     }
 
@@ -60,9 +60,9 @@
         border-radius: 5px;
     }
     #object-manager .types > button:not(:first-child){
-        border-left: 1px rgb(161,233,246) solid;
+        border-left: 1px  var(--main-color-5) solid;
     }
     #object-manager .types > button:not(:last-child){
-        border-right: 1px rgb(161,233,246) solid;
+        border-right: 1px  var(--main-color-5) solid;
     }
 }

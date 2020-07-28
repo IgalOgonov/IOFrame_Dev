@@ -40,7 +40,7 @@ var loginRegister = new Vue({
         if(this.configObject.login.hasRememberMe !== undefined)
             this.modes.login.hasRememberMe = this.configObject.login.hasRememberMe;
         if(this.configObject.login.switchToRegistration !== undefined)
-            this.modes.login.switchToRegistration = this.configObject.login.switchToRegistration;
+            this.modes.login.switchToRegzistration = this.configObject.login.switchToRegistration;
 
 
         if(!this.configObject.register)

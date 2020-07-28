@@ -3,7 +3,7 @@
 
 //Include mail
 require_once __DIR__.'/../../IOFrame/Handlers/MailHandler.php';
-$mail = new IOFrame\Handlers\MailHandler($settings,array_merge($defaultSettingsParams,['debug'=>true]));
+$mail = new IOFrame\Handlers\MailHandler($settings,array_merge($defaultSettingsParams,['verbose'=>true]));
 if($mail->removeSecToken('igal1333@hotmail.com',true)) echo 'Removed token for 1@1'.EOL;
 $secToken = $mail->createSecToken('igal1333@hotmail.com');
 echo 'Mail sec token for 1@1 is '.$secToken.EOL;
@@ -32,13 +32,13 @@ var_dump(
 );
 echo EOL;
 
-
 /*
-$mail ->  sendMailAsync( 'igal1333@hotmail.com', 'Test async Mail', $secToken, ['',$settings->getSetting('siteName').' automated mail'],
-    '', '1', '{"uId":"test1","Code":"test2"}',$type = 'template' );
 $mail->SMTPDebug = 3;                               // Enable verbose debug output
 if ($mail->sendMailTemplate([['aacount001@gmail.com','Joe User'],['igal1333@hotmail.com']], 'Here is the subject',
     'Test template! oh look a %%var%%','{"var":"variable"}', ['from@example.com','Test'],'',
     [[]], [['igal1333@hotmail.com']])
 )
-    echo 'Message sent!<br>';*/
+    echo 'Message sent!<br>';
+
+$mail ->  sendMailAsync( 'igal1333@hotmail.com', 'Test async Mail', $secToken, ['test@ioframe.io',$settings->getSetting('siteName').' automated mail'],
+    '', '1', '{"uId":"test1","Code":"test2"}',$type = 'template' );*/

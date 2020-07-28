@@ -3,7 +3,7 @@ if(eventHub === undefined)
 
 Vue.component('gallery-editor', {
     mixins:[
-        eventHubManager
+        eventHubManager,IOFrameCommons,sourceURL
     ],
     props: {
         //Gallery we are displaying. May be {} if nothing is selected. Remember, this is a Vue object, no clean prototype!
@@ -77,6 +77,10 @@ Vue.component('gallery-editor', {
         return {
             //Whether we are currently initiating
             initiating: false,
+            //Expected gallery name identifiers
+            expectedNames: ['name'],
+            //Expected gallery names
+            galleryNames: {},
             //Type of media viewer - 'local' or 'db'
             viewerType: 'local',
         };
@@ -84,6 +88,33 @@ Vue.component('gallery-editor', {
     template: `
          <div class="gallery-editor">
             <div>
+            <div class="info-container">
+                <div class="properties">
+                    <label v-for="(itemArr, item) in galleryNames"
+                    >
+                        <div v-text="itemArr.text"></div>
+                        <input
+                        :name="item"
+                        class="property"
+                        :class="{changed:itemArr.current !== itemArr.original}"
+                        type="text"
+                        v-model:value="itemArr.current"
+                        :placeholder="itemArr.placeholder">
+                    </label>
+                </div>
+                <div class="operations" v-if="edited">
+                    <button class="update positive-1" @click.prevent="updateGalleryNames"">
+                        <div v-text="'Confirm'"></div>
+                        <img :src="sourceURL()+'img/icons/confirm-icon.svg'">
+                    </button>
+                    <button class="reset cancel-1" @click.prevent="resetGalleryNames">
+                        <div v-text="'Reset'"></div>
+                        <img :src="sourceURL()+'img/icons/cancel-icon.svg'">
+                    </button>
+                </div>
+            </div>
+            `+`
+
                 <div v-if="galleryMembers.length === 0">
                 Nothing to display!
                 </div>
@@ -107,8 +138,8 @@ Vue.component('gallery-editor', {
                     <h1 >Select images from bellow:</h1>
 
                     <div class="types">
-                        <button class="positive-3" :class="{selected:viewerType === 'local'}" @click="viewerType = 'local'">Local</button>
-                        <button class="positive-3" :class="{selected:viewerType === 'db'}" @click="viewerType = 'db'">Remote</button>
+                        <button class="positive-3" :class="{selected:viewerType === 'local'}" @click.prevent="viewerType = 'local'">Local</button>
+                        <button class="positive-3" :class="{selected:viewerType === 'db'}" @click.prevent="viewerType = 'db'">Remote</button>
                     </div>
 
                     <div  v-if="viewerType === 'local'"
@@ -147,6 +178,61 @@ Vue.component('gallery-editor', {
          </div>
         `,
     methods: {
+        //Updates gallery name(s)
+        updateGalleryNames: function(){
+
+            if(!this.edited){
+                if(this.verbose)
+                    console.log('Gallery names have not changed, will not update!');
+                return;
+            }
+
+            //Data to be sent
+            var data = new FormData();
+            data.append('action', 'setGallery');
+            data.append('gallery', this.gallery.identifier);
+            data.append('update', true);
+            for(let i in this.galleryNames){
+                if(this.galleryNames[i]['original'] !== this.galleryNames[i]['current'])
+                    data.append(i, this.galleryNames[i]['current']);
+            }
+            if(this.test)
+                data.append('req', 'test');
+
+            this.apiRequest(
+                data,
+                "api/media",
+                'galleryUpdateResponse',
+                {
+                    'verbose': this.verbose,
+                    'identifier':this.identifier
+                }
+            );
+        },
+        //Responds to gallery names update
+        galleryUpdateResponse: function(request){
+            if(this.verbose)
+                console.log('galleryUpdateResponse got', request);
+
+            if(!request.from || request.from !== this.identifier)
+                return;
+
+            let response = request.content;
+
+            if(response == 0){
+                this.setGalleryNameToCurrents();
+                eventHub.$emit('searchAgain');
+            }
+            else if(response == -1){
+                alertLog('gallery names not updated, server error occurred.','error',this.$el);
+            }
+            else if(response == 1){
+                alertLog('gallery names not updated, gallery no longer exists.','error',this.$el);
+            }
+            else{
+                alertLog('gallery names not updated, unknown error: '+response,'error',this.$el);
+            }
+        },
         //Initiates the gallery info from the API
         initiateGallery: function(){
             //Make sure we're not initiating already
@@ -238,10 +324,18 @@ Vue.component('gallery-editor', {
         parseGalleryResponse: function(){
             this.initiating = false;
         },
-        //Returns absolute media URL
-        absoluteMediaURL:function(relativeURL){
-            return this.sourceURL() + 'img/'+relativeURL;
-        }
+        //Reset gallery names
+        resetGalleryNames: function(){
+            for(let i in this.galleryNames){
+                this.galleryNames[i]['current'] = this.galleryNames[i]['original'];
+            }
+        },
+        //Sets gallery names to current
+        setGalleryNameToCurrents: function(){
+            for(let i in this.galleryNames){
+                this.galleryNames[i]['original'] = this.galleryNames[i]['current'];
+            }
+        },
     },
     computed:{
         allowSelectMultiple: function(){
@@ -253,6 +347,14 @@ Vue.component('gallery-editor', {
         needViewer:function(){
             return this.currentOperation === 'add';
         },
+        //See if anything was edited
+        edited: function(){
+            for(let i in this.galleryNames){
+                if(this.galleryNames[i].original !== this.galleryNames[i].current)
+                    return true;
+            }
+            return false;
+        }
     },
     created:function(){
         if(this.verbose)
@@ -260,6 +362,22 @@ Vue.component('gallery-editor', {
         this.registerHub(eventHub);
         this.registerEvent('select', this.selectElement);
         this.registerEvent('parseGallery', this.parseGalleryResponse);
+        this.registerEvent('galleryUpdateResponse', this.galleryUpdateResponse);
+
+        //Get expected names
+        for(let i in document.languages){
+            this.expectedNames.push(document.languages[i]+'_name');
+        }
+        //See which names the gallery has, and which it needs to get
+        for(let i in this.expectedNames){
+            let name = this.expectedNames[i];
+            let existing = this.gallery[name] !== undefined? this.gallery[name] : '';
+            Vue.set(this.galleryNames,name,{
+                original:existing,
+                current:existing,
+                text:(!document.languages[i-1] ? 'Gallery Name' : 'Gallery Name ['+document.languages[i-1]+']')
+            });
+        }
     },
     beforeMount:function(){
         if(this.verbose)

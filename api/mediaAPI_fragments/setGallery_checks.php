@@ -1,10 +1,14 @@
 <?php
+require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+$config = HTMLPurifier_Config::createDefault();
+$config->set('HTML.AllowedElements', []);
+$purifier = new HTMLPurifier($config);
 
 //Gallery
 if($inputs['gallery'] !== null){
     if(!preg_match('/'.GALLERY_REGEX.'/',$inputs['gallery'])){
         if($test)
-            echo 'Invalid gallery name!'.EOL;
+            echo 'Invalid gallery identifier!'.EOL;
         exit(INPUT_VALIDATION_FAILURE);
     }
 }
@@ -14,20 +18,31 @@ else{
     exit(INPUT_VALIDATION_FAILURE);
 }
 
+$meta = [];
 //Meta information
-if($inputs['name']){
+$nameArr = ['name'];
+foreach($languages as $lang){
+    array_push($nameArr,$lang.'_name');
+}
+foreach($nameArr as $nameParam){
 
-    if(strlen($inputs['name'])>GALLERY_NAME_MAX_LENGTH){
-        if($test)
-            echo 'Invalid image name for '.$inputs['gallery'].EOL;
-        exit(INPUT_VALIDATION_FAILURE);
+    if($inputs[$nameParam] !== null)
+        $inputs[$nameParam] = $purifier->purify($inputs[$nameParam]);;
+
+    if($inputs[$nameParam] !== null){
+        if(strlen($inputs[$nameParam])>GALLERY_NAME_MAX_LENGTH){
+            if($test)
+                echo 'Invalid gallery name!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
     }
 
-    $meta = json_encode(['name'=>$inputs['name']]);
-
 }
-else
+
+if($meta == [])
     $meta = null;
+else
+    $meta = json_encode($meta);
 
 
 

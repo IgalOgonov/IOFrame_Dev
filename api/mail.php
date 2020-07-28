@@ -141,7 +141,7 @@ switch($action){
         require 'mailAPI_fragments/getTemplates_checks.php';
         require 'mailAPI_fragments/getTemplates_execution.php';
 
-        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
 
     case 'createTemplate':
@@ -157,11 +157,8 @@ switch($action){
         require 'mailAPI_fragments/setTemplate_checks.php';
         require 'mailAPI_fragments/setTemplate_execution.php';
 
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo ($result === 0)?
-                '0' : $result;
+        echo ($result === 0)?
+            '0' : $result;
         break;
 
     case 'deleteTemplates':

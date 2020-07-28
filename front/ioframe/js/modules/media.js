@@ -171,7 +171,10 @@ var media = new Vue({
                     custom:true,
                     title:'Name',
                     parser:function(item){
-                        return item.name? item.name : (item.dataType ? item.identifier : 'Unnamed link');
+                        if(document.selectedLanguage && (item[document.selectedLanguage+'_name'] !== undefined) )
+                                return item[document.selectedLanguage+'_name'];
+                        else
+                            return item.name? item.name : (item.dataType ? item.identifier : 'Unnamed link');
                     }
                 },
                 {
@@ -341,7 +344,7 @@ var media = new Vue({
     },
     methods:{
         //Switches to requested mode
-        updateView: function(newMode){
+        updateView: function(){
             this.view1.upToDate = false;
         },
         //Switches to requested mode
@@ -369,7 +372,7 @@ var media = new Vue({
         },
         //Initiates an operation
         operation: function(operation){
-            if(this.test)
+            if(this.verbose)
                 console.log('Operation',operation);
             switch (operation){
                 case 'copy':
@@ -404,7 +407,7 @@ var media = new Vue({
         },
         //Executes the operation
         confirmOperation: function(){
-            if(this.test)
+            if(this.verbose)
                 console.log('Current Operation ', this.currentOperation ,'Current input ',this.operationInput);
             var data = new FormData();
             var apiURL = this.mediaURL;
@@ -551,7 +554,7 @@ var media = new Vue({
         },
         //Cancels the operation
         cancelOperation: function(){
-            if(this.test)
+            if(this.verbose)
                 console.log('Canceling operation');
             this.currentOperation = '';
             this.operationInput = '';
@@ -662,7 +665,7 @@ var media = new Vue({
             if(!request.from || request.from === 'media')
                 return;
 
-            if(this.test)
+            if(this.verbose)
                 console.log('Recieved', request);
 
             let isFolder = request.content.folder;
@@ -725,7 +728,7 @@ var media = new Vue({
         },
         changeURLRequest: function(request){
 
-            if(this.test)
+            if(this.verbose)
                 console.log('Recieved', request);
 
             this.changeURL(request.from,request.content)
@@ -749,11 +752,11 @@ var media = new Vue({
         //Updates the current view with what we got from a viewer
         updateViewElements: function(request){
 
+            if(this.verbose)
+                console.log('Recieved updateViewElements', request);
+
             if(!request.from || request.from === 'media')
                 return;
-
-            if(this.test)
-                console.log('Recieved', request);
 
             //If we got a valid view, update the app
             if(typeof request.content === 'object'){
@@ -768,18 +771,18 @@ var media = new Vue({
             }
             //Handle errors
             else{
-                if(this.test)
+                if(this.verbose)
                     console.log('Error code: '+request.content);
             }
         },
         //Updates a single element currently selected in the searchlist (yes I know it's the same as updateViewElement, might combine them later)
         updateSearchListElement: function(request){
 
+            if(this.verbose)
+                console.log('Received', request);
+
             if(!request.from || request.from === 'media')
                 return;
-
-            if(this.test)
-                console.log('Received', request);
 
             //If we got a valid view, update the app
             let element = request.content;
@@ -794,7 +797,7 @@ var media = new Vue({
             if(!request.from || request.from === 'media')
                 return;
 
-            if(this.test)
+            if(this.verbose)
                 console.log('Recieved', request);
 
             //If we got a valid view, update the app
@@ -807,7 +810,8 @@ var media = new Vue({
         },
         //Handles responses of the API based on the operation
         handleResponse: function(response, currentOperation){
-            console.log(response,currentOperation);
+            if(this.verbose)
+                console.log(response,currentOperation);
             this.isLoading = false;
             if(this.currentMode === 'view')
                 this.changeURL('viewer1',this.view1.url);
@@ -889,7 +893,7 @@ var media = new Vue({
                     if(naturalWidth < 320){
                         Vue.set(context.searchList.items[index],'small',true);
                         if(verbose)
-                            console.log('setting image '+index+' ass small');
+                            console.log('setting image '+index+' as small');
                     }
                     else if(naturalHeight > naturalWidth){
                         Vue.set(context.searchList.items[index],'vertical',true);

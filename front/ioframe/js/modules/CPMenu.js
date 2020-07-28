@@ -1,6 +1,7 @@
 var CPMenu = new Vue({
     el: '#menu',
     name:'Side Menu',
+    mixins:[sourceURL],
     data: {
         configObject: JSON.parse(JSON.stringify(document.siteConfig)),
         selected: '',
@@ -60,7 +61,7 @@ var CPMenu = new Vue({
         if(this.configObject.cp.logo === undefined)
             this.configObject.cp.logo = {};
         if(this.configObject.cp.logo.imgURL === undefined)
-            this.configObject.cp.logo.imgURL = document.rootURI + 'front/ioframe/img/icons/logo.png';
+            this.configObject.cp.logo.imgURL = this.sourceURL()+'img/icons/logo.png';
         if(this.configObject.cp.logo.url === undefined)
             this.configObject.cp.logo.url = document.rootURI;
         this.logo = this.configObject.cp.logo;
@@ -71,73 +72,91 @@ var CPMenu = new Vue({
                 id: 'users',
                 title: 'Users',
                 url: 'users',
+                icon: 'icons/CPMenu/users.svg',
                 position: 1,
             },
             {
                 id: 'settings',
                 title: 'Settings',
                 url: 'settings',
+                icon: 'icons/CPMenu/settings.svg',
                 position: 2,
             },
             {
                 id: 'plugins',
                 title: 'Plugins',
                 url: 'plugins',
+                icon: 'icons/CPMenu/plugins.svg',
                 position: 3,
             },
             {
                 id: 'contacts',
                 title: 'Contacts',
                 url: 'contacts',
+                icon: 'icons/CPMenu/contacts.svg',
                 position: 4,
+            },
+            {
+                id: 'articles',
+                title: 'Articles',
+                url: 'articles',
+                icon: 'icons/CPMenu/articles.svg',
+                position: 5,
             },
             {
                 id: 'media',
                 title: 'Media',
                 url: 'media',
-                position: 5,
+                icon: 'icons/CPMenu/media.svg',
+                position: 6,
             },
             {
                 id: 'galleries',
                 title: 'Galleries',
                 url: 'galleries',
-                position: 6,
+                icon: 'icons/CPMenu/galleries.svg',
+                position: 7,
             },
             {
                 id: 'mails',
                 title: 'Mails',
                 url: 'mails',
-                position: 7,
+                icon: 'icons/CPMenu/mails.svg',
+                position: 8,
             },
             {
                 id: 'tokens',
                 title: 'Tokens',
                 url: 'tokens',
-                position: 8,
+                icon: 'icons/CPMenu/tokens.svg',
+                position: 9,
             },
             {
                 id: 'auth',
                 title: 'Permissions',
                 url: 'auth',
-                position: 9,
-            },
-            {
-                id: 'securityEvents',
-                title: '(Security) Events',
-                url: 'securityEvents',
+                icon: 'icons/CPMenu/permissions.svg',
                 position: 10,
             },
             {
-                id: 'securityIP',
-                title: '(Security) IP',
-                url: 'securityIP',
+                id: 'securityEvents',
+                title: 'Events',
+                url: 'securityEvents',
+                icon: 'icons/CPMenu/security.svg',
                 position: 11,
+            },
+            {
+                id: 'securityIP',
+                title: 'IP',
+                url: 'securityIP',
+                icon: 'icons/CPMenu/security.svg',
+                position: 12,
             },
             {
                 id: 'objects',
                 title: 'Objects',
                 url: 'objects',
-                position: 12,
+                position: 13,
             },
             {
                 id: 'login',

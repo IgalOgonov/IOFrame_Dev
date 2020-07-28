@@ -23,8 +23,18 @@ foreach($result as $resultName => $infoArray){
         $meta = $infoArray['Meta'];
         if(\IOFrame\Util\is_json($meta)){
             $meta = json_decode($meta,true);
-            if(isset($meta['name']))
-                $parsedResults['@']['name'] = $meta['name'];
+
+            $expected = ['name'];
+
+            foreach($languages as $lang){
+                array_push($expected,$lang.'_name');
+            }
+
+            foreach($expected as $attr){
+                if(isset($meta[$attr]))
+                    $parsedResults['@'][$attr] = $meta[$attr];
+            }
+
         }
     }
     else{
@@ -37,14 +47,15 @@ foreach($result as $resultName => $infoArray){
         unset($parsedResults[$resultName]['meta']);
         if(\IOFrame\Util\is_json($meta)){
             $meta = json_decode($meta,true);
-            if(isset($meta['name']))
-                $parsedResults[$resultName]['name'] = $meta['name'];
-            if(isset($meta['alt']))
-                $parsedResults[$resultName]['alt'] = $meta['alt'];
-            if(isset($meta['caption']))
-                $parsedResults[$resultName]['caption'] = $meta['caption'];
-            if(isset($meta['size']))
-                $parsedResults[$resultName]['size'] = $meta['size'];
+            $expected = ['name','alt','caption','size'];
+            foreach($languages as $lang){
+                array_push($expected,$lang.'_name');
+                array_push($expected,$lang.'_caption');
+            }
+            foreach($expected as $attr){
+                if(isset($meta[$attr]))
+                    $parsedResults[$resultName][$attr] = $meta[$attr];
+            }
         }
     }
 }

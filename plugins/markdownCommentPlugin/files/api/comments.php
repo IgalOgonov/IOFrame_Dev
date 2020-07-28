@@ -85,7 +85,7 @@ switch($action){
         require 'objectAPI_fragments/r_checks.php';
         require 'objectAPI_fragments/r_execution.php';
         require 'commentAPI_fragments/markdown_parse.php';
-        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+        echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
     case "rg":
         if(!validateThenRefreshCSRFToken($SessionHandler))

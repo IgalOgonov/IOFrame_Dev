@@ -7,6 +7,8 @@ $columnMap = [
     'action'=>'Object_Auth_Action',
     'group'=>'Object_Auth_Group',
     'title'=>'Title',
+    'created'=>'Created',
+    'updated'=>'Last_Updated',
     'userID'=>'ID'
 ];
 

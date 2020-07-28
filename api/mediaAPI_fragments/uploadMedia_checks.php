@@ -2,6 +2,11 @@
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
+require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+$config = HTMLPurifier_Config::createDefault();
+$config->set('HTML.AllowedElements', []);
+$purifier = new HTMLPurifier($config);
+
 //Type
 if($inputs['type'] !== null){
     if(!in_array($inputs['type'],['local','db','link'])){
@@ -26,6 +31,23 @@ else
     $inputs['items'] = [];
 
 foreach($inputs['items'] as $uploadName => $itemArray){
+
+
+    $purifyArr = ['caption','name','alt'];
+    $nameArr = ['name'];
+    $captionArr = ['caption'];
+
+    foreach($languages as $lang){
+        array_push($nameArr,$lang.'_name');
+        array_push($captionArr,$lang.'_caption');
+        array_push($purifyArr,$lang.'_name');
+        array_push($purifyArr,$lang.'_caption');
+    }
+
+    foreach($purifyArr as $param){
+        if($itemArray[$param] !== null)
+            $itemArray[$param] = $purifier->purify($itemArray[$param]);
+    }
 
     if(!preg_match('/'.UPLOAD_NAME_REGEX.'/',$uploadName)){
         if($test)
@@ -76,37 +98,41 @@ foreach($inputs['items'] as $uploadName => $itemArray){
 
     }
 
-    if(isset($itemArray['name'])){
+    foreach($nameArr as $nameParam)
+        if(isset($itemArray[$nameParam])){
 
-        if(strlen($itemArray['name'])>IMAGE_NAME_MAX_LENGTH){
-            if($test)
-                echo 'Invalid image name for '.$uploadName.EOL;
-            exit(INPUT_VALIDATION_FAILURE);
+            if(strlen($itemArray[$nameParam])>IMAGE_NAME_MAX_LENGTH){
+                if($test)
+                    echo 'Invalid image name for '.$uploadName.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+
+            if( !( $auth->hasAction(IMAGE_NAME_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
+                if($test)
+                    echo 'Cannot upload images with specific name!'.EOL;
+                exit(AUTHENTICATION_FAILURE);
+            }
+
+            $inputs['items'][$uploadName][$nameParam] = $itemArray[$nameParam];
+
         }
+    foreach($captionArr as $captionParam)
+        if(isset($itemArray[$captionParam])){
 
-        if( !( $auth->hasAction(IMAGE_NAME_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot upload images with specific name!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
+            if(strlen($itemArray[$captionParam])>IMAGE_CAPTION_MAX_LENGTH){
+                if($test)
+                    echo 'Invalid image caption for '.$uploadName.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+
+            if( !( $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
+                if($test)
+                    echo 'Cannot upload images with specific captions!'.EOL;
+                exit(AUTHENTICATION_FAILURE);
+            }
+
+            $inputs['items'][$uploadName][$captionParam] = $itemArray[$captionParam];
         }
-
-    }
-
-    if(isset($itemArray['caption'])){
-
-        if(strlen($itemArray['caption'])>IMAGE_CAPTION_MAX_LENGTH){
-            if($test)
-                echo 'Invalid image caption for '.$uploadName.EOL;
-            exit(INPUT_VALIDATION_FAILURE);
-        }
-
-        if( !( $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot upload images with specific captions!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
-        }
-
-    }
 }
 
 if($inputs['type'] !== 'link'){

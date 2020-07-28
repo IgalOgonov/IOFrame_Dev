@@ -1,0 +1,254 @@
+/* Media */
+
+.media-selector .modes > button.selected,
+.media-selector  .operations > button.selected {
+    font-weight: 800;
+}
+
+/* Types */
+.media-selector .types{
+    display: flex;
+}
+
+.media-selector .types > button {
+    padding: 5px 10px;
+    font-size: 1em;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out, border 0s;
+}
+
+.media-selector .types > button.selected  {
+    border-bottom: 3px var(--dark-1) solid;
+}
+
+.media-selector .types > button:first-child {
+    border-radius: 5px 0px 0px 5px;
+}
+.media-selector .types > button:not(:first-child){
+    border-left: 0;
+}
+.media-selector .types > button:last-child {
+    border-radius: 0px 5px 5px 0px;
+}
+.media-selector .types > button:not(:last-child){
+    border-right: 0;
+}
+
+/* Search List */
+.media-selector .search-list .search-results{
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+.media-selector .search-list .search-titles {
+    display: none;
+}
+.media-selector .search-list .search-item {
+    flex-direction: column;
+    max-width: 360px;
+    min-width: 360px;
+    margin: 5px;
+}
+.media-selector .search-list .search-item span:not(.image) .search-item-title {
+    display: inherit !important;
+    padding: 0px 3px;
+    background: var(--shadow-dark-1);
+}
+.media-selector .search-list .search-results > * > * {
+    flex:0;
+}
+.media-selector .search-list .search-results > .search-item > .image span {
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 5px 0px;
+}
+.media-selector .search-list .search-results > .search-item.vertical > .image span {
+    flex-direction: row;
+}
+.media-selector .search-list .search-results > .search-item.small > .image span {
+    width: max-content;
+    margin: 5px auto;
+}
+.media-selector .search-list .search-results > .search-item > .identifier textarea {
+    width: 100%;
+    margin: 5px 0px;
+    padding: 5px;
+    border: 1px var(--secondary-color-4) solid;
+    background: var(--main-color-4);
+}
+
+/***Viewer***/
+.media-selector .media-viewer{
+    margin: 0px 10px 0px 0px;
+}
+
+/*** URL ***/
+.media-selector .media-viewer > .media-url-container{
+    display: flex;
+    padding: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.media-selector .media-viewer > .media-url-container > .media-url-icon,
+.media-selector .media-viewer > .media-url-container > .media-url-up-arrow{
+    margin: 5px;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+.media-selector .media-viewer > .media-url-container > *:not(.media-url):hover{
+    filter: drop-shadow(0px 0px 1px var(--dark-1))
+}
+
+.media-selector .media-viewer .media-url{
+    flex: 1;
+    border-radius: 2px;
+    background: var(--main-color-1);
+    padding: 3px;
+    margin-left: 5px;
+    font-size: 1.25em;
+    max-width: 950px;
+    border: 1px var(--secondary-color-4) solid;
+}
+
+.media-selector .media-viewer .media-url > div{
+    margin-left: 5px;
+}
+
+/* URL\Arrow */
+.media-selector .media-viewer .media-url-up-arrow{
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+}
+.media-selector .media-viewer .up-arrow {
+    border-bottom: 10px var(--secondary-color-4) solid;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+}
+
+/*URL Change button*/
+.media-selector .media-viewer .media-url-change {
+    margin: 0px 5px;
+    border-radius: 2px;
+    padding: 3px;
+    min-width: 50px;
+    background: var(--secondary-color-4);
+    border: 1px var(--secondary-color-4) solid;
+}
+
+/*** Display ***/
+.media-selector .media-viewer .media-display{
+    display: flex;
+    min-height: 600px;
+    flex-wrap: wrap;
+    padding: 0px 10px;
+}
+
+/***Media Objects***/
+.media-selector .media-viewer .media-object-container {
+    display: inline-flex;
+    flex-direction: column;
+    max-width: 200px;
+    max-height: 250px;
+    padding: 25px;
+    cursor: pointer;
+}
+.media-selector .media-viewer .media-object-container:hover {
+    filter: brightness(110%);
+}
+.media-selector .media-viewer .media-object-container.selected{
+    background: var(--shadow-dark-1);
+}
+
+/* Image Related*/
+.media-selector .media-viewer .media-object-container > .thumbnail-container > img {
+    max-height: 150px;
+    max-width: 150px;
+}
+.media-selector .media-viewer .media-object-container.mediaFolder > .thumbnail-container > img {
+    height: auto;
+    width: auto;
+}
+
+/* Image Caption*/
+.media-selector .media-viewer .media-object-container > figcaption {
+    max-width: 150px;
+    font-size: 0.9em;
+    font-weight: 600;
+    overflow: auto;
+    color: var(--shadow-dark-3);
+}
+
+/* Image Thumbnail Container*/
+.media-selector .media-viewer .media-object-container > .thumbnail-container{
+    height: 150px;
+    width: 150px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+}
+
+/*Cropping*/
+.media-selector .media-viewer .media-object-container > .thumbnail-container.horizontalCrop{
+    flex-direction: column;
+}
+.media-selector .media-viewer .media-object-container > .thumbnail-container.verticalCrop{
+    flex-direction: row;
+}
+.media-selector .media-viewer .media-object-container > .thumbnail-container.centerCrop{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+.media-selector .media-viewer .media-object-container > .thumbnail-container.centerCrop > img{
+    justify-self: center;
+    align-self: center;
+}
+
+/* Image Size Bar*/
+.media-selector .media-viewer .media-object-container .image-size-wrapper{
+    height: 0;
+}
+
+.media-selector .media-viewer .media-object-container .image-size{
+    position: relative;
+    background: var(--shadow-dark-5);
+    width: 150px;
+    text-align: left;
+    color: var(--main-color-1);
+    font-weight: 700;
+    font-size: 1em;
+    transition: 0.5s;
+}
+.media-selector .media-viewer .media-object-container:hover .image-size{
+    transition: 0.5s;
+    opacity: 0;
+    width: 0;
+}
+
+/** Responsiveness **/
+@media (max-width: 1000px) {
+    .media-selector .search-list .search-results {
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .media-selector .search-list .search-item {
+        max-width: 305px;
+        min-width: 305px;
+    }
+    .media-selector .search-list .search-results > .search-item > .image span{}
+    .media-selector .search-list .search-results > .search-item > .image span img {
+        max-width: 283px;
+    }
+
+    .media-selector .media-viewer .media-display {
+        justify-content: center;
+    }
+}

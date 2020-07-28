@@ -15,6 +15,9 @@
  *                              'alt' : string, default '' - alt tag for the image (meta information)
  *                              'name' : string, default '' - "pretty" image name(meta information)
  *                              'caption' : string, default '' - image caption
+ *                              -- for each language prefix available in siteFiles, the following will be added --
+ *                              <lang>'_name', e.g. 'eng_name'
+ *                              <lang>'_caption', e.g. 'eng_caption'
  *                              ],
  *              <upload name 2>: ...,
  *              ...
@@ -87,6 +90,9 @@
  *                                              [OPTIONAL]'alt' : string, default '' - alt tag for the image (meta information)
  *                                              [OPTIONAL]'name' : string, default '' - "pretty" image name NOT FILENAME
  *                                              [OPTIONAL]'caption' : string, default '' - image caption
+ *                                              -- for each language prefix available in siteFiles, the following will be added --
+ *                                              [OPTIONAL]<lang>'_name', e.g. 'eng_name'
+ *                                              [OPTIONAL]<lang>'_caption', e.g. 'eng_caption'
  *                        ],
  *      ...
  *      ]
@@ -120,6 +126,9 @@
  *        name:  string, default '' - new name for the image
  *        alt:  string, default '' - alt tag for the image
  *        caption : string, default '' - image caption
+ *        -- for each language prefix available in siteFiles, the following will be added --
+ *        [OPTIONAL]<lang>'_name', e.g. 'eng_name'
+ *        [OPTIONAL]<lang>'_caption', e.g. 'eng_caption'
  *        deleteEmpty : bool, default false - parameters that are unset will be deleted instead
  *        remote: bool, default false - if true, will only affect DB resources
  *
@@ -213,6 +222,8 @@
  *                                              'created' => int, UNIX timestamp of when gallery was created
  *                                              'lastChanged' =>  int, UNIX timestamp of when gallery was last changed
  *                                              [OPTIONAL]'name' => string, default '' - "pretty" name for a gallery
+ *                                              -- for each language prefix available in siteFiles, the following will be added --
+ *                                              [OPTIONAL]<lang>'_name', e.g. 'eng_name'
  *                        ],
  *      ...
  *      '@' => {
@@ -245,6 +256,8 @@
  *        overwrite: bool, default false - will allow overwriting existing galleries
  *        update: bool, default false - will only update existing galleries
  *        name: String, optional "pretty" name of the gallery (stored as meta information)
+ *        -- for each language prefix available in siteFiles, the following will be added --
+ *        [OPTIONAL]<lang>'_name', e.g. 'eng_name'
  *
  *        Examples: action=setGallery&gallery=Test Gallery&name=Brave New Name&update=true
  *                  action=setGallery&gallery=Another Gallery&name=Name-o-tron
@@ -365,6 +378,13 @@ $action = $_REQUEST["action"];
 if($test)
     echo 'Testing mode!'.EOL;
 
+//Available languages
+$languages = $siteSettings->getSetting('languages');
+if(!empty($languages))
+    $languages = explode(',',$languages);
+else
+    $languages = [];
+
 
 //Handle inputs
 $inputs = [];
@@ -424,6 +444,10 @@ switch($action){
             exit(WRONG_CSRF_TOKEN);
 
         $arrExpected =["address","name","caption","alt","deleteEmpty"];
+        foreach($languages as $lang){
+            array_push($arrExpected,$lang.'_name');
+            array_push($arrExpected,$lang.'_caption');
+        }
 
         require 'setExpectedInputs.php';
         // This one is too specific to
@@ -512,7 +536,7 @@ switch($action){
         require 'mediaAPI_fragments/getGalleries_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -527,7 +551,7 @@ switch($action){
         require 'mediaAPI_fragments/getGallery_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo ($result === 0)?
                 '0' : $result;
@@ -538,6 +562,9 @@ switch($action){
             exit(WRONG_CSRF_TOKEN);
 
         $arrExpected =["name","gallery","overwrite","update"];
+        foreach($languages as $lang){
+            array_push($arrExpected,$lang.'_name');
+        }
 
         require 'setExpectedInputs.php';
         require 'mediaAPI_fragments/setGallery_checks.php';

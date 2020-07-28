@@ -28,12 +28,12 @@ $devMode =
     isset($_SESSION['devMode']) && $_SESSION['devMode'];
 
 if($devMode)
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.js"></script>';
+    echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.js"></script>';
 else
-    echo '<script src="'.$dirToRoot.'front/ioframe/js/vue/2.6.10/vue.min.js"></script>';
+    echo '<script src="'.$dirToRoot.'front/ioframe/js/ext/vue/2.6.10/vue.min.js"></script>';
 
 $JS = ['mixins/commons.js','mixins/componentHookFunctions.js','components/userLogin.js','components/userRegistration.js','components/userLogout.js'];
-$CSS = ['global.css','standard.css','fonts.css'];
+$CSS = ['standard.css','global.css','fonts.css'];
 
 
 ?>

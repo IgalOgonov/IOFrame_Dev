@@ -31,27 +31,47 @@ if(is_dir($settings->getSetting('absPathToRoot').'front/ioframe/js/plugins')){
         }
     }
 }
+
+/*Get the languages and parse them*/
+$languages = $siteSettings->getSetting('languages');
+if(!empty($languages))
+    $languages = explode(',',$languages);
+else
+    $languages = [];
 ?>
 
 <script>
     //This is the path to the root of the IOFrame site
     document.pathToRoot = '<?php echo $dirToRoot;?>';
+    //Site Name
+    document.siteName = encodeURI('<?php echo $siteSettings->getSetting('siteName');?>');
     //Current page full name
     document.currentPage = encodeURI('<?php echo $currentPage;?>');
     //Current page URI
     document.currentPageURI = encodeURI('<?php echo $currentPageURI;?>');
+    //Current page URI
+    document.imagePathLocal = encodeURI('<?php echo $resourceSettings->getSetting('imagePathLocal');?>');
+    //Current page URI
+    document.jsPathLocal = encodeURI('<?php echo $resourceSettings->getSetting('jsPathLocal');?>');
+    //Current page URI
+    document.cssPathLocal = encodeURI('<?php echo $resourceSettings->getSetting('cssPathLocal');?>');
     //Current root URI
     document.rootURI = encodeURI('<?php echo $rootURI;?>');
     //Path to the current page from root
     document.loggedIn = <?php echo $auth->isLoggedIn()? "true" : "false";  ?>;
     //Difference between local time and server time - in seconds!
     document.serverTimeDelta = Math.floor( Math.floor(Date.now()/1000 - <?php echo time();?>) / 10) * 10;
+    //Languages
+    document.languages = <?php echo json_encode($languages);?>;
     //CSRF Token
-    localStorage.setItem('CSRF_token','<?php echo $_SESSION['CSRF_token'];?>');
+    if(localStorage)
+        localStorage.setItem('CSRF_token','<?php echo $_SESSION['CSRF_token'];?>');
     //In a very specific case PHP has re-logged using cookies and the session ID changed - this will only work if the relog happaned on a page with this script
     let newID = <?php echo isset($newID) ? "'".$newID."'" : 'false';?>;
-    if(newID)
+    if(newID && localStorage)
         localStorage.setItem('sesID',newID);
+    //Retrieve selected language from localStorage if one exists - can be null
+    document.selectedLanguage = localStorage.getItem('lang');
 
     document.addEventListener('DOMContentLoaded', function(e) {
         //Define callbacks if not defined

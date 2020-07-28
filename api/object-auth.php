@@ -10,7 +10,7 @@
  * Parameters:
  * "action"     - Requested action - described bellow
  * "params"     - Parameters, depending on action - described bellow
- * "itemType"   - string, each action here has an associated item type. The following types are valid:
+ * "type"   - string, each action here has an associated item type. The following types are valid:
  *                'categories','objects','actions','groups','objectUsers','objectGroups','userGroups'
  *_________________________________________________
  * getItems
@@ -18,6 +18,16 @@
  *      Actions and objects regex is /^[a-zA-Z][a-zA-Z0-9\.\-\_ ]{1,255}$/, while for Titles it's the same but max length is 1024.
  *
  *      params:
+ *      keys - array of keys, can be empty to get all items. If not empty, it's an array of arrays, each member
+ *            represents the requested identifiers, and is of the following form, depending on itemType:
+ *          'categories': [<int, category>]
+ *          'objects': [<int, category>,<string, object>]
+ *          'actions': [<int, category>,<string, action>]
+ *          'groups': [<int, category>,<string, object>,<int, group>]
+ *          'objectUsers': [<int, category>,<string, object>,<int, user>]
+ *          'objectGroups': [<int, category>,<string, object>,<int, group>]
+ *          'userGroups': [<int, category>,<string, object>,<int, user>]
+ *      -- The following are only relevant when not getting specific keys --
  *      limit - can be passed as explicit parameters when not getting specific items - those are SQL pagination parameters.
  *              Default 50.
  *      offset - related to limit
@@ -29,16 +39,8 @@
  *          'objectUsers': ['category','object','userID','action']
  *          'objectGroups': ['category','object','group','action']
  *          'userGroups': ['category','object','userID','group']
+ *          * common filters are 'created' and 'updated'
  *      orderType - int, default null, when not getting specific items - possible values 0 and 1 - 0 is 'ASC', 1 is 'DESC'
- *      keys - array of keys, can be empty to get all items. If not empty, it's an array of arrays, each member
- *            represents the requested identifiers, and is of the following form, depending on itemType:
- *          'categories': [<int, category>]
- *          'objects': [<int, category>,<string, object>]
- *          'actions': [<int, category>,<string, action>]
- *          'groups': [<int, category>,<string, object>,<int, group>]
- *          'objectUsers': [<int, category>,<string, object>,<int, user>]
- *          'objectGroups': [<int, category>,<string, object>,<int, group>]
- *          'userGroups': [<int, category>,<string, object>,<int, user>]
  *      filters - array of filters, defaults to []. If not empty, it's an associative array, each member
  *            represents a specific filter depending on itemType:
  *          'categories': [
@@ -490,7 +492,7 @@ switch($action){
         require 'objectAuthAPI_fragments/getItems_execution.php';
 
         if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
+            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
             echo ($result === 0)?
                 '0' : $result;

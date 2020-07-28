@@ -153,6 +153,7 @@ namespace IOFrame\Handlers{
          * @params array $params Includes multiple possible parameters:
          *                      'escapeBackslashes' DEFAULT TRUE - will replace every backslash with '\\' in the query
          *                      'orderBy' An array of column names to order by
+         *                      'groupBy' An array of column names to group by
          *                      'orderType' 1 descending, 0 ascending
          *                      'useBrackets' will surround the query with brackets
          *                      'limit' If not null/0, will limit number of selected rows.
@@ -179,6 +180,8 @@ namespace IOFrame\Handlers{
                 $useBrackets = $params['useBrackets'] : $useBrackets = false;
             isset($params['orderBy'])?
                 $orderBy = $params['orderBy'] : $orderBy = null;
+            isset($params['groupBy'])?
+                $groupBy = $params['groupBy'] : $groupBy = null;
             isset($params['orderType'])?
                 $orderType = $params['orderType'] : $orderType = null;
             isset($params['limit'])?
@@ -260,6 +263,16 @@ namespace IOFrame\Handlers{
                     $query .= $orderBy;
                 if($orderType !== null)
                     $query .=' '.$orderType;
+            }
+
+            //If we have an group
+            if($groupBy != null){
+                $query .= ' GROUP BY ';
+                if(is_array($groupBy)){
+                    $query .= implode(',',$groupBy);
+                }
+                else
+                    $query .= $groupBy;
             }
 
             //If we have a limit

@@ -159,7 +159,6 @@ var securityEvents = new Vue({
                 console.log('Searching again!');
             this.items = [];
             this.total = 0;
-            this.page = 0;
             this.selected = -1;
             this.initiated = false;
         },

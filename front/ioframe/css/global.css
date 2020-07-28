@@ -2,6 +2,9 @@
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
+}
+
+:not(ol):not(ul):not(ul):not(li):not(blockquote){
     padding: 0;
     margin: 0;
 }
@@ -17,7 +20,7 @@ body {
     line-height: 1.5;
     color: rgb(0,0,0);
     text-align: left;
-    background-color: rgb(250,252,255);
+    background-color: var(--main-color-1);
     overflow-x: hidden;
     position: initial;
 }
@@ -27,7 +30,7 @@ a {
     color: inherit;
 }
 a:visited{
-    color: rgb(136, 146, 191) !important;
+    color: var(--secondary-color-5) !important;
 }
 
 b {
@@ -40,7 +43,10 @@ u {
 
 p {
     margin-top: 0;
-    margin-bottom: 1rem;
+}
+
+blockquote {
+    font-style: italic;
 }
 
 .alert{

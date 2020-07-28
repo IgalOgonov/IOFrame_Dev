@@ -15,11 +15,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_g
 
 echo '<title>(Security) Events</title>';
 
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/searchList.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['components/security/securityEventsEditor.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/securityEvents.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
+$frontEndResourceTemplateManager->printResources('CSS');
 
 ?>
 
@@ -57,12 +53,7 @@ $siteConfig = array_merge($siteConfig,
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_start.php';
 
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['mixins/sourceURL.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['mixins/eventHubManager.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['components/searchList.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['components/security/securityEventsEditor.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/CPMenu.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/securityEvents.js']['relativeAddress'].'"></script>';
+$frontEndResourceTemplateManager->printResources('JS');
 
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_end.php';

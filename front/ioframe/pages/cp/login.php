@@ -6,17 +6,14 @@ require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definiti
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';
 
 array_push($CSS, 'cp.css','popUpTooltip.css', 'modules/CPMenu.css', 'modules/loginRegister.css');
-array_push($JS, 'ezPopup.js', 'mixins/eventHubManager.js', 'modules/CPMenu.js', 'modules/loginRegister.js');
+array_push($JS, 'ezPopup.js', 'mixins/eventHubManager.js','mixins/sourceURL.js', 'modules/CPMenu.js', 'modules/loginRegister.js');
 
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';
 
 echo '<title>Login</title>';
 
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['popUpTooltip.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/loginRegister.css']['relativeAddress'] . '"">';
+$frontEndResourceTemplateManager->printResources('CSS');
 
 ?>
 
@@ -33,7 +30,6 @@ $siteConfig = array_merge($siteConfig,
 $userSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.SETTINGS_DIR_FROM_ROOT.'/userSettings/');
 $siteConfig['login'] = [
     'hasRememberMe'=>$userSettings->getSetting('rememberMe')? true: false,
-    /*'switchToRegistration'=>false TODO add*/
 ];
 $siteConfig['register'] = [
     'canHaveUsername'=>$userSettings->getSetting('usernameChoice') < 2,
@@ -64,11 +60,7 @@ $siteConfig['register'] = [
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_start.php';
 
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['ezPopup.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['mixins/eventHubManager.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/CPMenu.js']['relativeAddress'].'"></script>';
-echo '<script src="'.$dirToRoot.$IOFrameJSRoot . $JSResources['modules/loginRegister.js']['relativeAddress'].'"></script>';
-
+$frontEndResourceTemplateManager->printResources('JS');
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_end.php';
 

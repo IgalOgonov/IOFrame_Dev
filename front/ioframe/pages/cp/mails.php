@@ -7,7 +7,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_sta
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-array_push($JS,'modules/CPMenu.js','modules/mails.js');
+array_push($JS,'mixins/sourceURL.js','modules/CPMenu.js','modules/mails.js');
 
 array_push($CSS,'cp.css','modules/CPMenu.css','modules/mails.css');
 
@@ -15,9 +15,7 @@ require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'/headers_
 
 echo '<title>Mails</title>';
 
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['cp.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/CPMenu.css']['relativeAddress'] . '"">';
-echo '<link rel="stylesheet" href="' . $dirToRoot . $IOFrameCSSRoot . $CSSResources['modules/mails.css']['relativeAddress'] . '"">';
+$frontEndResourceTemplateManager->printResources('CSS');
 ?>
 
 <?php
@@ -48,13 +46,12 @@ $siteConfig = array_merge($siteConfig,
 
 </body>
 
-<?php require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'/footers_start.php'; ?>
-
-
 <?php
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/CPMenu.js']['relativeAddress'].'\'></script>';
-echo '<script src=\''.$dirToRoot.$IOFrameJSRoot.$JSResources['modules/mails.js']['relativeAddress'].'\'></script>';
+
+require $settings->getSetting('absPathToRoot') . $IOFrameTemplateRoot.'/footers_start.php';
+
+$frontEndResourceTemplateManager->printResources('JS');
+
+require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'/footers_end.php';
 
 ?>
-
-<?php require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'/footers_end.php';?>

@@ -91,7 +91,8 @@ Vue.component('auth-users-editor', {
         this.registerEvent('setGroupsResponse' ,this.handleGroupsSet);
         this.registerEvent('setActionsResponse' ,this.handleActionsSet);
         this.registerEvent('requestSelection', this.selectElement);
-        this.registerEvent('searchResults', this.parseSearchResults);
+        this.registerEvent(this.identifier+'-groups-results', this.parseSearchResults);
+        this.registerEvent(this.identifier+'-actions-results', this.parseSearchResults);
         this.registerEvent('goToPage', this.goToPage);
 
         //Global config
@@ -566,6 +567,7 @@ Vue.component('auth-users-editor', {
                     <div is="search-list"
                      :api-url="url"
                      api-action="getActions"
+                     :event-name="identifier+'-actions-results'"
                      :page="page"
                      :limit="limit"
                      :total="total"
@@ -585,6 +587,7 @@ Vue.component('auth-users-editor', {
                     <div is="search-list"
                      :api-url="url"
                      api-action="getGroups"
+                     :event-name="identifier+'-groups-results'"
                      :page="page"
                      :limit="limit"
                      :total="total"
