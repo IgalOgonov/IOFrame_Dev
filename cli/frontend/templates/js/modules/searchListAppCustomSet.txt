@@ -326,7 +326,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 default:
                     alertLog('Unknown operation '+this.from+' response, '+content,'error',this.$el);
             }
-        }
+        },
         //Goes to relevant page  TODO Remove if no searchlist
         goToPage: function(page){
             if(!this.initiating && page.from == 'search'){

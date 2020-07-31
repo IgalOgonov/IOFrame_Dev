@@ -468,6 +468,75 @@ if(!$local){
             'Another Gallery',
             ['test'=>$test]
         );
+        // ------------------ MENU TEST -------------------
+        $SQLHandler->insertIntoTable(
+            $SQLHandler->getSQLPrefix().'CORE_VALUES',
+            ['tableKey','tableValue'],
+            [[['test_menu','STRING'],NULL]],
+            [
+                'test'=>true,
+                'IGNORE'=>true
+            ]
+        );
+
+        if(!defined('MenuHandler'))
+            require __DIR__.'/../../IOFrame/Handlers/MenuHandler.php';
+        $MenuHandler = new IOFrame\Handlers\MenuHandler($settings,array_merge($defaultSettingsParams,['menuIdentifier'=>'test_menu']));
+        $MenuHandler->setMenuItems(
+            [
+                [
+                    'address'=>[],
+                    'identifier'=>'test_1',
+                    'title'=>'1'
+                ],
+                [
+                    'address'=>[],
+                    'identifier'=>'test_2',
+                    'title'=>'2'
+                ],
+                [
+                    'address'=>[],
+                    'identifier'=>'test_3',
+                    'title'=>'3'
+                ],
+                [
+                    'address'=>['test_1'],
+                    'identifier'=>'test_1',
+                    'title'=>'1/1'
+                ],
+                [
+                    'address'=>['test_1'],
+                    'identifier'=>'test_2',
+                    'title'=>'1/2'
+                ],
+                [
+                    'address'=>['test_2'],
+                    'identifier'=>'test_1',
+                    'title'=>'2/1'
+                ],
+                [
+                    'address'=>['test_2'],
+                    'identifier'=>'test_3',
+                    'title'=>'2/3'
+                ],
+                [
+                    'address'=>['test_2','test_3'],
+                    'identifier'=>'test_1',
+                    'title'=>'2/3/1'
+                ],
+                [
+                    'address'=>['test_2','test_3'],
+                    'identifier'=>'test_2',
+                    'title'=>'2/3/2'
+                ],
+                [
+                    'address'=>['test_2','test_3'],
+                    'identifier'=>'test_3',
+                    'title'=>'2/3/3'
+                ],
+            ],
+            ['test'=>$test]
+        );
     }
 }
 

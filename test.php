@@ -304,6 +304,14 @@ if(!$requireOnlyTab || $requireOnlyTab === 'articleTest'){
     echo '</section>';
 }
 
+if(!$requireOnlyTab || $requireOnlyTab === 'menuTest'){
+    echo '<h1>'.'Article test'.'</h1>';
+    echo '<button @click = "tabs.menuTest = !tabs.menuTest">Toggle Visibility</button>';
+    echo '<section :class="{open:tabs.menuTest, closed:!tabs.menuTest}">';
+    require 'test/verbose/menuTest.php';
+    echo '</section>';
+}
+
 if(!$requireOnlyTab || $requireOnlyTab === 'generalSandbox'){
     echo '<h1>'.'General sandbox'.'</h1>';
     echo '<button @click = "tabs.generalSandbox = !tabs.generalSandbox">Toggle Visibility</button>';
@@ -389,6 +397,7 @@ echo '<script>
             templatesTest: false,
             objectAuthTest: false,
             articleTest: false,
+            menuTest: false,
             generalSandbox: false,
             SQLSandbox: false,
             cryptoSandbox: false,

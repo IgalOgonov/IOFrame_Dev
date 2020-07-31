@@ -107,15 +107,17 @@ namespace IOFrame\Handlers{
             }
 
             if(isset($params['rootFolder']))
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+                $rootFolder = $params['rootFolder'];
             else{
                 if($type === 'js')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('jsPathLocal');
                 elseif($type === 'css')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
                 else
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('imagePathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('imagePathLocal');
             }
+            $rootFolderOrigin = $rootFolder;
+            $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
 
             $updateDBIfExists = isset($params['updateDBIfExists'])? $params['updateDBIfExists'] : true;
 
@@ -170,6 +172,8 @@ namespace IOFrame\Handlers{
                 }
 
                 //Get expected local file locations
+                $currentRootFolder = $rootFolder;
+                $currentRootFolderOrigin = $rootFolderOrigin;
                 $resourcePath = explode('/',$address);
                 $resourceName = array_pop($resourcePath);
                 $resourcePath = $rootFolder.implode('/',$resourcePath);
@@ -178,6 +182,32 @@ namespace IOFrame\Handlers{
                 $fullAddress = ($addresses !== [])? $resourcePath.'/'.$resourceName : substr($rootFolder,0,-1);
                 $isDir = is_dir($fullAddress);
                 $isFile = is_file($fullAddress);
+                //Fall back to ioframe default resource location IF both dir and file do not exist, but IOFrame ones do
+                if(!$isDir && !$isFile && !$ignoreLocal){
+                    $fallBack = [];
+                    if($type === 'js')
+                        $fallBack['currentRootFolder'] = 'front/ioframe/js/';
+                    elseif($type === 'css')
+                        $fallBack['currentRootFolder'] = 'front/ioframe/css/';
+                    else
+                        $fallBack['currentRootFolder'] = 'front/ioframe/img/';
+                    $fallBack['currentRootFolderOrigin'] = $fallBack['currentRootFolder'];
+                    $fallBack['currentRootFolder'] = $this->settings->getSetting('absPathToRoot').$fallBack['currentRootFolder'];
+                    $fallBack['resourcePath'] = explode('/',$address);
+                    $fallBack['resourceName'] = array_pop($fallBack['resourcePath']);
+                    $fallBack['resourcePath'] = $fallBack['currentRootFolder'].implode('/',$fallBack['resourcePath']);
+                    if($fallBack['resourcePath'][-1] === '/')
+                        $fallBack['resourcePath'] = substr($fallBack['resourcePath'],0,-1);
+                    $fallBack['fullAddress'] = ($addresses !== [])? $fallBack['resourcePath'].'/'.$fallBack['resourceName'] : substr($fallBack['currentRootFolder'],0,-1);
+                    $fallBack['isDir'] = is_dir($fullAddress);
+                    $fallBack['isFile'] = is_file($fullAddress);
+                    if($fallBack['isDir'] || $fallBack['isFile']){
+                        foreach($fallBack as $paramName => $value){
+                            ${$paramName} = $value;
+                        }
+                    }
+                }
+
                 $resourceNameTemp = explode('.',$resourceName);
                 $resourceExtension = $isFile? array_pop($resourceNameTemp) : '';
                 $newAddress = '';
@@ -186,7 +216,7 @@ namespace IOFrame\Handlers{
                 if( $isFile && ($type !== $resourceExtension)  && ($type !== 'img') ){
                     //In case of a CSS file that's an SCSS file, compile it to CSS on the fly
                     if($type === 'css' && $resourceExtension === 'scss' && $scss){
-                        $compilation = $this->compileSCSS($address,$params);
+                        $compilation = $this->compileSCSS($address,array_merge($params,['rootFolder'=>$currentRootFolderOrigin]));
                         $newAddress = $compilation['newName'];
                         $fullAddress = $compilation['newAddress'];
                         if(!$fullAddress)
@@ -208,7 +238,7 @@ namespace IOFrame\Handlers{
                         $resource['Address'] = $newAddress;
                     else
                         $resource['Address'] = $address;
-                    $fullAddress = ($addresses !== [])? $rootFolder.$resource['Address'] : substr($rootFolder,0,-1);
+                    $fullAddress = ($addresses !== [])? $currentRootFolder.$resource['Address'] : substr($currentRootFolder,0,-1);
                     $resource['Resource_Local'] = true;
                     $resource['Minified_Version'] = false;
                     $resource['Text_Content'] = null;
@@ -238,7 +268,7 @@ namespace IOFrame\Handlers{
                         }
                     }
                     //Handle recursive return
-                    $folderParams = $params;
+                    $folderParams = array_merge($params,['rootFolder'=>$currentRootFolderOrigin]);
                     if(!$includeSubFolders){
                         $folderParams['includeChildFiles'] = false;
                         $folderParams['includeChildFolders'] = false;
@@ -301,9 +331,9 @@ namespace IOFrame\Handlers{
                     }
                     else{
                         if($newAddress == '')
-                            $minified = $this->minifyFrontendResource($address,$type,$params);
+                            $minified = $this->minifyFrontendResource($address,$type,array_merge($params,['rootFolder'=>$currentRootFolderOrigin]));
                         else
-                            $minified = $this->minifyFrontendResource($newAddress,$type,$params);
+                            $minified = $this->minifyFrontendResource($newAddress,$type,array_merge($params,['rootFolder'=>$currentRootFolderOrigin]));
 
                         if(!is_array($minified))
                             continue;
@@ -331,7 +361,7 @@ namespace IOFrame\Handlers{
                     $resourcesToReturn[$address] = [
                         'address' => $fullAddress,
                         'dataType' => null,
-                        'relativeAddress' => substr($fullAddress,strlen($rootFolder)),
+                        'relativeAddress' => substr($fullAddress,strlen($currentRootFolder)),
                         'folder' => $isDir,
                         'meta' =>  $resource['Text_Content'],
                         'lastChanged' => $changeTime,
@@ -638,13 +668,14 @@ namespace IOFrame\Handlers{
             $minifyToFolder = isset($params['minifyToFolder'])? $params['minifyToFolder'] : '';
 
             if(isset($params['rootFolder']))
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+                $rootFolder = $params['rootFolder'];
             else{
                 if($type === 'js')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('jsPathLocal');
                 else
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
             }
+            $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
 
             //Minifier
             if($type === 'js')
@@ -655,13 +686,41 @@ namespace IOFrame\Handlers{
             if(!$minifyName){
                 $results = [];
                 foreach($addresses as $address){
+                    $currentRoot = $rootFolder;
                     //Get expected local file locations
                     $resourcePath = explode('/',$address);
                     $resourceName = array_pop($resourcePath);
-                    $resourcePath = $rootFolder.implode('/',$resourcePath);
+                    $resourcePath = $currentRoot.implode('/',$resourcePath);
                     if($resourcePath[-1] === '/')
                         $resourcePath = substr($resourcePath,0,-1);
                     $fullAddress = $resourcePath.'/'.$resourceName;
+                    $timeOriginalChanged = @filemtime($fullAddress);
+
+                    //Check if file exists, if not - try to fall back to default folder
+                    if(!$timeOriginalChanged){
+                        if($type === 'js')
+                            $currentRoot = $this->settings->getSetting('absPathToRoot').'front/ioframe/js/';
+                        else
+                            $currentRoot = $this->settings->getSetting('absPathToRoot').'front/ioframe/css/';
+                        $fallBack = [];
+                        $fallBack['resourcePath'] = explode('/',$address);
+                        $fallBack['resourceName'] = array_pop($fallBack['resourcePath']);
+                        $fallBack['resourcePath'] = $currentRoot.implode('/',$fallBack['resourcePath']);
+                        if($fallBack['resourcePath'][-1] === '/')
+                            $fallBack['resourcePath'] = substr($fallBack['resourcePath'],0,-1);
+                        $fallBack['fullAddress'] = $fallBack['resourcePath'].'/'.$fallBack['resourceName'];
+                        $fallBack['timeOriginalChanged'] = @filemtime($fallBack['fullAddress']);
+                        if($fallBack['timeOriginalChanged']){
+                            foreach($fallBack as $paramName => $value){
+                                    ${$paramName} = $value;
+                            }
+                        }
+                        else{
+                            $results[$address] = 2;
+                            continue;
+                        }
+                    }
+
                     $resourceNameTemp = explode('.',$resourceName);
                     $resourceExtension = array_pop($resourceNameTemp);
                     $resourceMinifiedName = implode('.',array_merge($resourceNameTemp,['min',$resourceExtension]));
@@ -671,7 +730,7 @@ namespace IOFrame\Handlers{
 
                         if($minifyToFolder[0] === '/'){
                             $minifyToFolder = substr($minifyToFolder,1);
-                            $minifiedFolderPath = $rootFolder.$minifyToFolder;
+                            $minifiedFolderPath = $currentRoot.$minifyToFolder;
                             $minifiedAddress = $minifiedFolderPath.'/'.$resourceMinifiedName;
                         }
                         else{
@@ -704,11 +763,11 @@ namespace IOFrame\Handlers{
 
                     //Remember - either of those may not exist
                     $timeMinifiedChanged = @filemtime($minifiedAddress);
-                    $timeOriginalChanged = @filemtime($fullAddress);
+
                     if($verbose)
                         echo $minifiedAddress.' changed at '.$timeMinifiedChanged.', '.$fullAddress.' changed at '.$timeOriginalChanged.EOL;
                     //If the file exists, and was changed later than the minified version, minify it again
-                    if($timeOriginalChanged && $timeOriginalChanged > $timeMinifiedChanged){
+                    if($timeOriginalChanged > $timeMinifiedChanged){
                         $minifier->add($fullAddress);
                         if(!$test){
                             try {
@@ -731,19 +790,12 @@ namespace IOFrame\Handlers{
                         ];
                     }
                     else{
-                        if($timeOriginalChanged){
-                            if($verbose)
-                                echo 'Minified address '.$minifiedAddress.' is up to date!'.EOL;
-                            $results[$address] = [
-                                'address' => $minifiedAddress,
-                                'changeTime' => $timeMinifiedChanged
-                            ];
-                        }
-                        else{
-                            if($verbose)
-                                echo 'File '.$fullAddress.' does not exist'.EOL;
-                            $results[$address] = 2;
-                        }
+                        if($verbose)
+                            echo 'Minified address '.$minifiedAddress.' is up to date!'.EOL;
+                        $results[$address] = [
+                            'address' => $minifiedAddress,
+                            'changeTime' => $timeMinifiedChanged
+                        ];
                     }
                     //Finally delete the mutex
                     $mutex->deleteMutex();
@@ -756,6 +808,7 @@ namespace IOFrame\Handlers{
                 $originalChangeTime = 0;
 
                 foreach($addresses as $address){
+                    $currentRoot = $rootFolder;
                     //Get expected local file locations
                     $resourcePath = explode('/',$address);
                     $resourceName = array_pop($resourcePath);
@@ -764,22 +817,40 @@ namespace IOFrame\Handlers{
                         $resourcePath = substr($resourcePath,0,-1);
                     $fullAddress = $resourcePath.'/'.$resourceName;
                     $changeTime = @filemtime($fullAddress);
+
+                    //Check if file exists, if not - try to fall back to default folder
+                    if(!$changeTime){
+                        if($type === 'js')
+                            $currentRoot = $this->settings->getSetting('absPathToRoot').'front/ioframe/js/';
+                        else
+                            $currentRoot = $this->settings->getSetting('absPathToRoot').'front/ioframe/css/';
+                        $fallBack = [];
+                        $fallBack['resourcePath'] = explode('/',$address);
+                        $fallBack['resourceName'] = array_pop($fallBack['resourcePath']);
+                        $fallBack['resourcePath'] = $currentRoot.implode('/',$fallBack['resourcePath']);
+                        if($fallBack['resourcePath'][-1] === '/')
+                            $fallBack['resourcePath'] = substr($fallBack['resourcePath'],0,-1);
+                        $fallBack['fullAddress'] = $fallBack['resourcePath'].'/'.$fallBack['resourceName'];
+                        $fallBack['changeTime'] = @filemtime($fallBack['fullAddress']);
+                        if($fallBack['changeTime']){
+                            foreach($fallBack as $paramName => $value){
+                                ${$paramName} = $value;
+                            }
+                        }
+                        else{
+                            continue;
+                        }
+                    }
+
                     $originalChangeTime = max($changeTime,$originalChangeTime);
-                    //Remember - only minify files that exist!
-                    if($changeTime){
-                        if(!$test)
-                            $minifier->add($fullAddress);
-                        if($verbose)
-                            echo 'File '.$fullAddress.' added to minification'.EOL;
-                    }
-                    else{
-                        if($verbose)
-                            echo 'File '.$fullAddress.' does not exist'.EOL;
-                    }
+
+                    if(!$test)
+                        $minifier->add($fullAddress);
+                    if($verbose)
+                        echo 'File '.$fullAddress.' added to minification'.EOL;
                 }
 
                 $resourceMinifiedName = $minifyName.'.'.$type;
-                $minifyPath = $rootFolder;
                 //Minify into a folder if asked
                 if($minifyToFolder!=''){
                     if(!is_dir($rootFolder.$minifyToFolder)){
@@ -1011,17 +1082,18 @@ namespace IOFrame\Handlers{
                 $params['verbose'] : $test ? true : false;
 
             if(isset($params['rootFolder']))
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+                $rootFolder = $params['rootFolder'];
             else{
                 if($type === 'js')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('jsPathLocal');
                 elseif($type === 'css')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
                 elseif($type === 'img')
-                    $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('imagePathLocal');
+                    $rootFolder = $this->resourceSettings->getSetting('imagePathLocal');
                 else
                     return 2;
             }
+            $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
             if($relativeAddress !== '' && $relativeAddress[strlen($relativeAddress)-1] !== '/')
                 $relativeAddress .= '/';
 
@@ -1306,9 +1378,10 @@ namespace IOFrame\Handlers{
             $compileToFolder = isset($params['compileToFolder'])? $params['compileToFolder'] : '';
 
             if(isset($params['rootFolder']))
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$params['rootFolder'];
+                $rootFolder = $params['rootFolder'];
             else
-                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('cssPathLocal');
+                $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
+            $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
 
             $resultAddress =
                 [

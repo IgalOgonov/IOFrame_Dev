@@ -5,6 +5,7 @@ test2.php
 backup/
 front/ioframe/js/min/
 front/ioframe/css/min/
+cli/watcher-json/
 *min.js
 *min.css
 !vue.min.js

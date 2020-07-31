@@ -20,6 +20,39 @@ namespace IOFrame\Handlers{
         {
         }
 
+
+        /** Reads a file $fileName at url $url without waiting for mutex
+         * @param string $url Url of specified file
+         * @param string $fileName  Name of specified file
+         * @param array $params
+         * @throws \Exception If lock file can't be opened, mutex was locked over the wait specified duration.
+         *
+         * @returns string
+         *  the file contents,
+         *  or throws an exception.
+         * */
+        function readFile(string $url, string $fileName, $params = []){
+
+            //Set defaults
+            $verbose = (isset($params['verbose']) && $params['verbose']) || (isset($params['test']) && $params['test']);
+
+            try{
+                $myFile = @fopen($url.$fileName,"r");
+                if(filesize($url.$fileName) == 0)
+                    return '';
+                if(!$myFile)
+                    throw new \Exception("Cannot open file ".$url.$fileName);
+                $fileContents = fread($myFile,filesize($url.$fileName));
+                fclose($myFile);
+                return $fileContents;
+            }
+            catch(\Exception $e){
+                if($verbose)
+                    echo 'Exception when reading file -> '.$e->getMessage();
+                return false;
+            }
+        }
+
         /** Reads a file $fileName at url $url after waiting $sec seconds for a mutex.
          * @param string $url Url of specified file
          * @param string $fileName  Name of specified file

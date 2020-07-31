@@ -455,6 +455,8 @@ namespace IOFrame\Handlers{
          *                      'justTheQuery' If true, will only return the query and not execute it.
          *                      'returnError' will return the SQL error instead of "-2" when possible. Notice that errors are not
          *                                    always properly provided.
+         *                      'IGNORE','LOW_PRIORITY','HIGH_PRIORITY',...other valid INSERT flags will add the after "INSERT"
+         *                      'REPLACE' will replace the INSERT with REPLACE, which behaves similarly but only updates existing rows.
          * @params bool $test indicates test mode
          * @returns int
          *      -2 server error
@@ -488,7 +490,24 @@ namespace IOFrame\Handlers{
             $columnNames = ' ('.implode(',',$columns).')';
 
             //Prepare the query to be executed
-            $query = 'INSERT INTO '.$tableName.$columnNames.' ';
+            $query = 'INSERT';
+            if (isset($params['IGNORE']))
+                $query .= ' IGNORE ';
+
+            //Unlike the others, replace replaces INSERT and ignores IGNORE
+            if (isset($params['REPLACE'])){
+                $query = 'REPLACE';
+                $onDuplicateKey = false;
+            }
+
+            if (isset($params['HIGH_PRIORITY']))
+                $query .= ' HIGH_PRIORITY ';
+            elseif(isset($params['LOW_PRIORITY']))
+                $query .= ' LOW_PRIORITY';
+            elseif(isset($params['DELAYED']))
+                $query .= ' DELAYED ';
+
+            $query .=' INTO '.$tableName.$columnNames.' ';
 
             //Values
             if(is_array($values)){
@@ -1062,7 +1081,7 @@ namespace IOFrame\Handlers{
 
             try{
                 $availableBackups = $this->selectFromTable(
-                    $this->getSQLPrefix().'db_backup_meta',
+                    $this->getSQLPrefix().'DB_BACKUP_META',
                     ['Table_Name',$prefix.$tableName,'='],
                     ['Full_Name'],
                     ['orderBy'=>["ID"],'orderType'=>1,'test'=>$test,'verbose'=>$verbose]

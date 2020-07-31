@@ -83,7 +83,7 @@ namespace IOFrame\Handlers{
             string $name = null,
             array $params = []
         ){
-            return $this->setRoutes([$method,$route,$match,$name],$params);
+            return $this->addRoutes([[$method,$route,$match,$name]],$params);
         }
 
         /** Creates new routes, or updates existing routes.
@@ -188,7 +188,7 @@ namespace IOFrame\Handlers{
             string $name = null,
             array $params = []
         ){
-            return $this->updateRoutes([$ID,$method,$route,$match,$name],$params)[$ID];
+            return $this->updateRoutes([[$ID,$method,$route,$match,$name]],$params)[$ID];
         }
 
         /** Creates new routes, or updates existing routes.
@@ -554,7 +554,7 @@ namespace IOFrame\Handlers{
          *          2 - Trying to create a new match with insufficient values.
          * */
         function setMatch(string $match, $url = null, array $extensions = null, array $params = []){
-            return $this->setMatches([$match=>[$url,$extensions]],$params)[$match];
+            return $this->setMatches([[$match=>[$url,$extensions]]],$params)[$match];
         }
 
         /** Creates new matches, or update existing ones.
