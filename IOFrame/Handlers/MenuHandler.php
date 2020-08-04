@@ -14,28 +14,28 @@ namespace IOFrame\Handlers{
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
      */
-    class MenuHandler extends IOFrame\abstractDBWithCache{
+    class MenuHandler extends IOFrame\abstractObjectsHandler{
 
 
         /**
          * @var string The table name where the menu resides
          */
-        protected $tableName = 'CORE_VALUES';
+        protected $tableName = 'MENUS';
 
         /**
          * @var string The table key column for the menu
          */
-        protected $tableKeyCol = 'tableKey';
+        protected $tableKeyCol = 'Menu_ID';
 
         /**
          * @var string The table column storing the value of the menu
          */
-        protected $menuValueCol = 'tableValue';
+        protected $menuValueCol = 'Menu_Value';
 
         /**
-         * @var string The identifier of the menu in the table
+         * @var string The table column storing the menu meta
          */
-        protected $menuIdentifier = '';
+        protected $menuMetaCol = 'Meta';
 
         /**
          * @var string The cache name for the menu
@@ -49,12 +49,46 @@ namespace IOFrame\Handlers{
          */
         function __construct(SettingsHandler $settings, $params = []){
 
-            //Either the child passes menuIdentifier
-            if(isset($params['menuIdentifier']))
-                $this->menuIdentifier = $params['menuIdentifier'];
-            //Or it has it set - otherwise, throw exception
-            elseif($this->menuIdentifier === '')
-                throw new \Exception('menuIdentifier must be set by the parent or passed to this handler directly!');
+            $this->validObjectTypes = ['menus'];
+            $this->objectsDetails = [
+                'menus' => [
+                    'tableName' => 'MENUS',
+                    'extendTTL' => true,
+                    'cacheName' => 'menu_',
+                    'keyColumns' => ['Menu_ID'],
+                    'safeStrColumns' => ['Menu_Value'],
+                    'setColumns' => [
+                        'Menu_ID' => [
+                            'type' => 'string'
+                        ],
+                        'Title' => [
+                            'type' => 'string',
+                            'default' => null
+                        ],
+                        'Menu_Value' => [
+                            'type' => 'string',
+                            'jsonObject' => true,
+                            'default' => null
+                        ],
+                        'Meta' => [
+                            'type' => 'string',
+                            'jsonObject' => true,
+                            'default' => null
+                        ]
+                    ],
+                    'moveColumns' => [
+                    ],
+                    'columnFilters' => [
+                    ],
+                    'extraToGet' => [
+                        '#' => [
+                            'key' => '#',
+                            'type' => 'count'
+                        ]
+                    ],
+                    'orderColumns' => ['Menu_ID']
+                ]
+            ];
 
             //By default, menu's should have a much higher priority than regular cached items.
             if(!isset($params['cacheTTL']))
@@ -63,13 +97,16 @@ namespace IOFrame\Handlers{
         }
 
         /** Get menu.
+         * @param string $identifier - menu identifier, required
          * @param array $params
          *              'safeStr' - bool, whether item is stored in safestring by default.
          * @returns int|array JSON decoded object of the form:
          * {
-         *      <string, "identifier"  of the menu item used for stuff like routing. Assumed to not contain "/".> => {
+         *     {
+         *          ['identifier]: <string, "identifier"  of the menu item used for stuff like routing. Assumed to not contain "/".>
          *          ['title': <string, Title of the menu item>]
          *          ['children': <array, objects of the same structure as this one>]
+         *          ['meta': <associated array of meta information>]
          *          //Potentially more stuff, depending on the extending class
          *     },
          *     ...
@@ -79,19 +116,27 @@ namespace IOFrame\Handlers{
          *      -2 Menu not found for some reason
          *      -1 Database Error
          */
-        function getMenu(array $params = []){
+        function getMenu(string $identifier, array $params = []){
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
 
             $result = $this->getFromCacheOrDB(
-                [$this->menuIdentifier],
+                [$identifier],
                 $this->tableKeyCol,
                 $this->tableName,
                 $this->cacheName,
                 [],
                 $params
-            )[$this->menuIdentifier];
+            )[$identifier];
 
             if(is_array($result)){
+                if(!empty($result['Meta']) && IOFrame\Util\is_json($result['Meta']))
+                    $meta = json_decode($result['Meta'],true);
+                else
+                    $meta = [];
+                if(!empty($result['Title']) && IOFrame\Util\is_json($result['Title']))
+                    $title = json_decode($result['Title'],true);
+                else
+                    $title = null;
                 $result = $result[$this->menuValueCol];
                 if(empty($result))
                     $result = [];
@@ -103,6 +148,8 @@ namespace IOFrame\Handlers{
                     else
                         $result = json_decode($result, true);
                 }
+                $result['@'] = $meta;
+                $result['@title'] = $title;
             }
             elseif($result === 1)
                 $result = -2;
@@ -112,12 +159,14 @@ namespace IOFrame\Handlers{
 
 
         /** Sets (or unsets) a menu item.
+         * @param string $identifier - menu identifier, required
          * @param array $inputs of the form:
          *          'address' - string, array of valid identifiers that represent parents. defaults to [] (menu root).
          *                      If a non-existent parent is referenced, will not add the item.
-         *          'identifier' - string, "identifier"  of the menu item used for stuff like routing. Assumed to not contain "/".
+         *          ['identifier' - string, "identifier"  of the menu item used for stuff like routing - may simply be included in the address].
          *          ['delete' - bool, if true, deletes the item instead of modifying.]
          *          ['title': string, Title of the menu item]
+         *          ['order' -  string, comma separated list of identifiers to signify item order.
          *          //Potentially more stuff, depending on the extending class
          * @param array $params of the form:
          *          'safeStr' - bool, default true. Whether to convert Meta to a safe string
@@ -127,12 +176,14 @@ namespace IOFrame\Handlers{
          *      -1 Database Error
          *       0 All good
          *       1 One of the parents not found
+         *       2 Item with similar identifier already exists in address
          */
-        function setMenuItem( array $inputs, array $params = []){
-            return $this->setMenuItems([$inputs],$params);
+        function setMenuItem(string $identifier, array $inputs, array $params = []){
+            return $this->setMenuItems($identifier,[$inputs],$params);
         }
 
         /** Sets (or unsets) multiple menu item.
+         * @param string $identifier - menu identifier, required
          * @param array $inputs Array of input arrays in the same order as the inputs in setMenuItem, HOWEVER:
          *              'address' can also include parents created from inputs in the $inputs array - AS LONG AS THEY
          *                        CAME EARLIER that the child in the array.
@@ -144,7 +195,7 @@ namespace IOFrame\Handlers{
          *       0 All good
          *       1 One of the parents FOR ANY OF THE ITEMS not found
          */
-        function setMenuItems(array $inputs, array $params = []){
+        function setMenuItems(string $identifier, array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
@@ -153,7 +204,7 @@ namespace IOFrame\Handlers{
             if(isset($params['existing']))
                 $existingMenu = $params['existing'];
             else
-                $existingMenu = $this->getMenu(array_merge($params,['updateCache'=>false]));
+                $existingMenu = $this->getMenu($identifier,array_merge($params,['updateCache'=>false]));
 
             if(!is_array($existingMenu))
                 return $existingMenu;
@@ -171,18 +222,28 @@ namespace IOFrame\Handlers{
                         }
                     }
 
-                if(empty($target['children']))
-                    $target['children'] = [];
-                if(empty($target['children'][$inputArray['identifier']]))
-                    $target['children'][$inputArray['identifier']] = [];
-                //Yes, unset it if you create it when it doesn't exist. I know. It still is structured better this way.
-                if(!empty($inputArray['delete']))
-                    unset($target['children'][$inputArray['identifier']]);
-                else
+                if(!empty($inputArray['delete'])){
+                    if(!empty($inputArray['identifier']))
+                        unset($target['children'][$inputArray['identifier']]);
+                    else
+                        unset($target);
+                }
+                else{
+
+                    if(empty($target['children']))
+                        $target['children'] = [];
+
+                    //reserved for the irregular case where we want to update the root menu
+                    if(!empty($inputArray['identifier']))
+                        $target = &$target['children'][$inputArray['identifier']];
+
+                    if(empty($target))
+                        $target = [];
                     foreach($inputArray as $inputIndex => $input){
                         if(!in_array($inputIndex,['children','identifier','delete','address']))
-                            $target['children'][$inputArray['identifier']][$inputIndex] = $input;
+                            $target[$inputIndex] = $input;
                     }
+                }
             }
 
             $existingMenu = json_encode($existingMenu);
@@ -192,15 +253,15 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->tableName,
                 [$this->menuValueCol.' = "'.$existingMenu.'"'],
-                [$this->tableKeyCol,$this->menuIdentifier,'='],
+                [$this->tableKeyCol,$identifier,'='],
                 $params
             );
             if($res){
                 $res = 0;
                 if(!$test)
-                    $this->RedisHandler->call('del',[$this->cacheName.$this->menuIdentifier]);
+                    $this->RedisHandler->call('del',[$this->cacheName.$identifier]);
                 if($verbose)
-                    echo 'Deleting cache of '.$this->cacheName.$this->menuIdentifier.EOL;
+                    echo 'Deleting cache of '.$this->cacheName.$identifier.EOL;
             }
             else
                 $res = -1;
@@ -208,10 +269,16 @@ namespace IOFrame\Handlers{
         }
 
         /** Moves one branch of the menu to a different root
-         * @param array $inputs Array of input arrays in the same order as the inputs in setMenuItem, HOWEVER:
-         *              'address' can also include parents created from inputs in the $inputs array - AS LONG AS THEY
-         *                        CAME EARLIER that the child in the array.
-         * @param array $params from setMenuItem
+         * @param string $identifier Identifier of branch
+         * @param string $blockIdentifier Identifier of branch
+         * @param string $sourceAddress Source address
+         * @param string $targetAddress Target address
+         * @param array $params
+         *          'override' - bool, default false. Whether to override a block with similar address at target address.
+         *          'updateOrder' - bool, default true. Will update target and source orders, if possible.
+         *          'orderIndex' - int, if set, will insert the target into a specific index at the order. Otherwise,
+         *                         if updateOrder is set, will insert it into the end.
+         *          'safeStr' - bool, default true. Whether to convert Meta to a safe string
          * @returns int Code of the form:
          *      -3 Menu not a valid json somehow
          *      -2 Menu not found for some reason
@@ -220,21 +287,25 @@ namespace IOFrame\Handlers{
          *       1 One of the parents for the source not found
          *       2 One of the parents for the target not found
          *       3 Source identifier does not exist
-         *       4 Source and target are the same (really?!)
+         *       4 Address identifier exists and override is false
          */
-        function moveMenuBranch(string $identifier, array $sourceAddress, array $targetAddress, array $params = []){
+        function moveMenuBranch(string $identifier, string $blockIdentifier, array $sourceAddress, array $targetAddress, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $override = isset($params['override'])? $params['override'] : false;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
+            $updateOrder = isset($params['updateOrder'])? $params['updateOrder'] : true;
+            $orderIndex = isset($params['orderIndex'])? $params['orderIndex'] : -1;
 
-            if(count($sourceAddress) === count($targetAddress) && count(array_diff($sourceAddress,$targetAddress)) === 0)
-                return 4;
+            $sameAddress = (count($sourceAddress) === count($targetAddress) && count(array_diff($sourceAddress,$targetAddress)) === 0);
+            if($sameAddress && !$updateOrder)
+                return 0;
 
             if(isset($params['existing']))
                 $existingMenu = $params['existing'];
             else
-                $existingMenu = $this->getMenu(array_merge($params,['updateCache'=>false]));
+                $existingMenu = $this->getMenu($identifier,array_merge($params,['updateCache'=>false]));
 
             if(!is_array($existingMenu))
                 return $existingMenu;
@@ -255,14 +326,67 @@ namespace IOFrame\Handlers{
                     else
                         return 2;
 
-            if(empty($source['children'][$identifier]))
+            if(empty($source['children'][$blockIdentifier]))
                 return 3;
+
+            if(!$sameAddress && !empty($target['children'][$blockIdentifier]) && !$override)
+                return 4;
+            else
+                $replacing = !empty($target['children'][$blockIdentifier]);
 
             if(empty($target['children']))
                 $target['children'] = [];
 
-            $target['children'][$identifier] = $source['children'][$identifier];
-            unset($source['children'][$identifier]);
+            if(!$sameAddress)
+                $target['children'][$blockIdentifier] = $source['children'][$blockIdentifier];
+
+            if($updateOrder){
+                //Source
+                if(!$sameAddress && isset($source['order'])){
+                    $source['order'] = explode(',',$source['order']);
+                    $index = array_search ($blockIdentifier, $source['order']);
+                    if($index !== false)
+                        array_splice($source['order'],$index,1);
+                    $source['order'] = implode(',',$source['order']);
+                }
+
+                //Target
+                if(!isset($target['order']))
+                    $target['order'] = $blockIdentifier;
+                else{
+
+                    $target['order'] = explode(',',$target['order']);
+                    $targetCount = count($target['order']);
+
+                    if(!$replacing){
+                        $orderIndex = ($orderIndex<0 || $orderIndex > $targetCount - 1 ) ? $targetCount : $orderIndex;
+                        if($targetCount === $orderIndex)
+                            array_push($target['order'],$blockIdentifier);
+                        else
+                            array_splice($target['order'],$orderIndex,0,$blockIdentifier);
+                    }
+                    elseif($orderIndex > 0){
+                        $existingIndex = array_search($blockIdentifier,$target['order']);
+                        if($existingIndex !== $orderIndex){
+                            if($existingIndex !== false){
+                                array_splice($target['order'],$existingIndex,1);
+                                $targetCount--;
+                                if($existingIndex<$orderIndex)
+                                    $orderIndex = max(0,$orderIndex-1);
+                            }
+                            if($targetCount === $orderIndex)
+                                array_push($target['order'],$blockIdentifier);
+                            else
+                                array_splice($target['order'],min($orderIndex,$targetCount - 1),0,$blockIdentifier);
+                        }
+                    }
+
+                    $target['order'] = implode(',',$target['order']);
+                }
+            }
+
+            if(!$sameAddress)
+                unset($source['children'][$blockIdentifier]);
 
             $existingMenu = json_encode($existingMenu);
             if($safeStr)
@@ -271,18 +395,20 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->tableName,
                 [$this->menuValueCol.' = "'.$existingMenu.'"'],
-                [$this->tableKeyCol,$this->menuIdentifier,'='],
+                [$this->tableKeyCol,$identifier,'='],
                 $params
             );
+
             if($res){
                 $res = 0;
                 if(!$test)
-                    $this->RedisHandler->call('del',[$this->cacheName.$this->menuIdentifier]);
+                    $this->RedisHandler->call('del',[$this->cacheName.$identifier]);
                 if($verbose)
-                    echo 'Deleting cache of '.$this->cacheName.$this->menuIdentifier.EOL;
+                    echo 'Deleting cache of '.$this->cacheName.$identifier.EOL;
             }
             else
                 $res = -1;
+
             return $res;
         }
 

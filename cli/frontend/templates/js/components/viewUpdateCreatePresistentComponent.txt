@@ -141,6 +141,8 @@ Vue.component('%%COMPONENT_NAME%%', {
     mounted:function(){
     },
     updated: function(){
+        if(!this.upToDate && !this.initiating)
+            this.getItemInfo();
     },
     computed:{
         changed: function(){
@@ -474,12 +476,12 @@ Vue.component('%%COMPONENT_NAME%%', {
                 </div>
             </div>
 
-            <form>
-                <div
-                v-for="(item, key) in mainItem"
-                v-if="paramMap[key].edit"
-                :class="{changed:item.current !== item.original}"
-                >
+           <form class="article-info-editor" v-if="mode !== 'view' && (mode === 'create' || initiated)">
+               <div
+               v-for="(item, key) in mainItem"
+               v-if="paramMap[key].edit"
+               :class="[{changed:(item.current !== item.original || paramMap[key].considerChanged)},key.replace('.','-'),paramMap[key].type]"
+               >
 
                    <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
 
@@ -518,8 +520,9 @@ Vue.component('%%COMPONENT_NAME%%', {
                        <option v-for="item in paramMap[key].list" :value="item.value" v-text="item.title? item.title: item.value"></option>
                     </select>
 
-                </div>
-            </form>
+               </div>
+
+           </form>
 
             <div class="control-buttons" v-if="changed">
                 <button  v-text="this.mode === 'create' ? 'Create' :'Update'" @click.prevent="setItem()" class="positive-1"></button>

@@ -1,11 +1,51 @@
 <?php
 if(!defined('MenuHandler'))
     require __DIR__.'/../../IOFrame/Handlers/MenuHandler.php';
-$MenuHandler = new IOFrame\Handlers\MenuHandler($settings,array_merge($defaultSettingsParams,['menuIdentifier'=>'test_menu']));
+$MenuHandler = new IOFrame\Handlers\MenuHandler($settings,$defaultSettingsParams);
+ini_set('xdebug.var_display_max_depth', '10');
+
+echo EOL.'Getting all menus'.EOL;
+var_dump(
+    $MenuHandler->getItems(
+        [
+            ['test_menu']
+        ],
+        'menus',
+        ['test'=>true]
+    )
+);
+
+echo EOL.'Creating test menu'.EOL;
+var_dump(
+    $MenuHandler->setItems(
+        [
+            [
+                'Menu_ID'=>'test_menu',
+                'Title'=>'Test Menu'
+            ]
+        ],
+        'menus',
+        ['test'=>true]
+    )
+);
+
+echo EOL.'Deleting test menu'.EOL;
+var_dump(
+    $MenuHandler->deleteItems(
+        [
+            [
+                'Menu_ID'=>'test_menu'
+            ]
+        ],
+        'menus',
+        ['test'=>true]
+    )
+);
 
 echo EOL.'Setting menu items:'.EOL;
 var_dump(
     $MenuHandler->setMenuItems(
+        'test_menu',
         [
             [
                 'address'=>[],
@@ -62,10 +102,10 @@ var_dump(
     )
 );
 
-ini_set('xdebug.var_display_max_depth', '10');
 echo EOL.'Getting menu:'.EOL;
 var_dump(
     $MenuHandler->getMenu(
+        'test_menu',
         ['test'=>true]
     )
 );
@@ -73,6 +113,7 @@ var_dump(
 echo EOL.'Deleting menu items, modifying others:'.EOL;
 var_dump(
     $MenuHandler->setMenuItems(
+        'test_menu',
         [
             [
                 'address'=>['test_2'],
@@ -97,6 +138,7 @@ var_dump(
 echo EOL.'Moving one branch to another:'.EOL;
 var_dump(
     $MenuHandler->moveMenuBranch(
+        'test_menu',
         'test_3',
         ['test_2'],
         ['test_1'],
@@ -104,15 +146,49 @@ var_dump(
     )
 );
 
-echo EOL.'Moving one branch to existing identifier:'.EOL;
+echo EOL.'Moving one branch to existing identifier, no override:'.EOL;
 var_dump(
     $MenuHandler->moveMenuBranch(
+        'test_menu',
         'test_3',
         ['test_2'],
         [],
         ['test'=>true]
     )
 );
+echo EOL.'Moving one branch to existing identifier, override and 2nd index:'.EOL;
+var_dump(
+    $MenuHandler->moveMenuBranch(
+        'test_menu',
+        'test_3',
+        ['test_2'],
+        [],
+        ['test'=>true,'override'=>true,'orderIndex'=>2]
+    )
+);
 
+
+echo EOL.'Moving a branch in place (just an order update)'.EOL;
+var_dump(
+    $MenuHandler->moveMenuBranch(
+        'test_menu',
+        'test_3',
+        [],
+        [],
+        ['test'=>true,'orderIndex'=>2]
+    )
+);
+
+
+echo EOL.'Final movement test'.EOL;
+var_dump(
+    $MenuHandler->moveMenuBranch(
+        'test_menu',
+        'test_3',
+        [],
+        ['test_1','test_2'],
+        ['test'=>true]
+    )
+);
 
 

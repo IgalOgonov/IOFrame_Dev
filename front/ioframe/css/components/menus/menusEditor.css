@@ -1,0 +1,322 @@
+/* Alerts (the editor is just too big!)*/
+.menus-editor .alert {
+    position: fixed;
+    z-index: 10;
+    top: 10vh;
+    left: 10vw;
+    max-width: 80vw;
+    max-height: 80vh;
+    min-width: 300px;
+    box-shadow: 0px 0px 5px var(--shadow-dark-8);
+    min-height: 100px;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+/*Info*/
+.menus-editor .info{
+    margin: 5px 0px;
+    padding: 5px;
+}
+
+.menus-editor .info > div{
+    margin: 5px;
+}
+
+.menus-editor .info .value{
+    padding: 2px 5px;
+    background-color: var(--shadow-dark-1);
+}
+
+.menus-editor .info .title{
+    font-size: 1em;
+    font-weight: 800;
+}
+
+/*Form*/
+.menus-editor form{
+    padding: 5px;
+    margin: 10px 0px;
+    transition: 0.2s ease-in-out;
+}
+.menus-editor form >div{
+    padding: 5px 20px 5px 10px;
+    margin: 5px 0px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+    max-width: max-content;
+}
+.menus-editor form >div.changed{
+    background-color: var(--main-color-3);
+}
+.menus-editor form > div button.item-param{
+    padding: 2px 7px;
+}
+
+/*Meta*/
+.menus-editor form > .meta{
+    border: 1px solid var(--secondary-color-5);
+    transition: 0.2s ease-in-out;
+}
+.menus-editor form > .meta.changed{
+    background: var(--main-color-3);
+}
+
+.menus-editor form > .meta > .meta-pair{
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    transition: 0.2s ease-in-out;
+}
+.menus-editor form > .meta > .meta-pair.new{
+    background: var(--message-success-color-1);
+}
+.menus-editor form > .meta > .meta-pair.add{
+    background: var(--message-success-bg-1);
+}
+.menus-editor form > .meta > .meta-pair.remove{
+    background: var(--message-error-bg-1);
+}
+.menus-editor form > .meta > .meta-pair.change{
+    background: var(--main-color-3);
+}
+
+.menus-editor form > .meta button{
+    min-height: 35px;
+    min-width: 35px;
+    float: right;
+}
+
+/**Menu related**/
+.menus-editor form > div.menu{
+    padding: 5px;
+    border: 1px solid var(--secondary-color-5);
+}
+/*Color Map*/
+.menus-editor .menu.preview .color-map{
+    display: flex;
+    flex-wrap: wrap;
+}
+.menus-editor .menu.preview .color-map > * {
+    margin: 2px 5px;
+    padding: 1px 5px;
+    background: var(--shadow-dark-2);
+    color: var(--white-2);
+}
+.menus-editor .menu.preview .color-map .add::after{
+    content: 'Added Item';
+}
+.menus-editor .menu.preview .color-map .remove::after{
+    content: 'Removed Item';
+}
+.menus-editor .menu.preview .color-map .changed::after{
+    content: 'Changed Item';
+}
+/*Preview*/
+.menus-editor .menu.preview{
+    background: var(--main-color-2);
+}
+.menus-editor .menu.preview > button {
+    padding: 5px;
+    margin: 5px;
+    width: calc(100% - 5px);
+    display: block;
+}
+.menus-editor .menu-child.preview .menu-child{
+    line-height: 40px;
+    margin-left: 5px;
+    padding-left: 3px;
+    color: var(--white-2);
+    background: var(--shadow-dark-2);
+}
+.menus-editor .menu.preview .color-map .add,
+.menus-editor .menu-child.preview .menu-child.add{
+    background: var(--soft-green-2);
+}
+.menus-editor .menu.preview .color-map .remove,
+.menus-editor .menu-child.preview .menu-child.remove{
+    background: var(--soft-red-2);
+}
+.menus-editor .menu.preview .color-map .changed,
+.menus-editor .menu-child.preview .menu-child.changed{
+    color: var(--main-color-3);
+}
+.menus-editor .menu.preview .color-map .changed{
+    background: var(--gray-2);
+}
+.menus-editor .menu-child.viewing{
+    border-left: 10px var(--main-color-6) solid;
+}
+.menus-editor .menu-child.preview .menu-child > .title {
+    margin: 0px 10px;
+}
+/*Preview - popUp*/
+.menus-editor .menu.preview.pop-up{
+    position: fixed;
+    z-index: 2;
+    right: 5px;
+    top: 5px;
+    max-height: calc(100vh - 10px);
+    overflow: auto;
+}
+.menus-editor .menu.preview.pop-up.left{
+    left: 5px;
+}
+.menus-editor .menu.preview.pop-up .color-map {
+    flex-direction: column;
+}
+/*Preview - new child*/
+.menus-editor .menu.preview:not(.moving) .menu-child.child-after::after {
+    content: 'New Block';
+    background: var(--main-color-6);
+    display: block;
+    padding: 0px 5px;
+    margin: 0px 0px 0px -3px;
+}
+.menus-editor .menu.preview:not(.moving) .menu-child.child-after.sub::after {
+    margin-left: 5px;
+}
+.menus-editor .menu.preview:not(.moving) .menu-child.child-before::before {
+    content: 'New Block';
+    background: var(--main-color-6);
+    display: block;
+    padding: 0px 5px;
+    margin: 0px 0px 0px -3px;
+}
+/*Preview - moving, moving to*/
+.menus-editor .menu.preview.moving .menu-child:not(.preview){
+    padding: 0px 0px 0px 40px;
+}
+.menus-editor .menu-child.preview .menu-child.moving{
+    border-left: 10px var(--secondary-color-4) solid;
+}
+.menus-editor .menu.preview.moving .menu-child.moving-to.add-before{
+    border-top: 10px var(--secondary-color-4) solid;
+}
+.menus-editor .menu.preview.moving .menu-child.moving-to.add-after{
+    border-bottom: 10px var(--secondary-color-4) solid;
+}
+.menus-editor .menu.preview.moving .menu-child.moving-to.add-sub-after::after {
+    content: '';
+    border-bottom: 10px var(--secondary-color-4) solid;
+    display: block;
+}
+
+/*Edit*/
+.menus-editor form > div.menu:not(.preview){
+    max-width: 100%;
+}
+.menus-editor form > div.menu:not(.preview) > * {
+    margin: 10px 0px;
+}
+.menus-editor form > div.menu:not(.preview) > .address{
+    background: var(--shadow-gray-8);
+    padding: 5px 10px;
+}
+.menus-editor form > div.menu:not(.preview) > .address::before{
+    content: 'Parents: ';
+}
+.menus-editor form > div.menu:not(.preview) > .address.none::before{
+    content: 'Menu Root';
+}
+.menus-editor form > div.menu:not(.preview) > .address span > span:not(.delimiter){
+    background: var(--gray-2);
+    padding: 0px 5px;
+}
+.menus-editor form > div.menu:not(.preview) > .address span > span.delimiter {
+    margin: 0px 5px 0px 2px;
+    font-weight: 800;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child-container > button,
+.menus-editor form > div.menu:not(.preview) > button{
+    margin: 5px;
+    width: calc(100% - 10px);
+}
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child > button {
+    margin: 2px 0px;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child.new,
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child {
+    margin: 5px;
+    padding: 5px;
+    background: var(--gray-3);
+}
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child.remove {
+    background: var(--soft-red-1);
+}
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child.add {
+    background: var(--soft-green-1);
+}
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child.changed {
+    background: var(--secondary-color-2);
+}
+.menus-editor form > div.menu:not(.preview) .menu-child .inputs {
+    margin: 5px;
+    border: 1px solid var(--dark-1);
+    padding: 5px;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child .inputs > .input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child .inputs > .input > input {
+    flex: 1;
+    margin: 5px 10px;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child .menu-pair > button{
+    min-height: 35px;
+    min-width: 35px;
+    margin: 5px;
+}
+.menus-editor form > div.menu:not(.preview) .menu-child.new {
+    background: var(--main-color-5);
+}
+.menus-editor form > div.menu button.save-changes::before{
+    content: 'Save Changes';
+}
+.menus-editor form > div.menu:not(.preview) .menu-child.new::before,
+.menus-editor form > div.menu:not(.preview) button.add-here::before{
+    content: 'New Child';
+}
+.menus-editor form > div.menu:not(.preview) button.add-here.sub::before{
+    content: 'New Sub-Child';
+}
+.menus-editor form > div.menu:not(.preview) button.go-to-children::before{
+    content: 'View Children';
+}
+.menus-editor form > div.menu:not(.preview) button.go-up::before{
+    content: 'Back To Parent';
+}
+.menus-editor form > div.menu:not(.preview) button.remove-menu-branch::before{
+    content: 'Delete Branch';
+}
+.menus-editor form > div.menu:not(.preview) button.restore-menu-branch::before{
+    content: 'Restore Branch';
+}
+.menus-editor form > div.menu:not(.preview) .menu-child.new > .add-menu-child::before {
+    content: 'Add Child';
+}
+.menus-editor form > div.menu:not(.preview) .menu-child button.reset-menu-child::before,
+.menus-editor form > div.menu:not(.preview) .menu-child.new > .reset-menu-child::before {
+    content: 'Reset';
+}
+.menus-editor form > div.menu:not(.preview) button.add-here,
+.menus-editor form > div.menu:not(.preview) .menu-child.new > button,
+.menus-editor form > div.menu:not(.preview) .menu-child-container > .menu-child > button{
+    width: 100%;
+    padding: 5px;
+}
+
+
+/*Control buttons*/
+.menus-editor .control-buttons {
+    margin: 10px 0px 0px 0px;
+}
+.menus-editor .control-buttons button {
+    padding: 5px 50px;
+    font-weight: 800;
+    font-size: 1.25em;
+    margin: 0px 5px 0px 0px;
+}

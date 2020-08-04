@@ -895,6 +895,39 @@ namespace IOFrame{
             }
 
 
+
+            // INITIALIZE MENUS
+            /* This table is the default table for dynamic menus.
+             *
+             * Menu_ID        -   Varchar(256), primary identifier
+             * Title        - varchar(1024), title of the menu.
+             * Menu_Value    -  TEXT JSON encoded menu, of the required form
+             * Meta    -  TEXT JSON encoded meta information about the menu
+             * Created      -   Varchar(14), UNIX timestamp of when the menu was created.
+             * Last_Changed      -   Varchar(14), UNIX timestamp of when the menu was last changed.
+             */
+            $query = "CREATE TABLE IF NOT EXISTS ".$prefix."MENUS (
+                                                              Menu_ID varchar(256) PRIMARY KEY NOT NULL,
+                                                              Title varchar(1024) DEFAULT NULL,
+                                                              Menu_Value TEXT DEFAULT NULL,
+                                                              Meta TEXT DEFAULT NULL,
+                                                              Created varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
+                                                              INDEX (Created),
+                                                              INDEX (Last_Changed)
+                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
+            $makeTB = $conn->prepare($query);
+
+            try{
+                $makeTB->execute();
+                echo "Default Menus table created.".EOL;
+            }
+            catch(\Exception $e){
+                echo "Default Menus table couldn't be created, error is: ".$e->getMessage().EOL;
+                $res = false;
+            }
+
+
             // INITIALIZE RESOURCES Table
             /* This table stores resource information.
              * Resource_Type-   Varchar(64), should be 'image', 'js', 'css', 'text' or 'blob' currently.

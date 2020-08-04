@@ -4,6 +4,10 @@
     -moz-box-sizing: border-box;
 }
 
+*:focus{
+    outline: none;
+}
+
 :not(ol):not(ul):not(ul):not(li):not(blockquote){
     padding: 0;
     margin: 0;
@@ -52,8 +56,13 @@ blockquote {
 .alert{
     text-align: center;
     font-weight: 800;
+}
+.alert.button{
     padding: 10px 35px 5px 5px;
     margin-bottom: 5px;
+}
+.alert.click{
+    padding: 10px;
 }
 
 button{

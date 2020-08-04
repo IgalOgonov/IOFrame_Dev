@@ -305,7 +305,7 @@ if(!$requireOnlyTab || $requireOnlyTab === 'articleTest'){
 }
 
 if(!$requireOnlyTab || $requireOnlyTab === 'menuTest'){
-    echo '<h1>'.'Article test'.'</h1>';
+    echo '<h1>'.'Menu test'.'</h1>';
     echo '<button @click = "tabs.menuTest = !tabs.menuTest">Toggle Visibility</button>';
     echo '<section :class="{open:tabs.menuTest, closed:!tabs.menuTest}">';
     require 'test/verbose/menuTest.php';

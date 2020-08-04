@@ -1,20 +1,13 @@
 if(eventHub === undefined)
     var eventHub = new Vue();
 
-var %%VARIABLE_NAME%% = new Vue({
-    el: '#%%ELEMENT_NAME%%',
-    name: '%%VUE_NAME%%',
-    mixins:[%%MIXINS%%],
+var menus = new Vue({
+    el: '#menus',
+    name: 'menus',
+    mixins:[sourceURL,eventHubManager,IOFrameCommons],
     data(){
         return {
-            configObject: JSON.parse(JSON.stringify(document.siteConfig)), %%IF(HAS_TYPES)
-            types: {
-                default:{
-                    title: 'Replace this',
-                    button: 'negative-1'
-                }
-            },
-            currentType: 'default',%%
+            configObject: JSON.parse(JSON.stringify(document.siteConfig)), 
             //Modes, and array of available operations in each mode
             modes: {
                 search:{
@@ -28,86 +21,32 @@ var %%VARIABLE_NAME%% = new Vue({
                             button:'cancel-1'
                         }
                     },
-                    title:'View %%VUE_NAME%%'
+                    title:'View menu'
                 },
                 edit:{
                     operations:{},
-                    title:'Edit %%VUE_NAME%%'
+                    title:'Edit Menu'
                 },
                 create:{
                     operations:{},
-                    title:'Create %%VUE_NAME%%'
+                    title:'Create menu'
                 }
             },
-            //Filters to display for the search list //TODO Expend common filters
+            //Filters to display for the search list
             filters:[
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'createdAfter',
-                            title:'Created After',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        },
-                        {
-                            name:'createdBefore',
-                            title:'Created Before',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        }
-                    ]
-                },
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'changedAfter',
-                            title:'Changed After',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        },
-                        {
-                            name:'changedBefore',
-                            title:'Changed Before',
-                            type:'Datetime',
-                            parser: function(value){ return Math.round(value/1000); }
-                        }
-                    ]
-                },
-                {
-                    type:'Group',
-                    group: [
-                        {
-                            name:'includeRegex',
-                            title:'Include',
-                            placeholder:'Text the name includes',
-                            type:'String',
-                            min:0,
-                            max: 64,
-                            validator: function(value){
-                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
-                            }
-                        },
-                        {
-                            name:'excludeRegex',
-                            title:'Exclude',
-                            placeholder:'Text the name excludes',
-                            type:'String',
-                            min:0,
-                            max: 64,
-                            validator: function(value){
-                                return value.match(/^[\w\.\-\_ ]{1,64}$/) !== null;
-                            }
-                        },
-                    ]
-                }
             ],
-            //Result columns to display, and how to parse them //TODO Expend with more
+            //Result columns to display, and how to parse them
             columns:[
                 {
                     id:'identifier',
-                    title:'%%VUE_NAME%%'
+                    title:'Identifier'
+                },
+                {
+                    id:'title',
+                    title:'Title',
+                    parser:function(title){
+                        return title === null? ' - ' : title;
+                    }
                 },
                 {
                     id:'created',
@@ -146,20 +85,20 @@ var %%VARIABLE_NAME%% = new Vue({
                     }
                 }
             ],
-            //SearchList API (and probably the only relevant API) URL TODO Edit
-            url: document.pathToRoot+ '%%API_URL%%',
-            //Current page  //TODO Remove if no search list
+            //SearchList API (and probably the only relevant API) URL
+            url: document.pathToRoot+ 'api/menu',
+            //Current page
             page:0,
-            //Go to page  //TODO Remove if no search list
+            //Go to page
             pageToGoTo: 1,
-            //Limit  //TODO Remove if no search list
+            //Limit
             limit:50,
-            //Total available results //TODO Remove if no search list
+            //Total available results
             total: 0,
             //Main items
             items: [],
-            extraParams: {}, //TODO Remove if no extra params for search list
-            selected:-1, //TODO Remove if no selection (although unlikely)
+            extraParams: {},
+            selected:-1,
             //Current Mode of operation
             currentMode:'search',
             //Current operation
@@ -169,7 +108,7 @@ var %%VARIABLE_NAME%% = new Vue({
             //Whether we are currently loading
             initiated: false,
             verbose:true, //TODO remove this when done building
-            test:true //TODO remove this when done building
+            test:false
         }
     },
     created:function(){
@@ -177,7 +116,7 @@ var %%VARIABLE_NAME%% = new Vue({
         this.registerEvent('requestSelection', this.selectElement);
         this.registerEvent('searchResults', this.parseSearchResults);
         this.registerEvent('operationRequest', this.handleOperationResponse);
-        this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
+        this.registerEvent('goToPage', this.goToPage);
         this.registerEvent('searchAgain', this.searchAgain);
         this.registerEvent('returnToMainApp', this.returnToMainApp);
     },
@@ -186,13 +125,13 @@ var %%VARIABLE_NAME%% = new Vue({
         title:function(){
             switch(this.currentMode){
                 case 'search':
-                    return '%%SEARCH_TITLE%%';
+                    return 'Browsing Menus';
                     break;
                 case 'edit':
-                    return '%%EDIT_TITLE%%';
+                    return 'Editing User';
                     break;
                 case 'create':
-                    return '%%CREATE_TITLE%%';
+                    return '';
                     break;
                 default:
             }
@@ -231,18 +170,7 @@ var %%VARIABLE_NAME%% = new Vue({
             return Object.keys(this.modes[this.currentMode].operations).length>0;
         },
     },
-    watch:{%%IF(HAS_TYPES)
-    'currentType':function(newVal){
-        if(this.verbose)
-            console.log('Changing type to '+newVal);
-        this.initiated = false;
-        this.updatedTitles = false;
-        this.selected = -1;
-        this.page = 0;
-        this.pageToGoTo = 0;
-        this.items = [];
-    }
-    %%},
+    watch:{},
     methods:{
         //Returns to main app
         returnToMainApp: function(){
@@ -250,7 +178,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 console.log('Returning to main app!');
             this.switchModeTo('search');
         },
-        //Searches again (meant to be invoked after relevant changes) TODO Remove if no searchlist
+        //Searches again (meant to be invoked after relevant changes)
         searchAgain: function(){
             if(this.verbose)
                 console.log('Searching again!');
@@ -259,7 +187,7 @@ var %%VARIABLE_NAME%% = new Vue({
             this.selected = -1;
             this.initiated = false;
         },
-        //Parses search results returned from a search list TODO Remove if no searchlist
+        //Parses search results returned from a search list
         parseSearchResults: function(response){
             if(this.verbose)
                 console.log('Received response',response);
@@ -280,6 +208,8 @@ var %%VARIABLE_NAME%% = new Vue({
 
             for(let k in response.content){
                 response.content[k].identifier = k;
+                response.content[k].meta = response.content[k].meta ? response.content[k].meta : {};
+                response.content[k].menu = response.content[k].menu ? response.content[k].menu : {};
                 this.items.push(response.content[k]);
             }
         },
@@ -329,7 +259,7 @@ var %%VARIABLE_NAME%% = new Vue({
                     alertLog('Unknown operation '+this.from+' response, '+content,'error',this.$el);
             }
         },
-        //Goes to relevant page  TODO Remove if no searchlist
+        //Goes to relevant page
         goToPage: function(page){
             if(!this.initiating && page.from == 'search'){
                 let newPage;
@@ -353,7 +283,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 this.selected = -1;
             }
         },
-        //Element selection from search list  TODO Remove if no searchlist
+        //Element selection from search list
         selectElement: function(request){
 
             if(!request.from || request.from !== 'search')
@@ -403,14 +333,7 @@ var %%VARIABLE_NAME%% = new Vue({
             }
             this.currentMode = newMode;
             this.currentOperation = '';
-        },%%IF(HAS_TYPES)
-        //Switches to requested type
-        switchTypeTo: function(newType){
-            if(this.currentType === newType)
-                return;
-            this.switchModeTo('search');
-            this.currentType = newType;
-        },%%
+        },
         //Executes the operation
         confirmOperation: function(payload){
             if(this.test)
@@ -427,7 +350,8 @@ var %%VARIABLE_NAME%% = new Vue({
                 switch (currentOperation){
                     case 'delete':
                         operation = currentOperation;
-                        data.append('action','%%DELETE_ACTION_NAME%%'); //TODO Add what's needed
+                        data.append('action','deleteMenus');
+                        data.append('menus',JSON.stringify([this.items[this.selected].identifier]));
                         break;
                     default:
                         break;
@@ -445,7 +369,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 //TODO Add what's needed
                  this.apiRequest(
                      data,
-                      '%%API_URL%%',
+                      'api/menu',
                       'operationRequest',
                       {
                          verbose: this.verbose,

@@ -63,17 +63,18 @@ class ezAlert{
         }
         //Create the alert
         let alert;
-        (params.dismissible == 'click')?
-         alert = document.createElement("a"): alert = document.createElement("div");
+        alert = document.createElement("div");
         alert.className=this.className+" "+params.extraClasses;
         alert.innerHTML = content;
         if(params.dismissible == 'click'){
+            alert.className +=' click';
             alert.style.display = 'block';
             alert.style.textDecoration = 'none';
             alert.style.cursor = 'pointer';
             alert.addEventListener('click',e =>{e.target.parentNode.removeChild(e.target)});
         }
         if(params.dismissible == 'button'){
+            alert.className +=' button';
             let alertClose = document.createElement("p");
             alertClose.innerHTML = 'X';
             alertClose.href = '';

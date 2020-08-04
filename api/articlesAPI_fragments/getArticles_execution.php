@@ -37,15 +37,17 @@ foreach($result as $key=>$res){
                             $resValue = (double)$resValue;
                             break;
                         case 'json':
-                            if(!\IOFrame\Util\is_json($resValue) || empty($articleResultsColumnMap[$resKey]['validChildren']))
+                            if(!\IOFrame\Util\is_json($resValue))
                                 break;
                             else
                                 $resValue = json_decode($resValue,true);
-                            $tempRes = [];
-                            foreach($articleResultsColumnMap[$resKey]['validChildren'] as $validChild){
-                                $tempRes[$validChild] = isset($resValue[$validChild])? $resValue[$validChild] : null;
+                            if(!empty($articleResultsColumnMap[$resKey]['validChildren'])){
+                                $tempRes = [];
+                                foreach($articleResultsColumnMap[$resKey]['validChildren'] as $validChild){
+                                    $tempRes[$validChild] = isset($resValue[$validChild])? $resValue[$validChild] : null;
+                                }
+                                $resValue = $tempRes;
                             }
-                            $resValue = $tempRes;
                             break;
                     }
 

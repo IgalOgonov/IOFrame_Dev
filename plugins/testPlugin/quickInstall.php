@@ -469,20 +469,22 @@ if(!$local){
             ['test'=>$test]
         );
         // ------------------ MENU TEST -------------------
-        $SQLHandler->insertIntoTable(
-            $SQLHandler->getSQLPrefix().'CORE_VALUES',
-            ['tableKey','tableValue'],
-            [[['test_menu','STRING'],NULL]],
-            [
-                'test'=>true,
-                'IGNORE'=>true
-            ]
-        );
 
         if(!defined('MenuHandler'))
             require __DIR__.'/../../IOFrame/Handlers/MenuHandler.php';
-        $MenuHandler = new IOFrame\Handlers\MenuHandler($settings,array_merge($defaultSettingsParams,['menuIdentifier'=>'test_menu']));
+        $MenuHandler = new IOFrame\Handlers\MenuHandler($settings,$defaultSettingsParams);
+        $MenuHandler->setItems(
+            [
+                [
+                    'Menu_ID'=>'test_menu',
+                    'Title'=>'Test Menu'
+                ]
+            ],
+            'menus',
+            ['test'=>$test]
+        );
         $MenuHandler->setMenuItems(
+            'test_menu',
             [
                 [
                     'address'=>[],
