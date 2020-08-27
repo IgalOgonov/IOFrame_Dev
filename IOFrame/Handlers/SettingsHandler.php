@@ -23,7 +23,7 @@ namespace IOFrame\Handlers{
     if(!defined('SETTINGS_TABLE_PREFIX'))
         define('SETTINGS_TABLE_PREFIX', 'SETTINGS_');
 
-    /**Handles settings files (and maybe by now - DB shared settings) in IOFrame
+    /**Handles settings , local and DB based, in IOFrame
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
@@ -335,7 +335,7 @@ namespace IOFrame\Handlers{
                 foreach($this->names as $name){
                     $tname = strtoupper($this->SQLHandler->getSQLPrefix().SETTINGS_TABLE_PREFIX.$name);
                     $testQuery.= $this->SQLHandler->selectFromTable($tname,
-                            [ [$tname, [['settingKey', '_Last_Changed', '='],['settingValue',$this->lastUpdateTimes[$name],'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'],
+                            [ [$tname, [['settingKey', '_Last_Updated', '='],['settingValue',$this->lastUpdateTimes[$name],'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'],
                             ['settingKey','settingValue', '\''.$name.'\' as Source'],
                             ['justTheQuery'=>true,'test'=>false]
                         ).' UNION ';
@@ -348,7 +348,7 @@ namespace IOFrame\Handlers{
                 }
                 $temp = $this->SQLHandler->exeQueryBindParam($testQuery, [], ['fetchAll'=>true]);
 
-                //Used to check whether there are duplicate settings - as ell as to remove '_Last_Changed'
+                //Used to check whether there are duplicate settings - as ell as to remove '_Last_Updated'
                 $res = [];
 
                 //Update the settings
@@ -358,7 +358,7 @@ namespace IOFrame\Handlers{
                             //Indicate the setting exists
                             $res[$resArray['settingKey']] = 1;
                             //If the setting key was not "_last_changed", it was a real setting
-                            if ($resArray['settingKey'] != '_Last_Changed') {
+                            if ($resArray['settingKey'] != '_Last_Updated') {
                                 if (!$test)
                                     $this->settingsArray[$resArray['settingKey']] = $resArray['settingValue'];
                                 if($verbose)
@@ -366,8 +366,8 @@ namespace IOFrame\Handlers{
                             }
 
                         }
-                        //If the setting key was "_Last_Changed", set it.
-                        if ($resArray['settingKey'] != '_Last_Changed') {
+                        //If the setting key was "_Last_Updated", set it.
+                        if ($resArray['settingKey'] != '_Last_Updated') {
                             if (!$test) {
                                 $this->settingsArrays[$resArray['Source']][$resArray['settingKey']] = $resArray['settingValue'];
                                 $this->lastUpdateTimes[$resArray['Source']] = $updateTime;
@@ -724,7 +724,7 @@ namespace IOFrame\Handlers{
                     $this->SQLHandler->insertIntoTable(
                         $tname,
                         ['settingKey','settingValue'],
-                        [[["_Last_Changed","STRING"],[(string)time(),"STRING"]]],
+                        [[["_Last_Updated","STRING"],[(string)time(),"STRING"]]],
                         ['onDuplicateKey'=>true,'test'=>$test,'verbose'=>$verbose]
                     );
             }
@@ -779,7 +779,7 @@ namespace IOFrame\Handlers{
                     echo 'Query to send: TRUNCATE TABLE '.$tname.EOL;
                 }
 
-                $toInsert = [[['_Last_Changed',"STRING"],[(string)$this->lastUpdateTimes[$name],"STRING"]]];
+                $toInsert = [[['_Last_Updated',"STRING"],[(string)$this->lastUpdateTimes[$name],"STRING"]]];
                 if($settings)
                     foreach($settings as $k=>$v){
                         array_push($toInsert,[[$k,"STRING"],[$v,"STRING"]]);
@@ -872,7 +872,7 @@ namespace IOFrame\Handlers{
                 foreach($this->settingsArrays[$name] as $k=>$v){
                     array_push($values,[[(string)$k,'STRING'],[(string)$v,'STRING']]);
                 }
-                array_push($values,[['_Last_Changed','STRING'],[(string)time(),'STRING']]);
+                array_push($values,[['_Last_Updated','STRING'],[(string)time(),'STRING']]);
                 $this->SQLHandler->insertIntoTable(
                     $tname,
                     ['settingKey','settingValue'],

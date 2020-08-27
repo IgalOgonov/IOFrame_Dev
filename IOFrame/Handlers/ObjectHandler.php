@@ -1739,7 +1739,7 @@ namespace IOFrame\Handlers{
                 return 1;
             }
 
-            //At this point, we log the time as Last_Changed for object_map
+            //At this point, we log the time as Last_Updated for object_map
             $lastChanged = strval(time());
 
 
@@ -1837,7 +1837,7 @@ namespace IOFrame\Handlers{
             }
             //Luckily for us, create and update operations may be handled in one query
             $values = [];
-            $colArr = ['Map_Name','Objects','Last_Changed'];
+            $colArr = ['Map_Name','Objects','Last_Updated'];
             foreach($maps as $mapName=>$details){
                 //Obviously, don't do this for empty pages
                 if(is_array($maps[$mapName])){
@@ -1867,7 +1867,7 @@ namespace IOFrame\Handlers{
                             [
                                 'Map_Name' => $mapName,
                                 'Objects' => json_encode($details['Objects']),
-                                'Last_Changed' => $lastChanged,
+                                'Last_Updated' => $lastChanged,
                             ]
                         );
                         if (!$test)
@@ -1899,8 +1899,8 @@ namespace IOFrame\Handlers{
          *                  'offset' => int, SQL offset clause (only matters if limit is set)
          *
          * @return mixed
-         *              A JSON array of the objects, of the form {"ID":"ID",...}, if $time < Last_Changed
-         *              0 if Last_Changed < $time
+         *              A JSON array of the objects, of the form {"ID":"ID",...}, if $time < Last_Updated
+         *              0 if Last_Updated < $time
          *              1 if the page doesn't exist, or has no objects in it
          * TODO - Add security, allow private or otherwise secure objects, or at least pages
          * */
@@ -1917,7 +1917,7 @@ namespace IOFrame\Handlers{
                 return 1;
             }
             else{
-                if($pageArr['Last_Changed'] < $time){
+                if($pageArr['Last_Updated'] < $time){
                     if($verbose)
                         echo 'Page '.$map.' is up to date! '.EOL;
                     return 0;
@@ -1958,7 +1958,7 @@ namespace IOFrame\Handlers{
             }
             else{
                 foreach($pageArr as $pageName=>$pageData){
-                    if($pageData['Last_Changed'] < $pageArray[$pageName]){
+                    if($pageData['Last_Updated'] < $pageArray[$pageName]){
                         if($verbose)
                             echo 'Page '.$pageName.' is up to date! '.EOL;
                         $res[$pageName] = 0;

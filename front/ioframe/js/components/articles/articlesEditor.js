@@ -7,7 +7,7 @@ Vue.component('articles-editor', {
         //Default auth - whether you are an admin (9999), owner (2), permitted to see (1), or public user (0)
         defaultAuth:{
             type: Number,
-            default: 0
+            default: 10000
         },
         //Whether to allow modification (disabling switches mode to view and locks it there)
         allowModifying:{
@@ -265,6 +265,38 @@ Vue.component('articles-editor', {
                     },
                     validateFailureMessage: `Valid auth levels are 0 to 3`
                 },
+                language:{
+                    title:'Language',
+                    type: 'select',
+                    list:function(){
+                        let list = [
+                            {
+                                value:'',
+                                title:'Default'
+                            }
+                        ];
+                        for(let i in document.languages){
+                            list.push({
+                                value:document.languages[i],
+                                title:document.languages[i]
+                            });
+                        }
+                        return list;
+                    }(),
+                    onUpdate: {
+                        validate: function(item){
+                            return item>=0 && item<4;
+                        },
+                    },
+                    //Generally here to set a default for creation
+                    parseOnGet: function(item){
+                        if(item === null)
+                            return '';
+                        else
+                            return item;
+                    },
+                    validateFailureMessage: `Valid auth levels are 0 to 3`
+                },
                 weight:{
                     title:'Weight',
                     ignore:!this.isAdmin,
@@ -391,12 +423,13 @@ Vue.component('articles-editor', {
 
         if(Object.keys(this.existingItem).length)
             this.setArticleInfo(this.item);
-        else if(this.currentMode !== 'create')
+        else if(this.currentMode !== 'create' && this.itemIdentifier > 0)
             this.getArticleInfo();
         else{
             this.initiating = true;
             this.setMainItem({});
             this.initiating = false;
+            this.initiated = false;
         }
     },
     mounted:function(){
@@ -818,7 +851,7 @@ Vue.component('articles-editor', {
                 return;
             }
             this.initiating = false;
-            let blocks = article.blocks;
+            let blocks = JSON.parse(JSON.stringify(article.blocks));
             for(let i in blocks){
                 if(!blocks[i].meta || blocks[i].meta.length !== undefined)
                     blocks[i].meta = {};
@@ -826,7 +859,7 @@ Vue.component('articles-editor', {
             }
             this.blockCreationIndex = blocks.length;
             for(let i in article){
-                Vue.set(this.article,i,article[i]);
+                Vue.set(this.article,i,JSON.parse(JSON.stringify(article[i])));
             }
 
             Vue.set(this.articleThumbnail,'original',article['thumbnail']);
@@ -837,8 +870,8 @@ Vue.component('articles-editor', {
                 Vue.set(this.articleThumbnail,'address',this.extractImageAddress(article['thumbnail']));
 
             this.newOrder = this.article.blockOrder;
-
             this.setMainItem(JSON.parse(JSON.stringify(article)));
+            this.resetInputs();
         },
 
         //Gets article by id
@@ -854,6 +887,7 @@ Vue.component('articles-editor', {
             var data = new FormData();
             data.append('action', 'getArticle');
             data.append('id', this.articleId);
+            if(this.defaultAuth < 10000)
             data.append('authAtMost', this.defaultAuth);
 
             this.apiRequest(
@@ -921,6 +955,10 @@ Vue.component('articles-editor', {
                     alertLog(param.onUpdate.validateFailureMessage,'warning',this.$el);
                     return;
                 }
+
+                //Meta params are sent as '@' instead of "null", to signify their deletion
+                if( ( (paramName.substr(0,4) === 'meta') || (paramName === 'language') ) && (paramValue === '') )
+                    paramValue = '@';
 
                 data.append(param.onUpdate.setName, paramValue);
                 sendParams[param.onUpdate.setName] = paramValue;
@@ -1200,6 +1238,16 @@ Vue.component('articles-editor', {
                 }
             }
             this.recompute.changed = !this.recompute.changed;
+        },
+        itemIdentifier: function(newVal){
+            this.articleId = newVal;
+            this.article = {};
+            this.blocks = [];
+            if(this.currentMode !== 'create' && newVal > 0){
+                this.initiated = false;
+                this.initiating = false;
+                this.getArticleInfo();
+            }
         }
     },
     template: `

@@ -95,7 +95,7 @@
  *_________________________________________________
  * pwdReset [Timing protected]
  *      - Sends the user a password reset email, or confirms an existing reset code and user session as eligible
- *        to reset the password for a few minutes (depends on settings)
+ *        to reset the password for a few minutes (time depends on settings)
  *        id: ID of relevant user, used for reset confirmation
  *        code: Confirmation code, used for reset confirmation
  *        mail: user mail, used to request the reset
@@ -115,7 +115,7 @@
  *                  action=pwdReset&id=4&code=GtIOsxkfbA92iGp0MsSt70GkfSDTFcUZlyd0I2MJMflz1h6kmI&async
  *_________________________________________________
  * changePassword [CSRF protected]
- *      - Changes user password. Needs to be authorized via pwdReset first.
+ *      - Changes user password. Session needs to be authorized via pwdReset first.
  *        newPassword: new password
  *        Returns integer code:
  *                 0 - All good
@@ -125,8 +125,7 @@
  *        Examples: action=changePassword&newPassword=Test012345
  *_________________________________________________
  * regConfirm
- *      - Sends a user a registration email, or confirms an existing registration code and user session as eligable
- *        to reset the password for a few minutes (depends on settings)
+ *      - Sends a user a registration email, or confirms an existing registration code and activates user.
  *        --- TO REQUEST A RESET CODE ---
  *        mail: Email of the account
  *        --- TO APPLY A RESET CODE ---

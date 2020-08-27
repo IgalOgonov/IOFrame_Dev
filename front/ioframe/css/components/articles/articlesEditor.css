@@ -214,8 +214,8 @@
     background: var(--main-color-4);
     display: flex;
     justify-content: center;
-    height: 40px;
-    width: 100px;
+    height: 35px;
+    width: 50px;
 }
 .articles-editor .move:hover {
     background: var(--main-color-3);

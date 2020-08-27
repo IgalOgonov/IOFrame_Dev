@@ -48,7 +48,7 @@ Vue.component('contacts-editor', {
                 identifier: {
                     original:'',
                     current:'',
-                    regex:/^[a-zA-Z][\w ]{0,255}$/
+                    regex:/^[\w ]{1,256}$/
                 },
                 created: 0,
                 updated: 0,

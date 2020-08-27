@@ -4,7 +4,7 @@
  *      See standard return values at defaultInputResults.php
  *
  * Parameters:
- * "target"     - Name/URL of the setting file/table
+ * "target"     - Identifier  of the setting file/table
  * "action"     - Requested action - described bellow
  * "params"     - Parameters, depending on action - described bellow
  *_________________________________________________

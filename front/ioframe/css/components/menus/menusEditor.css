@@ -1,3 +1,16 @@
+/*Wrapper when popping up preview*/
+.menus-editor.preview-pop-up > .wrapper{
+    max-width: 1000px;
+    width: 100%;
+    float: right;
+}
+.menus-editor.preview-pop-up.preview-left > .wrapper{
+    float: right;
+}
+.menus-editor.preview-pop-up.preview-right > .wrapper{
+    float: left;
+}
+
 /* Alerts (the editor is just too big!)*/
 .menus-editor .alert {
     position: fixed;
@@ -150,6 +163,9 @@
 }
 .menus-editor .menu-child.preview .menu-child > .title {
     margin: 0px 10px;
+}
+.menus-editor .menu-child.preview .menu-child .menu-child:not(:last-child){
+    border-bottom: 1px black solid;
 }
 /*Preview - popUp*/
 .menus-editor .menu.preview.pop-up{

@@ -1,22 +1,6 @@
 <?php
 namespace IOFrame\Util{
     define('modificationFunctions',true);
-    /*
-     * Example:
-         replaceInFolder(
-            'C:/wamp64/www/TestSite/test',
-            '/../../IOFrame/Handlers/IOFrameTest1Handler.php',
-            '/../IOFrame/Handlers/IOFrameTest2Handler.php',
-            [
-                'test'=>true,
-                'verbose'=>true,
-                'subFolders'=>true,
-                'forbidden'=>[],
-                'required'=>[],
-            ]
-        )
-     *
-     * */
     if(!defined('helperFunctions'))
         require __DIR__ . '/../../IOFrame/util/helperFunctions.php';
 
@@ -110,14 +94,30 @@ namespace IOFrame\Util{
     }
 
     /**
-    Replace a string with a different string in all the files in a specific folder, and optionally all its subfolders
+    * Replace a string with a different string in all the files in a specific folder, and optionally all its subfolders
      * @param string $url needs to be the absolute address of the folder to modify
      * @param string $strRemove String to replace
      * @param string $strRep String to replace $strRemove with
      * @param array $params Same as replaceInFile(), with the addition of:
      *                  'subFolders' => bool, default false - whether to recursively modify all files in
+     *
+     * Example:
+     * replaceInFolder(
+     *   'C:/wamp64/www/TestSite/test',
+     *   '/../../IOFrame/Handlers/IOFrameTest1Handler.php',
+     *   '/../IOFrame/Handlers/IOFrameTest2Handler.php',
+     *   [
+     *     'test'=>true,
+     *     'verbose'=>true,
+     *     'subFolders'=>true,
+     *     'forbidden'=>[],
+     *     'required'=>[],
+     *   ]
+     * )
+     *
+     *
      */
-    function replaceIn($url,$strRemove,$strRep, array $params = []){
+    function replaceInFolder($url,$strRemove,$strRep, array $params = []){
         isset($params['subFolders'])?
             $subFolders = $params['subFolders'] : $subFolders = false;
         $dirArray = scandir($url);

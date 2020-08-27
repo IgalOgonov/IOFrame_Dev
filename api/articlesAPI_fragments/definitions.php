@@ -12,7 +12,7 @@ $articleSetColumnMap = [
     'thumbnailLocal'=>'Thumbnail_Local',
     'thumbnailDataType'=>'Data_Type',
     'thumbnailMeta'=>'Thumbnail_Meta',
-    'thumbnailUpdated' => 'Thumbnail_Last_Changed',
+    'thumbnailUpdated' => 'Thumbnail_Last_Updated',
     'weight'=>'Article_Weight',
     'blockOrder'=>'Block_Order',
     'firstName'=>'Creator_First_Name',
@@ -61,7 +61,7 @@ $articleResultsColumnMap = [
         'validChildren'=>['caption','alt','name'],
         'groupBy'=>'thumbnail',
     ],
-    'Thumbnail_Last_Changed' => [
+    'Thumbnail_Last_Updated' => [
         'resultName'=>'updated',
         'groupBy'=>'thumbnail'
     ],
@@ -99,7 +99,7 @@ $blocksSetColumnMap = [
     'otherArticleThumbnailLocal'=>'Thumbnail_Local',
     'otherArticleThumbnailDataType'=>'Data_Type',
     'otherArticleThumbnailMeta'=>'Thumbnail_Meta',
-    'otherArticleThumbnailUpdated'=>'Thumbnail_Last_Changed',
+    'otherArticleThumbnailUpdated'=>'Thumbnail_Last_Updated',
     'otherArticleCreatorFirstName'=>'Other_Article_Creator_First_Name',
     'otherArticleCreatorLastName'=>'Other_Article_Creator_Last_Name',
     'created'=>'Created',
@@ -136,7 +136,7 @@ $blocksResultsColumnMap = [
         'type'=>'json',
         'validChildren'=>['caption','alt','name','height','width','autoplay','loop','mute'],
     ],
-    'Resource_Last_Changed' => [
+    'Resource_Last_Updated' => [
         'resultName'=>'updated',
         'type'=>'int',
         'groupBy'=>'resource'
@@ -201,7 +201,7 @@ $blocksResultsColumnMap = [
         'validChildren'=>['caption','alt','name'],
         'groupBy'=>['otherArticle','thumbnail']
     ],
-    'Thumbnail_Last_Changed'=>[
+    'Thumbnail_Last_Updated'=>[
         'resultName'=>'updated',
         'type'=>'int',
         'groupBy'=>['otherArticle','thumbnail']

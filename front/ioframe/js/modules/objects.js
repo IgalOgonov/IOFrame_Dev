@@ -234,9 +234,9 @@
             gaSubmit: function () {
                 this.inputs = JSON.stringify(this.ga);
                 //Encode request params
-                this.request.params['pages'] = {
+                this.request.params['maps'] = {
                 };
-                this.request.params['pages'][this.ga.pageName] = this.ga.date;
+                this.request.params['maps'][this.ga.pageName] = this.ga.date;
                 //Send request
                 this.sendRequest();
             },

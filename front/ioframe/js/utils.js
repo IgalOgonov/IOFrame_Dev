@@ -1,5 +1,5 @@
 /**
- * Created by IO on 3/1/2017.
+ * Created by Igal Ogonov on 3/1/2017.
  */
 
 //Returns true if an object is an HTML Element (Node)
@@ -129,16 +129,64 @@ function debounce(func, wait, timerName = '') {
             'function': function(){},
             'lastCalled':Date.now()
         };
-	return function() {
+    return function() {
+        let context = this, args = arguments;
+        let later = function() {
+            document[timerName].function = function(){};
+            func.apply(context, args);
+        };
+        clearTimeout(document[timerName].function);
+        document[timerName].function = setTimeout(later, wait);
+    };
+}
 
-		var context = this, args = arguments;
-		var later = function() {
-			document[timerName].function = function(){};
-			func.apply(context, args);
-		};
-		clearTimeout(document[timerName].function);
-		document[timerName].function = setTimeout(later, wait);
-	};
+// Similar to debounce, but instead throttles execution to once per "wait"
+function throttle(func, wait, timerName = '') {
+    let now = Date.now();
+    if(timerName == '')
+        timerName = strhash(func.toString());
+    if(document[timerName] === undefined)
+        document[timerName] = {
+            'function': func,
+            'lastCalled':now - wait
+        };
+    return function() {
+        let context = this, args = arguments;
+        let later = function() {
+            document[timerName].function = function(){};
+            document[timerName].lastCalled = Date.now();
+            func.apply(context, args);
+        };
+        let correctTimeout;
+        let delta = now - document[timerName].lastCalled;
+        //If we passed the last wait time, the function was already executed
+        //If we called the function earlier that "wait" milliseconds ago, set a timeout to call it in the right time
+        if(delta < wait){
+            correctTimeout = document[timerName].lastCalled - now + wait;
+        }
+        //Else, just call the function
+        else{
+            document[timerName].lastCalled = now;
+            correctTimeout = 0;
+        }
+        clearTimeout(document[timerName].function);
+        document[timerName].function = setTimeout(later, correctTimeout);
+    };
+}
+
+//generates a random id
+function makeid(length,characters='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') {
+    var result           = '';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+//Returns a random int in the range of 0 to max-1
+function randomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
 }
 
 //To be used with await
@@ -180,7 +228,7 @@ function updateCSRFToken(consumeExisting = true){
             let action;
             action = 'CSRF_token';
             // url
-            let url=document.pathToRoot+"api\/session";
+            let url=document.rootURI+"api\/session";
             //Request itself
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url+'?'+action);
@@ -451,3 +499,12 @@ function timestampToDate(timestamp){
     return realDate;
 }
 
+/** Unescape html characters
+* @credit https://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript/1912522#1912522
+* */
+function htmlDecode(input){
+    var e = document.createElement('textarea');
+    e.innerHTML = input;
+    // handle case of empty input
+    return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+}

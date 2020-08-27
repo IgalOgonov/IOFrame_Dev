@@ -1,6 +1,6 @@
 <?php
 
-require 'IOFrame/Util/ext/AltoRouter.php';
+require 'IOFrame/Handlers/ext/AltoRouter.php';
 require 'IOFrame/Handlers/RouteHandler.php';
 require 'main/coreInit.php';
 define('REQUEST_PASSED_THROUGH_ROUTER',true);

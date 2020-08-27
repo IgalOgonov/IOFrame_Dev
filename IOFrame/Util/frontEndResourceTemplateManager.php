@@ -2,7 +2,7 @@
 
 namespace IOFrame\Util{
     define('frontEndResourceTemplateManager',true);
-    /**A pretty simple timer. Allows tracking time passed, and waiting for specific intervals / until specific time passes.
+    /**A tool to output FrontEndResourceHandler items into pages as actual  resource (JS, CSS) links
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
@@ -18,6 +18,17 @@ namespace IOFrame\Util{
          * @var Array The result of $FrontEndResourceHandler->getCSS()
          */
         public $CSSResources = [];
+
+        /**
+         * @var Array Order in which the JS resources should be displayed'
+         */
+        public $JSOrder = [];
+
+        /**
+         * @var Array Order in which the CSS resources should be displayed'
+         */
+        public $CSSOrder = [];
+
         /**
          * @var String The root of JS resources relative to server address - defaults to 'front/ioframme/js/'
          */
@@ -37,7 +48,7 @@ namespace IOFrame\Util{
         /** @param Array $params optionally initiate $JSResources and $CSSResources with parameters SResources and CSSResources
          */
         function __construct(array $params = []){
-            $validParams = ['JSResources','CSSResources','dirToRoot','JSResourceRoot','CSSResourceRoot'];
+            $validParams = ['JSResources','CSSResources','dirToRoot','JSResourceRoot','CSSResourceRoot','JSOrder','CSSOrder'];
             foreach($validParams as $param){
                 if(isset($params[$param]))
                     $this->{$param} = $params[$param];
@@ -70,14 +81,22 @@ namespace IOFrame\Util{
                 case 'CSS':
                     $resourceArray = $this->{$type.'Resources'};
                     $resourceRoot = $this->{$type.'ResourceRoot'};
+                    $resourceOrder = $this->{$type.'Order'};
                     break;
                 default:
                     return;
             }
-            if($resources === []){
-                foreach($resourceArray as $identifier => $arr){
-                    if(is_array($arr))
+            if(!count($resources)){
+                if(!count($resourceOrder)){
+                    foreach($resourceArray as $identifier => $arr){
+                        if(is_array($arr))
+                            array_push($resources,$identifier);
+                    }
+                }
+                elseif(count($resourceOrder)){
+                    foreach($resourceOrder as $identifier){
                         array_push($resources,$identifier);
+                    }
                 }
             }
 

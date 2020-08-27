@@ -1,9 +1,8 @@
 <?php
-
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
-require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+require_once __DIR__ . '/../../IOFrame/Handlers/ext/htmlpurifier/HTMLPurifier.standalone.php';
 $config = HTMLPurifier_Config::createDefault();
 $config->set('HTML.AllowedElements', []);
 $purifier = new HTMLPurifier($config);
@@ -22,6 +21,8 @@ if(!$auth->isLoggedIn()){
 
 $requiredParams = [];
 $optionalParams = ['articleAuth','articleAddress','subtitle','caption','alt','name','thumbnailAddress','blockOrder','weight','language'];
+$metaParams = ['subtitle','caption','alt','name'];
+$canBeNullParams = array_merge($metaParams,['language']);
 
 if($inputs['create']){
     $requiredAuth = REQUIRED_AUTH_ADMIN;
@@ -34,6 +35,7 @@ else{
     $setParams['override'] = true;
     $setParams['update'] = true;
     array_push($requiredParams,'articleId');
+    array_push($optionalParams,'title');
 }
 
 $purifyParams = ['title','subtitle','caption','name','alt'];
@@ -71,7 +73,7 @@ foreach($requiredParams as $param){
 
 foreach($optionalParams as $param){
 
-    if($inputs[$param] !== null){
+    if($inputs[$param] !== null && !(in_array($param,$canBeNullParams) && ($inputs[$param] === '@')) ){
         switch($param){
             case 'articleAuth':
             case 'weight':
@@ -84,7 +86,6 @@ foreach($optionalParams as $param){
                     $requiredAuth = REQUIRED_AUTH_ADMIN;
                 }
                 break;
-            //No breaks!
             case 'subtitle':
                 if(!preg_match('/'.SUBTITLE_REGEX.'/',$inputs[$param])){
                     if($test)
@@ -157,7 +158,7 @@ foreach($optionalParams as $param){
                 break;
         }
 
-        if(!in_array($param,['subtitle','caption','alt','name']))
+        if(!in_array($param,$metaParams))
             $cleanInputs[$articleSetColumnMap[$param]] = $inputs[$param];
         else{
             if(!isset($cleanInputs['Article_Text_Content']))
@@ -177,6 +178,15 @@ foreach($optionalParams as $param){
         $address = strtolower(substr(implode('-',$address),0,ADDRESS_MAX_LENGTH-strlen($time)-1));
         $address .= '-'.$time;
         $cleanInputs[$articleSetColumnMap['articleAddress']] = $address;
+    }
+    elseif(in_array($param,$canBeNullParams) && ($inputs[$param] === '@')){
+        if(!in_array($param,$metaParams))
+            $cleanInputs[$articleSetColumnMap[$param]] = '';
+        else{
+            if(!isset($cleanInputs['Article_Text_Content']))
+                $cleanInputs['Article_Text_Content'] = [];
+            $cleanInputs['Article_Text_Content'][$param] = null;
+        }
     }
 
 }

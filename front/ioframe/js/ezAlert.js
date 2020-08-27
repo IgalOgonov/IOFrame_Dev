@@ -111,10 +111,3 @@ class ezAlert{
     };
 
 };
-
-
-/*
-* myTarget = document.querySelector("#The_old-fashioned_way > span");
-
-myTarget.addEventListener('click',e =>{e.target.parentNode.parentNode.removeChild(e.target.parentNode)})
-* */

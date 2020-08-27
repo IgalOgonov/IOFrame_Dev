@@ -9,6 +9,9 @@
  *  }
  * ]
  *
+ * example:
+ *  php simpleWatcher.php -f watcher-json/test.json
+ *
  * */
 if(php_sapi_name() != "cli"){
     die('This file must be accessed through the CLI!');
@@ -118,11 +121,15 @@ function populateWatchArray($inputs,&$watchArray,$depth,$silent,$test,$baseUrl){
         elseif(is_file($fullTarget)){
             if(!$silent)
                 echo '['.$changeTime.'] '.$fullTarget.' added to watchlist'.EOL;
-            if(!is_file($fullDestination)){
-                if(!$silent)
-                    echo 'Watched file '.$index.' target file '.$fullDestination.' does not exist, creating empty file!'.EOL;
+            if(!is_file($fullDestination) || @filemtime($fullDestination) < $changeTime){
+                if(!$silent){
+                    if(is_file($fullDestination))
+                        echo 'Watched file '.$index.' target file '.$fullDestination.' does not exist, copying file!'.EOL;
+                    else
+                        echo 'Watched file '.$index.' target file '.$fullDestination.' is older than source, copying file!'.EOL;
+                }
                 if(!$test)
-                    \IOFrame\Util\file_force_contents($fullDestination,'');
+                    @copy($fullTarget,$fullDestination);
             }
             $input['changedAt'] = $changeTime;
             $input['failedAttempts'] = 0;
@@ -145,7 +152,7 @@ function populateWatchArray($inputs,&$watchArray,$depth,$silent,$test,$baseUrl){
             }
             elseif(!is_dir($fullDestination)){
                 if(!$silent)
-                    echo 'Watched file '.$index.' target folder '.$fullDestination.' does not exist, creating empty file!'.EOL;
+                    echo 'Watched file '.$index.' target folder '.$fullDestination.' does not exist, creating empty dir!'.EOL;
                 if(!$test)
                     mkdir( $fullDestination, 0777, true );
             }
@@ -202,7 +209,11 @@ else
 echo "Press 'q' to quit on Linux, Ctrl+'c' on windows".EOL;
 $cycleStart = time();
 while(true){
-    if($cycleStart+$interval > time()){
+    if($windows)
+        sleep($interval);
+    else
+        usleep(200000); // 5 checks per second is enough
+    if(!$windows || ($cycleStart+$interval > time())){
         $x = "";
         if(!$windows && non_block_read(STDIN, $x)) {
             if($x === 'q')

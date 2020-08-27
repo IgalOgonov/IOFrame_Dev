@@ -30,6 +30,11 @@ Vue.component('search-list', {
             type: String,
             default: 'searchResults'
         },
+        //The name of the event to emit when starting a search and sending current filters
+        filtersEventName: {
+            type: String,
+            default: 'searchingFilters'
+        },
         //The name of the event to emit on selection
         selectionEventName: {
             type: String,
@@ -174,6 +179,18 @@ Vue.component('search-list', {
             type: Function,
             default: function(filters){
                 return filters;
+            },
+        },
+        /* Allows "remembering" the filters (by the parent).
+         * Is an object of the form:
+         * {
+         *   <filter "name", corresponding to the filters array "name" parameter> : <current value to set (directly via setting the element "value" attribute)>
+         * }
+         * */
+        currentFilters: {
+            type: Object,
+            default: function(){
+                return {};
             },
         },
         /* Extra classes for an item. May be a string (a specific class for each item), a array of strings (similar), or
@@ -553,6 +570,16 @@ Vue.component('search-list', {
                     data.append(key, this.extraParams[key]);
             }
 
+            //Emit filters event
+            let request =  this.identifier ?
+                {
+                    from: this.identifier,
+                    content: filterArray
+                }
+                :
+                filterArray;
+            eventHub.$emit(this.filtersEventName,request);
+
             this.apiRequest(
                 data,
                 this.apiUrl,
@@ -856,6 +883,17 @@ Vue.component('search-list', {
             if(this.verbose)
                 console.log('Initiating at mounted');
             this.search();
+        }
+        if(Object.keys(this.currentFilters).length > 0){
+            if(this.verbose)
+                console.log('Setting filters at mounted');
+            for(let identifier in this.currentFilters){
+                if(!this.currentFilters.hasOwnProperty(identifier))
+                    continue;
+                let filter = this.$el.querySelector('.filters *[name="'+identifier+'"]');
+                if(filter)
+                    filter.value = this.currentFilters[identifier];
+            }
         }
     },
     beforeUpdate: function(){

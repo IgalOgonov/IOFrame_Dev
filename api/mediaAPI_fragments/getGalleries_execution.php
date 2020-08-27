@@ -42,7 +42,7 @@ foreach($result as $galleryName => $infoArray){
     //Populate results that always exist
     $parsedResults['order'] = $infoArray['Collection_Order'];
     $parsedResults['created'] = $infoArray['Created'];
-    $parsedResults['lastChanged'] = $infoArray['Last_Changed'];
+    $parsedResults['lastChanged'] = $infoArray['Last_Updated'];
 
     //Handle meta
     $meta = $infoArray['Meta'];

@@ -128,7 +128,7 @@ var menus = new Vue({
                     return 'Browsing Menus';
                     break;
                 case 'edit':
-                    return 'Editing User';
+                    return 'Editing Menus';
                     break;
                 case 'create':
                     return '';

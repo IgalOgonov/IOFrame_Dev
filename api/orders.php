@@ -29,7 +29,7 @@
  *          The following are ONLY relevant if IDs is null:
  *              limit: int, default 50, max 500, min 1 - limit the number of items you get
  *              offset: int, default 0 - used for pagination purposes with limit
- *              orderBy                - string, defaults to null. Possible values include 'Created' 'Last_Changed',
+ *              orderBy                - string, defaults to null. Possible values include 'Created' 'Last_Updated',
  *                                     and any of the names in $orderColumnNames
  *              orderType              - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
  *              createdAfter           - int, default null - Only return items created after this date.
@@ -90,7 +90,7 @@
  *_________________________________________________
  * archiveOrders
  *      - Moves orders to archive, and deletes them from the main table.
- *        This is a very limited version of the actual handler.
+ *        This is a very limited version of the actual handler function.
  *        The maximum time limit for this action is 20 seconds. If it stops before that, you might need to run this again
  *        for all the orders you wanted to be archived.
  *        MUST BE AN ADMIN.
@@ -138,7 +138,7 @@
  *          createdBefore       - same as in getOrders() but applies to user<=>order relationships
  *          changedAfter        - same as in getOrders() but applies to user<=>order relationships
  *          changedBefore       - same as in getOrders() but applies to user<=>order relationships
- *          orderBy             - string, defaults to null. Possible values include 'Created' 'Last_Changed',
+ *          orderBy             - string, defaults to null. Possible values include 'Created' 'Last_Updated',
  *                                  and any of the names in $userOrderColumnNames
  *          orderType           - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
  *          limit               - string, SQL LIMIT, defaults to system default

@@ -513,7 +513,7 @@ namespace IOFrame\Handlers{
                     $res = $this->SQLHandler->updateTable(
                         $metaname,
                         ['settingValue = '.time()],
-                        ['settingKey','_Last_Changed','='],
+                        ['settingKey','_Last_Updated','='],
                         ['test'=>$test,'verbose'=>$verbose]
                     );
             }
@@ -559,7 +559,7 @@ namespace IOFrame\Handlers{
                         [
                             [
                                 $metaname,
-                                [['settingKey','_Last_Changed', '='],['settingValue',$lastUpdated,'>='],'AND'],
+                                [['settingKey','_Last_Updated', '='],['settingValue',$lastUpdated,'>='],'AND'],
                                 ['settingKey','settingValue'],
                                 [],
                                 'SELECT'
@@ -579,7 +579,7 @@ namespace IOFrame\Handlers{
                         "AND"
                     ];
                 else
-                    $queryCond = [ [$metaname, [['settingKey', '_Last_Changed', '='],['settingValue',$lastUpdated,'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'];
+                    $queryCond = [ [$metaname, [['settingKey', '_Last_Updated', '='],['settingValue',$lastUpdated,'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'];
 
                 $testQuery.= $this->SQLHandler->selectFromTable($tname,
                         $queryCond,
@@ -738,7 +738,7 @@ namespace IOFrame\Handlers{
                 else
                     $updateTime = $this->lastUpdateTimes[$treeName];
                 $toInsert = [
-                    [['_Last_Changed',"STRING"],[(string)$updateTime,"STRING"]],
+                    [['_Last_Updated',"STRING"],[(string)$updateTime,"STRING"]],
                     [['_Private',"STRING"],[(string)$private,"STRING"]]
                 ];
 
@@ -1195,7 +1195,7 @@ namespace IOFrame\Handlers{
                 );
                 $this->SQLHandler->updateTable($metaname,
                     ['settingValue = '.(string)(time())],
-                    ['settingKey','_Last_Changed','='],
+                    ['settingKey','_Last_Updated','='],
                     ['test'=>$test,'verbose'=>$verbose]
                 );
             }
@@ -1344,7 +1344,7 @@ namespace IOFrame\Handlers{
                 );
                 $this->SQLHandler->updateTable($metaname,
                     ['settingValue = '.(string)(time())],
-                    ['settingKey','_Last_Changed','='],
+                    ['settingKey','_Last_Updated','='],
                     ['test'=>$test,'verbose'=>$verbose]
                 );
             }

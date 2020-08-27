@@ -1,18 +1,9 @@
 <?php
 
-/* This the BASIC API that handles all the object auth functions.
- * The way object auth is actually meant to be used means this API will always be about modifying raw data
- * which operates by business logic unknown to the API itself, thus should only be used by those who can understand it and
- * act accordingly.
- *
- *      See standard return values at defaultInputResults.php
+/* Handles articles in IOFrame.
  *
  * Parameters:
  * "action"     - Requested action - described bellow
- * "params"     - Parameters, depending on action - described bellow
- * "type"       - string, each action here has an associated item type. The following types are valid:
- *                'articles','markdown-block','image-block','cover-block','gallery-block','video-block','youtube-block',
- *                'article-block'
  *_________________________________________________
  * getArticles
  *      Gets all available articles, or specific articles. Will not get article blocks with this action.
@@ -96,7 +87,7 @@
  *          action=getArticles&limit=5&titleLike=t&addressLike=t&categoryIn=[1,2]
  *          action=getArticles&keys=[1,2]&authAtMost=2
  *_________________________________________________
- * getArticle [CSRF protected]
+ * getArticle
  *      Gets a specific article and all its blocks
  *      params:
  *      id - int, article ID - Overrides articleAddress if set. Required if articleAddress is not set.
@@ -259,7 +250,7 @@
  *_________________________________________________
  * deleteArticles [CSRF protected]
  *      Deletes articles. The default, however, is not to delete them but to "hide" them by setting their view auth to 9999.
- *      Requires admin auth or ownership. To actually delete an article, you must be an admin.
+ *      Hiding requires admin auth or ownership, but to actually delete an article, you must be an admin.
  *
  *      params:
  *      articles - int[], array of article IDs
@@ -280,7 +271,8 @@
  *      action=deleteArticles&articles=[1,2,3]&permanentDeletion=true
  *_________________________________________________
  * setArticleBlock [CSRF protected]
- *       Create/Update Article block - Creating requires relevant article auth.
+ *      Create/Update Article block.
+ *      Creating requires relevant article auth.
  *      Updating requires auth or ownership.
  *
  *      params:
@@ -409,7 +401,7 @@
  *      action=deleteArticleBlocks&articleId=1&deletionTargets=[0,3,5]
  *_________________________________________________
  * moveBlockInArticle [CSRF protected]
- *      Deletes article blocks.
+ *      Move block in article order - from one index to another (starting at 0).
  *
  *      params:
  *      articleId: int, id of the article

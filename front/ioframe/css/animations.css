@@ -1,0 +1,11 @@
+@keyframes rotatingLoop{
+    from {transform: rotate(0deg);}
+    to {transform: rotate(360deg);}
+}
+
+.rotating-loop {
+    animation-name: rotatingLoop;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}

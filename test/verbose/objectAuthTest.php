@@ -940,7 +940,7 @@ var_dump(
 
 echo EOL.'Checking user actions that all exist (OR)'.EOL;
 var_dump(
-    $ObjectAuthHandler->useHasActions(
+    $ObjectAuthHandler->userHasActions(
         'test_1',
         1,
         'test_1',
@@ -951,7 +951,7 @@ var_dump(
 
 echo EOL.'Checking user actions that all exist  (OR) - fake user'.EOL;
 var_dump(
-    $ObjectAuthHandler->useHasActions(
+    $ObjectAuthHandler->userHasActions(
         'test_1',
         99999,
         'test_1',
@@ -962,7 +962,7 @@ var_dump(
 
 echo EOL.'Checking user actions that some exist (OR)'.EOL;
 var_dump(
-    $ObjectAuthHandler->useHasActions(
+    $ObjectAuthHandler->userHasActions(
         'test_1',
         1,
         'test_1',
@@ -973,7 +973,7 @@ var_dump(
 
 echo EOL.'Checking user actions (AND)'.EOL;
 var_dump(
-    $ObjectAuthHandler->useHasActions(
+    $ObjectAuthHandler->userHasActions(
         'test_1',
         1,
         'test_1',
@@ -984,7 +984,7 @@ var_dump(
 
 echo EOL.'Checking user actions that some exist (AND)'.EOL;
 var_dump(
-    $ObjectAuthHandler->useHasActions(
+    $ObjectAuthHandler->userHasActions(
         'test_1',
         1,
         'test_1',

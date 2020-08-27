@@ -47,8 +47,8 @@ const componentSize = {
     },
     watch:{
         'componentSize.width': function(newWidth) {
-            for(let i in this.componentSize.levels){
-                if(this.componentSize.levels[i+1] === undefined || newWidth < this.componentSize.levels[i].width){
+            for(let i = this.componentSize.levels.length; i--; i>=0){
+                if(newWidth > this.componentSize.levels[i].width){
                     this.componentSize.mode = this.componentSize.levels[i].mode;
                     return;
                 }

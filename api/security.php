@@ -1,6 +1,6 @@
 <?php
 /* This the the API that handles all (framework internal) security related functions.
- * There are two types of functions related to security - thoserelated to the event rulebook, and those related to IP blacklists/whitelists.
+ * There are two types of functions related to security - those related to the event rulebook, and those related to IP blacklists/whitelists.
  *
  *      See standard return values at defaultInputResults.php
  * ---- EVENTS RULEBOOK RELATED ----
@@ -132,7 +132,7 @@
  *          ]
  *_________________________________________________
  * setEventsMeta
- *      - Sets Event rules into the Events rulebook
+ *      - Sets Event rules meta information (typically display name)
  *        inputs:  string, JSON encoded array of objects, where each member is of the form:
  *          [
  *              'category' => int, Event category (required)
@@ -155,7 +155,7 @@
  *           2 item exists and 'override' is false
  *_________________________________________________
  * deleteEventsMeta
- *      - Deletes Event rules from the Events rulebook
+ *      - Sets Event rules meta information
  *        inputs:  string, JSON encoded array of objects, where each member is of the form:
  *          [
  *              'category' => int, Event category (required)
@@ -200,7 +200,7 @@
  *          ]
  *_________________________________________________
  * getIPRanges
- *      - Gets all -or some - IPv4's
+ *      - Gets all -or some - IPv4 ranges
  *              'ranges' - string, JSON array of arrays, defaults to [] - each item must be of the form:
  *                          [
  *                              'prefix' => string, defaults to '' - valid IP prefix ('', '54', '46.212', '35.127.213', etc)

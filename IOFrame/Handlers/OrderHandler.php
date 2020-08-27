@@ -537,6 +537,7 @@ namespace IOFrame\Handlers{
          * @param string $name Item name
          * @param array $params of the form:
          *              'index' - int, default -1 - As described above.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'local' => bool, default true - Whether to change the order just locally, or globally too.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'order' => string, default false - Allows passing an order you got earlier
@@ -548,7 +549,8 @@ namespace IOFrame\Handlers{
          *          3 - couldn't read or write file/db
          * */
         function pushToOrder(string $name, $params = []){
-            return $this->pushToOrderMultiple([$name],$params)[$name];
+            $res = $this->pushToOrderMultiple([$name],$params);
+            return isset($res[$name]) ? $res[$name] : $res;
         }
 
         /** Pushes multiple items to the bottom/top of the order list, if index is -1/-2, respectively, or
@@ -557,14 +559,16 @@ namespace IOFrame\Handlers{
          * @param string[] $names Ordered array of the items you wish to push
          * @param array $params of the form:
          *              'index' - int, default -1 - As described above.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'local' => bool, default $this->local - Whether to change the order just locally, or globally too.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'order' => string, default false - Allows passing an order you got earlier
          *              'unique' => bool, default true - Whether to only allow unique items in the order
          *              'rowExists' => bool, default false - indicates that the row we're updating already exists.
-         * @returns int[]
-         *              Array of the form:
+         * @returns int[]|string Array of the form:
          *          [$name => code from pushToOrder]
+         *          OR
+         *          ['pureFunc' and no other errors] New order - CSV string.
          *
         */
         function pushToOrderMultiple(array $names, $params = []){
@@ -597,6 +601,11 @@ namespace IOFrame\Handlers{
             else{
                 $order = $this->getOrder($params);
             }
+
+            $pureFunc = isset($params['pureFunc'])? $params['pureFunc'] : false;
+            if($pureFunc)
+                $local = false;
+
             //The string of names we are pushing
             $namesString = implode($this->separator,$names);
 
@@ -693,7 +702,7 @@ namespace IOFrame\Handlers{
                         }
                     return $res;
                 }
-                else{
+                elseif(!$pureFunc){
                     if($rowExists)
                         $dbRes =  $this->updateGlobalOrder($order,$params);
                     else
@@ -706,6 +715,9 @@ namespace IOFrame\Handlers{
 
                     return $res;
                 }
+                else{
+                    return $order;
+                }
 
             }
         }
@@ -717,6 +729,7 @@ namespace IOFrame\Handlers{
          * @param string $type is 'index', 'range' or 'name'
          * @param array $params of the form:
          *              'local' => bool, default true - Whether to change the order just locally, or globally too.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'indexChecksOnly' => bool, default false - if true, will only check $target and return 0 if it's valid
          *              'order' => string, default false - Allows passing an order you got earlier
@@ -725,9 +738,11 @@ namespace IOFrame\Handlers{
          * 1 - index or name don't exist ( or order is empty)
          * 2 - incorrect type
          * 3 - couldn't read or write file/db
+         * ['pureFunc' and no other errors] New order - CSV string.
          * */
         function removeFromOrder( $target, string $type, array $params = []){
-            return $this->removeFromOrderMultiple([$target],$type,$params)[$target];
+            $res = $this->removeFromOrderMultiple([$target],$type,$params);
+            return isset($res[$target]) ? $res[$target] : $res;
         }
 
 
@@ -737,13 +752,15 @@ namespace IOFrame\Handlers{
          * @param string $type is 'index', 'range' or 'name'
          * @param array $params of the form:
          *              'local' => bool, default true - Whether to change the order just locally, or globally too.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'indexChecksOnly' => bool, default false - if true, will only check $targets and return 0 they are valid
          *              'order' => string, default false - Allows passing an order you got earlier
          *              'rowExists' => bool, default false - indicates that the row we're updating already exists.
-         * @returns int[]
-         *              Array of the form:
+         * @returns int[]|string Array of the form:
          *          [$target => code from removeFromOrder]
+         *          OR
+         *          ['pureFunc' and no other errors] New order - CSV string.
          * */
         function removeFromOrderMultiple(array $targets, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -770,6 +787,10 @@ namespace IOFrame\Handlers{
             else{
                 $order = $this->getOrder($params);
             }
+
+            $pureFunc = isset($params['pureFunc'])? $params['pureFunc'] : false;
+            if($pureFunc)
+                $local = false;
 
             if($verbose)
                 echo $indexChecksOnly ?
@@ -908,7 +929,7 @@ namespace IOFrame\Handlers{
                         }
                     return $res;
                 }
-                else{
+                elseif(!$pureFunc){
                     if($rowExists)
                         $dbRes =  $this->updateGlobalOrder($order,$params);
                     else
@@ -920,6 +941,9 @@ namespace IOFrame\Handlers{
                         }
                     return $res;
                 }
+                else{
+                    return $order;
+                }
             }
         }
 
@@ -929,6 +953,7 @@ namespace IOFrame\Handlers{
          * @param int $to
          * @param array $params of the form:
          *              'local' => bool, default true - Whether to change the order just locally, or globally too.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'indexChecksOnly' => bool, default false - if true, will only check $from/$to and return 0 if they're valid
          *              'order' => string, default false - Allows passing an order you got earlier
@@ -938,6 +963,7 @@ namespace IOFrame\Handlers{
          * 1 - from or to indexes are not set, or empty
          * 2 - could not open file
          * 3 - failed to write to db/file
+         * ['pureFunc'] New order - CSV string.
          * */
         function moveOrder(int $from, int $to, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -965,6 +991,10 @@ namespace IOFrame\Handlers{
             else{
                 $order = $this->getOrder($params);
             }
+
+            $pureFunc = isset($params['pureFunc'])? $params['pureFunc'] : false;
+            if($pureFunc)
+                $local = false;
 
             if($verbose)
                 echo $indexChecksOnly ?
@@ -1029,7 +1059,7 @@ namespace IOFrame\Handlers{
                         return 3;
                     }
                 }
-                else{
+                elseif(!$pureFunc){
                     if($rowExists)
                         $dbRes =  $this->updateGlobalOrder($order,$params);
                     else
@@ -1042,6 +1072,8 @@ namespace IOFrame\Handlers{
                         return 3;
                     }
                 }
+                else
+                    return $order;
             }
         }
 
@@ -1050,6 +1082,7 @@ namespace IOFrame\Handlers{
          * @param int $num2
          * @param array $params of the form:
          *              'local' => bool, default true - Whether to change the order just locally, or globally too.
+         *              'pureFunc' => bool, default false - If set to true, overrides other modes and simply returns new order.
          *              'backUp' => bool, default false - Back up local file after changing
          *              'indexChecksOnly' => bool, default false - if true, will only check $num1/$num2 and return 0 if they're valid
          *              'order' => string, default false - Allows passing an order you got earlier
@@ -1059,6 +1092,7 @@ namespace IOFrame\Handlers{
          * 1 - one of the indices is not set (or empty order file), or not integers, or order is not an array
          * 2 - couldn't open order file
          * 3 - Could not write to db/local
+         * ['pureFunc'] New order - CSV string.
          * */
         function swapOrder(int $num1,int $num2, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -1086,6 +1120,10 @@ namespace IOFrame\Handlers{
             else{
                 $order = $this->getOrder($params);
             }
+
+            $pureFunc = isset($params['pureFunc'])? $params['pureFunc'] : false;
+            if($pureFunc)
+                $local = false;
 
             $order = is_array($order)?
                 $order = implode($this->separator,$order): $order;
@@ -1153,7 +1191,7 @@ namespace IOFrame\Handlers{
                         return 3;
                     }
                 }
-                else{
+                elseif(!$pureFunc){
                     if($rowExists)
                         $dbRes =  $this->updateGlobalOrder($order,$params);
                     else
@@ -1166,6 +1204,8 @@ namespace IOFrame\Handlers{
                         return 3;
                     }
                 }
+                else
+                    return $order;
             }
 
         }

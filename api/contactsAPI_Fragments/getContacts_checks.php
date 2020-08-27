@@ -31,7 +31,7 @@ if($inputs['orderType'] !== null){
 
 //orderBy
 if($inputs['orderBy'] !== null){
-    if(!in_array($inputs['orderType'],['Created','Last_Changed','Email','Country','City','Company_Name'])){
+    if(!in_array($inputs['orderType'],['Created','Last_Updated','Email','Country','City','Company_Name'])){
         if($test)
             echo 'If orderType it must be ASC or DESC'.EOL;
         exit(INPUT_VALIDATION_FAILURE);

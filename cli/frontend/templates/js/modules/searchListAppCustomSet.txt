@@ -147,7 +147,7 @@ var %%VARIABLE_NAME%% = new Vue({
                 }
             ],
             //SearchList API (and probably the only relevant API) URL TODO Edit
-            url: document.pathToRoot+ '%%API_URL%%',
+            url: document.rootURI+ '%%API_URL%%',
             //Current page  //TODO Remove if no search list
             page:0,
             //Go to page  //TODO Remove if no search list

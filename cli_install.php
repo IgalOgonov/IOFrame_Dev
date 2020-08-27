@@ -5,7 +5,7 @@
     {
         "expectedProxy"*: < local setting expectedProxy, e.g: "10.12.145.200,100.2.32.6" >,
         "expectedPath"*: < local setting pathToRoot, e.g: "/IOFrame/" or "/Framework/Test Folder/" >,
-        "dieOnPluginMismatch": <local setting dieOnPluginMismatch, e.g: true>,
+        "dieOnPluginMismatch"*: <local setting dieOnPluginMismatch, e.g: true>,
         "redis"*:{
             "redis_addr": < As in redisSettings, eg: "127.0.0.1" >,
             "redis_port"*: < As in redisSettings, eg: 6379 >,
@@ -14,8 +14,9 @@
             "redis_default_persistent"*: < As in redisSettings, eg: false >
         },
         "sql":{
-            "sql_server_addr": < As in sqlSettings, eg: false >"127.0.0.1:3306",
-            "sql_username": < As in sqlSettings, eg: false >"username",
+            "sql_server_addr": < As in sqlSettings, eg: "127.0.0.1" >,
+            "sql_server_port": < As in sqlSettings, eg: 3306 >,
+            "sql_username": < As in sqlSettings, eg: "username" >,
             "sql_password": < As in sqlSettings, eg: "password" >,
             "sql_db_name": < As in sqlSettings, eg: "databaseName" >,
             "sql_table_prefix": < As in sqlSettings, eg: "ABC" >,
@@ -49,6 +50,8 @@ if($installFromFile){
     if(!isset($installOptions['sql']))
         die('SQL credential must be provided!');
     if(!isset($installOptions['sql']['sql_server_addr']))
+        die('SQL server address must be provided!');
+    if(!isset($installOptions['sql']['sql_server_port']))
         die('SQL server address must be provided!');
     if(!isset($installOptions['sql']['sql_username']))
         die('SQL username must be provided!');
@@ -278,6 +281,18 @@ if($sqlSettings->setSetting('sql_server_addr',$line,['createNew'=>true]))
     echo 'Setting sql_server_addr set to '.$line.EOL;
 else
     echo 'Failed to set setting sql_server_addr to '.$line.EOL;
+
+if(!$installFromFile){
+    echo "Enter the MySQL server port - E.g 3306".EOL;
+    $line = trim(fgets($handle));
+}
+else{
+    $line = $installOptions['sql']['sql_server_port'];
+}
+if($sqlSettings->setSetting('sql_server_port',$line,['createNew'=>true]))
+    echo 'Setting sql_server_port set to '.$line.EOL;
+else
+    echo 'Failed to set setting sql_server_port to '.$line.EOL;
 
 if(!$installFromFile){
     echo "Enter the MySQL username (remember- ALL privileges)".EOL;

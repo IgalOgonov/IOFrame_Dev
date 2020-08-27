@@ -137,7 +137,7 @@ namespace IOFrame\Handlers{
          *                                and passed to getFromCacheOrDB() as 'columnConditions'.
          *          ------ Using the parameters bellow disables caching ------
          *          'ignoreBlob'        - bool, default false - if true, will not return the blob column.
-         *          'orderBy'           - string, defaults to null. Possible values include 'Created' 'Last_Changed',
+         *          'orderBy'           - string, defaults to null. Possible values include 'Created' 'Last_Updated',
          *                                'Local' and 'Address'(default)
          *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
          *          'limit'             - string, SQL LIMIT, defaults to system default
@@ -190,7 +190,7 @@ namespace IOFrame\Handlers{
                 $retrieveParams['offset'] =  $offset? $offset : null;
             }
 
-            $columns = array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Changed',
+            $columns = array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Updated',
                 'Text_Content','Data_Type'],$this->extraColumns);
             if(!$ignoreBlob)
                 $columns = array_merge($columns,['Blob_Content']);
@@ -212,13 +212,13 @@ namespace IOFrame\Handlers{
             }
 
             if($changedAfter!== null){
-                $cond = ['Last_Changed',$changedAfter,'>'];
+                $cond = ['Last_Updated',$changedAfter,'>'];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
             }
 
             if($changedBefore!== null){
-                $cond = ['Last_Changed',$changedBefore,'<'];
+                $cond = ['Last_Updated',$changedBefore,'<'];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
             }
@@ -525,7 +525,7 @@ namespace IOFrame\Handlers{
                 return $results;
             $res = $this->SQLHandler->insertIntoTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceTableName,
-                array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Changed',
+                array_merge(['Resource_Type','Address','Resource_Local','Minified_Version','Version','Created','Last_Updated',
                     'Text_Content','Blob_Content','Data_Type'],$extraColumns),
                 $resourcesToSet,
                 array_merge($params,['onDuplicateKey'=>true])
@@ -951,12 +951,12 @@ namespace IOFrame\Handlers{
                 }
 
                 if($changedAfter!== null){
-                    $cond = ['Last_Changed',$changedAfter,'>'];
+                    $cond = ['Last_Updated',$changedAfter,'>'];
                     array_push($dbConditions,$cond);
                 }
 
                 if($changedBefore!== null){
-                    $cond = ['Last_Changed',$changedBefore,'<'];
+                    $cond = ['Last_Updated',$changedBefore,'<'];
                     array_push($dbConditions,$cond);
                 }
 
@@ -1086,7 +1086,7 @@ namespace IOFrame\Handlers{
                     $resourcesTable.'.Minified_Version',
                     $resourcesTable.'.Version',
                     $resourcesTable.'.Created',
-                    $resourcesTable.'.Last_Changed',
+                    $resourcesTable.'.Last_Updated',
                     $resourcesTable.'.Text_Content',
                     $resourcesTable.'.Blob_Content'
                 ];
@@ -1142,7 +1142,7 @@ namespace IOFrame\Handlers{
                                 'Minified_Version' => $array['Minified_Version'],
                                 'Version' => $array['Version'],
                                 'Created' => $array['Created'],
-                                'Last_Changed' => $array['Last_Changed'],
+                                'Last_Updated' => $array['Last_Updated'],
                                 'Text_Content' => $array['Text_Content'],
                                 'Blob_Content' => $array['Blob_Content']
                             ];
@@ -1302,7 +1302,7 @@ namespace IOFrame\Handlers{
 
             $res = $this->SQLHandler->insertIntoTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
-                ['Collection_Name','Resource_Type','Created','Last_Changed','Meta'],
+                ['Collection_Name','Resource_Type','Created','Last_Updated','Meta'],
                 $toSet,
                 array_merge($params, ['onDuplicateKey'=>true])
             );
@@ -1495,7 +1495,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                 ],
                 [
                     [
@@ -1513,7 +1513,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, exit. Else write the changes to the DB.
+            //If we failed to set Last_Updated, exit. Else write the changes to the DB.
             if(!$res){
                 return $results;
             }
@@ -1617,7 +1617,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                 ],
                 [
                     [
@@ -1635,7 +1635,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, exit. Else write the changes to the DB.
+            //If we failed to set Last_Updated, exit. Else write the changes to the DB.
             if(!$res){
                 return -1;
             }
@@ -1734,7 +1734,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                 ],
                 [
                     [
@@ -1752,7 +1752,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, We will return. Else,  update the order
+            //If we failed to set Last_Updated, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
                 $orderParams['tableName'] = $this->resourceCollectionTableName;
@@ -1826,7 +1826,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                 ],
                 [
                     [
@@ -1844,7 +1844,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, We will return. Else,  update the order
+            //If we failed to set Last_Updated, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
                 $orderParams['tableName'] = $this->resourceCollectionTableName;
@@ -1923,7 +1923,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                 ],
                 [
                     [
@@ -1941,7 +1941,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, We will return. Else,  update the order
+            //If we failed to set Last_Updated, We will return. Else,  update the order
             if($res){
                 $orderParams = $this->defaultSettingsParams;
                 $orderParams['tableName'] = $this->resourceCollectionTableName;
@@ -2008,7 +2008,7 @@ namespace IOFrame\Handlers{
             $res = $this->SQLHandler->updateTable(
                 $this->SQLHandler->getSQLPrefix().$this->resourceCollectionTableName,
                 [
-                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Changed = '.time(),
+                    $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Last_Updated = '.time(),
                     $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS.Collection_Order = NULL',
                 ],
                 [
@@ -2027,7 +2027,7 @@ namespace IOFrame\Handlers{
                 $params
             );
 
-            //If we failed to set Last_Changed, We will return. Else,  update the order
+            //If we failed to set Last_Updated, We will return. Else,  update the order
             if(!$res)
                 return -1;
 

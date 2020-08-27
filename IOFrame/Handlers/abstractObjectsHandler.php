@@ -10,7 +10,7 @@ namespace IOFrame{
     /** Most Handlers in IOFrame follow a specific pattern.
      * This abstract class comes to provide a common set of actions, that have no reason to be implemented on their own every time.
      * It is meant to be expanded upon by its child classes.
-     * Not that in some cases, it'd still be better to write a new class from scratch than to extend this.
+     * Note that in some cases, it'd still be better to write a new class from scratch than to extend this.
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
@@ -90,6 +90,7 @@ namespace IOFrame{
          *                                          'jsonObject' => bool, default false - if set and true, will treat the field
          *                                                         as a JSON
          *                                          'autoIncrement' => bool, if set, indicates that this column auto-increments (doesn't need to be set on creation)
+         *                                          'considerNull' => mixed, if true, this value will be considered "NULL" (since we cannot pass an actual NULL value sometimes, like through the API)
          *                                      ]
          *                      'moveColumns' => array of objects, where each object is of the form:
          *                                      <column name> => [
@@ -429,7 +430,7 @@ namespace IOFrame{
          * @throws \Exception If the item type is invalid
          *
          */
-        function getItems(array $items = [], string $type, array $params = []){
+        function getItems(array $items, string $type, array $params = []){
 
             if(in_array($type,$this->validObjectTypes))
                 $typeArray = $this->objectsDetails[$type];
@@ -920,12 +921,16 @@ namespace IOFrame{
                             if(in_array($colName,$safeStrColumns))
                                 $val = IOFrame\Util\str2SafeStr($val);
 
-                            if(!isset($colArr['type']) || $colArr['type'] === 'string')
-                                $val = [$val,'STRING'];
-                            elseif($colArr['type'] === 'int')
+                            if($colArr['type'] === 'int')
                                 $val = (int)$val;
                             elseif($colArr['type'] === 'bool')
                                 $val = (bool)$val;
+
+                            if(isset($colArr['considerNull']) && ($val === $colArr['considerNull']) )
+                                $val = null;
+                            elseif(!isset($colArr['type']) || $colArr['type'] === 'string')
+                                $val = [$val,'STRING'];
+
                             array_push($arrayToSet,$val);
                         }
                         //Add creation and update time
@@ -995,12 +1000,15 @@ namespace IOFrame{
                         if(in_array($colName,$safeStrColumns))
                             $val = IOFrame\Util\str2SafeStr($val);
 
-                        if(!isset($colArr['type']) || $colArr['type'] === 'string')
-                            $val = [$val,'STRING'];
-                        elseif($colArr['type'] === 'int')
+                        if($colArr['type'] === 'int')
                             $val = (int)$val;
                         elseif($colArr['type'] === 'bool')
                             $val = (bool)$val;
+
+                        if(isset($colArr['considerNull']) && ($val === $colArr['considerNull']) )
+                            $val = null;
+                        elseif(!isset($colArr['type']) || $colArr['type'] === 'string')
+                            $val = [$val,'STRING'];
 
                         array_push($arrayToSet,$val);
 

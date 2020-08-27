@@ -986,6 +986,7 @@ Vue.component('menus-editor', {
             this.$forceUpdate();
         },
         addMenuChildPair: function(item = null){
+            item['@'].changed = true;
             if(item === null)
                 item = this.menu.preview.newChild;
             if(
@@ -1018,6 +1019,9 @@ Vue.component('menus-editor', {
 
             let identifier = this.focusedMenu['children'][index].identifier;
 
+            if(this.verbose)
+                console.log('Removing menu branch ',index,' with identifier ',identifier);
+
             if(this.focusedMenu['children'][index]['@'].add){
                 this.focusedMenu['children'].splice(index,1);
                 this.focusedMenu['order'].splice(this.focusedMenu['order'].indexOf(identifier),1);
@@ -1025,7 +1029,7 @@ Vue.component('menus-editor', {
             else{
                 if(!this.focusedMenu['children'][index]['@'].remove){
                     this.focusedMenu['children'][index]['@'].remove = true;
-                    this.focusedMenu['order'].splice(index,1);
+                    this.focusedMenu['order'].splice(this.focusedMenu['order'].indexOf(identifier),1);
                 }
                 else{
                     this.focusedMenu['children'][index]['@'].remove = false;
@@ -1065,7 +1069,7 @@ Vue.component('menus-editor', {
                     rootMenu = true;
                     address = [];
                 }
-                if(menu.remove){
+                if(menu['@'].remove){
                     let newItem = {
                         address:address,
                         "delete":true
@@ -1308,7 +1312,7 @@ Vue.component('menus-editor', {
     watch: {
     },
     template: `
-    <div class="menus-editor">
+    <div class="menus-editor" :class="{'preview-pop-up':menu.preview.popUp,'preview-left':menu.preview.stickToLeft,'preview-right':!menu.preview.stickToLeft}">
         <div class="wrapper">
 
             <div class="info message-info-2" v-if="itemHasInfo">

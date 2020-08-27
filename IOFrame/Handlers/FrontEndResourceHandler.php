@@ -295,7 +295,7 @@ namespace IOFrame\Handlers{
                             'relativeAddress' => '',
                             'folder' => false,
                             'meta' =>  $resource['Text_Content'],
-                            'lastChanged' => $resource['Last_Changed'],
+                            'lastChanged' => $resource['Last_Updated'],
                             'version' => $resource['Version'],
                             'type' => $resource['Data_Type'],
                             'local' => false,
@@ -308,7 +308,7 @@ namespace IOFrame\Handlers{
                             'relativeAddress' => '',
                             'folder' => false,
                             'meta' =>  $resource['Text_Content'],
-                            'lastChanged' => $resource['Last_Changed'],
+                            'lastChanged' => $resource['Last_Updated'],
                             'version' => $resource['Version'],
                             'local' => false,
                             'size' => 0

@@ -78,8 +78,8 @@ namespace IOFrame\Handlers{
                         ],
                         [
                             'tableName' => 'RESOURCES',
-                            'column' => 'Last_Changed',
-                            'as' => 'Thumbnail_Last_Changed'
+                            'column' => 'Last_Updated',
+                            'as' => 'Thumbnail_Last_Updated'
                         ],
                         [
                             'tableName' => 'CONTACTS',
@@ -113,7 +113,8 @@ namespace IOFrame\Handlers{
                         ],
                         'Article_Language' => [
                             'type' => 'string',
-                            'default' => null
+                            'default' => null,
+                            'considerNull' => '@'
                         ],
                         'Article_View_Auth' => [
                             'type' => 'int',
@@ -126,7 +127,8 @@ namespace IOFrame\Handlers{
                         ],
                         'Thumbnail_Address' => [
                             'type' => 'string',
-                            'default' => null
+                            'default' => null,
+                            'considerNull' => '@'
                         ],
                         'Block_Order' => [
                             'type' => 'string',
@@ -282,8 +284,8 @@ namespace IOFrame\Handlers{
                 [
                     'tableName' => 'res1',
                     'alias'=>true,
-                    'column' => 'Last_Changed',
-                    'as' => 'Resource_Last_Changed'
+                    'column' => 'Last_Updated',
+                    'as' => 'Resource_Last_Updated'
                 ],
                 [
                     'tableName' => 'RESOURCE_COLLECTIONS',
@@ -322,8 +324,8 @@ namespace IOFrame\Handlers{
                 [
                     'tableName' => 'res2',
                     'alias'=>true,
-                    'column' => 'Last_Changed',
-                    'as' => 'Thumbnail_Last_Changed'
+                    'column' => 'Last_Updated',
+                    'as' => 'Thumbnail_Last_Updated'
                 ],
                 [
                     'tableName' => 'res2',

@@ -35,7 +35,7 @@ namespace IOFrame{
             // INITIALIZE CORE VALUES TABLE
             /* Literally just the pivot time for now. */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."CORE_VALUES(
-                                                              tableKey varchar(255) UNIQUE NOT NULL,
+                                                              tableKey varchar(255) PRIMARY KEY,
                                                               tableValue text
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
 
@@ -77,7 +77,7 @@ namespace IOFrame{
                                                               Content TEXT,
                                                               Created_On varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
-                                                              INDEX (Created),
+                                                              INDEX (Created_On),
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
 
@@ -128,7 +128,9 @@ namespace IOFrame{
                                                               Auth_Rank int,
                                                               SessionID varchar(255),
                                                               authDetails TEXT,
-                                                              INDEX (loginIndex)
+                                                              INDEX (Username),
+                                                              INDEX (Email),
+                                                              INDEX (Active)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
 
             try{
@@ -236,11 +238,12 @@ namespace IOFrame{
                                                               Created_On varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
     														  PRIMARY KEY(Contact_Type,Identifier),
-                                                              INDEX (Contact_Name),
+                                                              INDEX (First_Name,Last_Name),
                                                               INDEX (Email),
                                                               INDEX (Country),
                                                               INDEX (City),
-                                                              INDEX (Company),
+                                                              INDEX (Company_Name),
+                                                              INDEX (Company_ID),
                                                               INDEX (Created_On),
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
@@ -257,11 +260,11 @@ namespace IOFrame{
             // INITIALIZE USERS AUTH TABLE
             /*THIS IS AN AUTH TABLE- it is responsible for authorization.
              * ID - foreign key - tied to USERS table
-             * Last_Changed - The latest time this users actions/groups were changed.
+             * Last_Updated - The latest time this users actions/groups were changed.
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."USERS_AUTH (
                                                               ID int PRIMARY KEY,
-                                                              Last_Changed varchar(11),
+                                                              Last_Updated varchar(11),
                                                                 FOREIGN KEY (ID)
                                                                 REFERENCES ".$prefix."USERS(ID)
                                                                 ON DELETE CASCADE,
@@ -279,12 +282,12 @@ namespace IOFrame{
             // INITIALIZE GROUPS AUTH TABLE
             /*THIS IS A GROUPS AUTH TABLE- it is responsible for authorization of groups.
              * Auth_Group - name of the group
-             * Last_Changed - The latest time this groups actions were changed.
+             * Last_Updated - The latest time this groups actions were changed.
              * Description - Optional group description
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."GROUPS_AUTH (
                                                               Auth_Group varchar(256) PRIMARY KEY,
-                                                              Last_Changed varchar(11) NOT NULL DEFAULT '0',
+                                                              Last_Updated varchar(11) NOT NULL DEFAULT '0',
                                                               Description TEXT,
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
@@ -464,44 +467,6 @@ namespace IOFrame{
                 echo "IPV4_RANGE table couldn't be created, error is: ".$e->getMessage().EOL;
                 $res = false;
             }
-
-
-            // INITIALIZE IP_LIST_META
-            /* This table is for storing meta information (currently just Last_Changed) of the IP_LIST table
-             * settingKey - Similar to a settings table
-             * settingValue - similar to a settings table
-             */
-            $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."IP_LIST_META (
-                                                              settingKey varchar(255) PRIMARY KEY,
-                                                              settingValue varchar(255) NOT NULL
-                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
-                                                              ");
-            try{
-                $makeTB->execute();
-                echo "IP_LIST_META table created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "IP_LIST_META table couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
-            // INITIALIZE IPV4_RANGE_META
-            /* Similar to IP_LIST_META
-             */
-            $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."IPV4_RANGE_META (
-                                                              settingKey varchar(255) PRIMARY KEY,
-                                                              settingValue varchar(255) NOT NULL
-                                                              ) ENGINE=InnoDB DEFAULT CHARSET = utf8;
-                                                              ");
-            try{
-                $makeTB->execute();
-                echo "IPV4_RANGE_META table created.".EOL;
-            }
-            catch(\Exception $e){
-                echo "IPV4_RANGE_META table couldn't be created, error is: ".$e->getMessage().EOL;
-                $res = false;
-            }
-
 
             // INITIALIZE IP_EVENTS
             /* This table is for storing the list of (probably suspicious) events per IP
@@ -725,12 +690,12 @@ namespace IOFrame{
              * Objects - Varchar(20000) A JSON assoc array of the format:
              *           {"#":"ObjID1,ObjID2,...", "group":"ObjID1,ObjID2,...", "anotherGroup":"ObjID1,..."}
              *           where # is the collection of the group-less objects of the current page.
-             * Last_Changed - Last time objects/groups/anything were added/removed to/from the page, unix timestamp.
+             * Last_Updated - Last time objects/groups/anything were added/removed to/from the page, unix timestamp.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."OBJECT_MAP (
                                                               Map_Name Varchar(255) PRIMARY KEY,
                                                               Objects TEXT,
-                                                              Last_Changed varchar(14)
+                                                              Last_Updated varchar(14)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
             try{
@@ -904,7 +869,7 @@ namespace IOFrame{
              * Menu_Value    -  TEXT JSON encoded menu, of the required form
              * Meta    -  TEXT JSON encoded meta information about the menu
              * Created      -   Varchar(14), UNIX timestamp of when the menu was created.
-             * Last_Changed      -   Varchar(14), UNIX timestamp of when the menu was last changed.
+             * Last_Updated      -   Varchar(14), UNIX timestamp of when the menu was last changed.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."MENUS (
                                                               Menu_ID varchar(256) PRIMARY KEY NOT NULL,
@@ -914,7 +879,7 @@ namespace IOFrame{
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
                                                               INDEX (Created),
-                                                              INDEX (Last_Changed)
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
 
@@ -938,7 +903,7 @@ namespace IOFrame{
              *                    Rules of how to handle it are defined by the handler.
              * Version      -   int, default 1. meant for versioning purposes. Is incremented by the user.
              * Created      -   Varchar(14), UNIX timestamp of when the resource was added.
-             * Last_Changed -   Varchar(14), UNIX timestamp of when the resource was last changed (just in the DB).
+             * Last_Updated -   Varchar(14), UNIX timestamp of when the resource was last changed (just in the DB).
              * Text_Content -   Space for general text content.
              * Blob_Content -   Space for general blob content.
              * Data_Type    -   In case of binary content, this is used to save the type (e.g "application/pdf")
@@ -950,14 +915,14 @@ namespace IOFrame{
                                                               Minified_Version BOOLEAN NOT NULL,
                                                               Version int DEFAULT 1 NOT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
-                                                              Last_Changed varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
                                                               Text_Content TEXT,
                                                               Blob_Content LONGBLOB,
                                                               Data_Type varchar(512) DEFAULT NULL,
                                                                PRIMARY KEY(Resource_Type, Address),
                                                               INDEX (Resource_Local),
                                                               INDEX (Created),
-                                                              INDEX (Last_Changed)
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
 
@@ -978,18 +943,18 @@ namespace IOFrame{
              * Collection_Order-   TEXT, Reserved for order a collection might have.
              * Resource_Type-   Varchar(64), should be 'image', 'js', 'css', 'text' or 'blob' currently.
              * Created      -   Varchar(14), UNIX timestamp of when the collection was added.
-             * Last_Changed -   Varchar(14), UNIX timestamp of when the collection (or any of its memebers was last changed.
+             * Last_Updated -   Varchar(14), UNIX timestamp of when the collection (or any of its memebers was last changed.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."RESOURCE_COLLECTIONS (
                                                               Resource_Type varchar(64),
                                                               Collection_Name varchar(128),
                                                               Collection_Order TEXT DEFAULT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
-                                                              Last_Changed varchar(14) NOT NULL DEFAULT 0,
+                                                              Last_Updated varchar(14) NOT NULL DEFAULT 0,
                                                               Meta TEXT,
                                                                PRIMARY KEY(Resource_Type, Collection_Name),
                                                               INDEX (Created),
-                                                              INDEX (Last_Changed)
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
 
@@ -1079,7 +1044,7 @@ namespace IOFrame{
                                                               INDEX (Order_Type),
                                                               INDEX (Order_Status),
                                                               INDEX (Created),
-                                                              INDEX (Last_Changed)
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
 
@@ -1109,13 +1074,13 @@ namespace IOFrame{
              * Last_Updated - Varchar(14), UNIX timestamp of when the relationship was last updated.
              */
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."DEFAULT_USERS_ORDERS (
-                                                              User_ID int,
-                                                              Order_ID int,
+                                                              User_ID int NOT NULL,
+                                                              Order_ID int NOT NULL,
                                                               Relation_Type varchar(256) DEFAULT NULL,
                                                               Meta TEXT DEFAULT NULL,
                                                               Created varchar(14) NOT NULL DEFAULT 0,
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
-                                                              UNIQUE (Order_ID, User_ID),
+                                                              PRIMARY KEY (Order_ID, User_ID),
                                                               FOREIGN KEY (User_ID)
                                                               REFERENCES ".$prefix."USERS(ID)
                                                               ON DELETE CASCADE,
@@ -1123,7 +1088,7 @@ namespace IOFrame{
                                                               REFERENCES ".$prefix."DEFAULT_ORDERS(ID)
                                                               ON DELETE CASCADE,
                                                               INDEX (Created),
-                                                              INDEX (Last_Changed)
+                                                              INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;";
             $makeTB = $conn->prepare($query);
 

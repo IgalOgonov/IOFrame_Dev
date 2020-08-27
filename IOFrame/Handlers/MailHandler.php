@@ -512,13 +512,13 @@ namespace IOFrame\Handlers{
             }
 
             if($changedAfter!== null){
-                $cond = ['Last_Changed',$changedAfter,'>'];
+                $cond = ['Last_Updated',$changedAfter,'>'];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
             }
 
             if($changedBefore!== null){
-                $cond = ['Last_Changed',$changedBefore,'<'];
+                $cond = ['Last_Updated',$changedBefore,'<'];
                 array_push($extraCacheConditions,$cond);
                 array_push($extraDBConditions,$cond);
             }

@@ -3,12 +3,14 @@
  *
  *      See standard return values at defaultInputResults.php
  *_________________________________________________
+ * getAvailable
  *      - Get available plugin (specified by name) or all plugins.
  *        Returns a json encoded string of the format:
  *          {'pluginName':'status'}
  *
  *        Examples: action=getAvailable&name=testPlugin, action=getAvailable
  *_________________________________________________
+ * getInfo
  *      - Get info of a specific plugin, or of all plugins.
  *        Returns a 2D json encoded string of the format:
  *          {"0":
@@ -29,11 +31,12 @@
  *
  *      Examples: action=getInfo&name=testPlugin, action=getInfo
  *_________________________________________________
+ * getOrder
  *      - Get the current order of plugins, if there is any.
  *        Returns a string of the form '<plugin1>,<plugin2>,...', '' if there is no order.
  *        Example: action=getOrder
  *_________________________________________________
- *      pushToOrder [CSRF protected]
+ * pushToOrder [CSRF protected]
  *      - Add a plugin by name to the top or bottom of the list, depending on whether 'toTop' parameter is true.
  *        Will instead push the plugin to a specified spot (sending the rest down) if index is specified and over 0.
  *        The plugin must be installed ("active"), unless the parameter 'verify' is set to false.
@@ -47,7 +50,7 @@
  *      Examples: action=pushToOrder&name=hohoPlugin&toTop=true&verify=false
  *                action=pushToOrder&name=testPlugin&index=4&verify=true&backup=true
  *_________________________________________________
- *       removeFromOrder [CSRF protected]
+ * removeFromOrder [CSRF protected]
  *      - Remove a plugin from the order list.
  *        type is 'index' or 'name'
  *        target is the index (number) or name of the plugin, depending on $type.
@@ -64,7 +67,7 @@
  *                action=removeFromOrder&target=4&type=index&backup=true
  *                action=removeFromOrder&target=-1&type=index&backup=true
  *_________________________________________________
- *        moveOrder [CSRF protected]
+ * moveOrder [CSRF protected]
  *      - Move a plugin from one index in the order list to another.
  *        from=<index>,to=<index>,backup=true/false - self explanatory (backup same as earlier actions)
  *        Returns
@@ -75,7 +78,7 @@
  *
  *      Examples: action=moveOrder&from=0&to=2
  *_________________________________________________
- *        swapOrder [CSRF protected]
+ * swapOrder [CSRF protected]
  *      - Swap 2 plugins in the order list.
  *        p1=<index>,p2=<index>,backup=true/false - self explanatory (backup same as earlier actions)
  *        Returns
@@ -86,7 +89,7 @@
  *      Examples: action=swapOrder&p1=0&p2=2
  *                action=swapOrder&p1=6&p2=3
  *_________________________________________________
- *        install/fullInstall [CSRF protected]
+ * install/fullInstall [CSRF protected]
  *      - Installs a plugin
  *        If the $name specified is a legal, uninstalled plugin, installs it.
  *        'name' should be a name of a legal plugin (you can get a list of legal ones through getAvailable API, too).
@@ -108,7 +111,7 @@
  *      Full Install is available - just includes fullInstall.php of the plugin 'name', if it exists
  *      Example: action=fullInstall&name=testPlugin
  *_________________________________________________
- *        uninstall/fullUninstall [CSRF protected]
+ * uninstall/fullUninstall [CSRF protected]
  *      - Uninstalls a plugin
  *        'name' should be a name of an active plugin (you can get a list of active ones through getAvailable API, too).
  *        'options' should be a JSON string of options, formatted {"option":"value",...}
@@ -129,7 +132,6 @@
  *      Full Uninstall is available - just includes fullUninstall.php of the plugin 'name', if it exists
  *      Example: action=fullUninstall&name=testPlugin
  */
-//TODO potentially add auto-generating, expiring security tokens to full (un)install
 
 if(!defined('coreInit'))
     require __DIR__ . '/../main/coreInit.php';

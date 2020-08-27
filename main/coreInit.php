@@ -31,16 +31,6 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
     if(!defined('FrontEndResourceHandler'))
         require __DIR__ . '/../IOFrame/Handlers/FrontEndResourceHandler.php';
 
-    /*Changes connection type to https if it isn't already*/
-    function convertToHTTPS(){
-        if(empty($_SERVER['HTTPS']) || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "off") ){
-            $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            header('HTTP/1.1 301 Moved Permanently');
-            header('Location: ' . $redirect);
-            exit();
-        }
-    }
-
     //--------------------The global settings parameters. They'll get updated as we go.--------------------
     $defaultSettingsParams = [];
 
@@ -88,12 +78,13 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
     $defaultSettingsParams['resourceSettings'] = $resourceSettings;
 
     //-------------------Convert to SSL if needed-------------------
-    if($_SERVER['REMOTE_ADDR']!="::1" && $_SERVER['REMOTE_ADDR']!="127.0.0.1")
-        if($siteSettings->getSetting('sslOn') == 1)
-            convertToHTTPS();
-
-    //--------------------Initialize sql handler--------------------
-    $SQLHandler = new IOFrame\Handlers\SQLHandler($settings);
+    if($_SERVER['REMOTE_ADDR']!="::1" && $_SERVER['REMOTE_ADDR']!="127.0.0.1" && ($siteSettings->getSetting('sslOn') == 1) )
+        if(empty($_SERVER['HTTPS']) || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "off") ){
+            $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            header('HTTP/1.1 301 Moved Permanently');
+            header('Location: ' . $redirect);
+            exit();
+        }
 
     //-------------------Iniitialize other soft singletons-------------------
     $loggerHandler = new IOFrameHandler($settings, $SQLHandler, 'local');

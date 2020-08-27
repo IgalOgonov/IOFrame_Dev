@@ -15,7 +15,6 @@ namespace IOFrame\Handlers{
 
     /**Handles basic sql (mySQL, MariaDB) actions in IOFrame
      * TODO Rewrite for consistency
-     * TODO Move PHPQueryGenerator into util folder and its own class
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
@@ -44,10 +43,6 @@ namespace IOFrame\Handlers{
             //Separates fields on backup/restore
             if(!defined('DB_FIELD_SEPARATOR'))
                 define('DB_FIELD_SEPARATOR', '#&%#');
-
-            //Location of the local "lock" file for database operations - in single node mode.
-            if(!defined('DB_LOCK_FILE'))
-                define('DB_LOCK_FILE', $localSettings->getSetting('absPathToRoot').'/'.SETTINGS_DIR_FROM_ROOT.'/nodeDatabase.lock');
 
             //This is the core of this handler
             $this->queryBuilder = new IOFrame\Util\PHPQueryBuilder();

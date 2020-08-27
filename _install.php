@@ -716,7 +716,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 echo EOL.'Default Actions NOT initiated properly! Please initiate the database properly.'.EOL;
                 die();
             }
-
+            require __DIR__.'/IOFrame/Handlers/SecurityHandler.php';
             $SecurityHandler = new \IOFrame\Handlers\SecurityHandler($localSettings,$defaultSettingsParams);
             $res = $SecurityHandler->setEventsMeta(
                 [
@@ -849,7 +849,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <span>Mail Server Port:</span> <input type="text" name="mailPort" placeholder="465 - might be different, see host settings"><br>
                     <span>System Alias*:</span> <input type="text" name="defaultAlias" placeholder="customAlias@yourHostName.com"><br>
                     <small>Fill this in if you want to be sending system mails as a different alias (not your username).
-                           In most services, you\'ll need to set them manual, and at worst using an non-existent one will cause your emails not being sent.</small>;
+                           In most services, you\'ll need to set them manual, and at worst using an non-existent one will cause your emails not being sent.</small><br>;
                      <input type="submit" value="Next">
                      </form>';
 
@@ -1161,7 +1161,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
 
             foreach($metaArgs as $key=>$val){
                 if($metaSettings->setSetting($val[0],$val[1],['createNew'=>true]))
-                    echo 'Resource setting '.$val[0].' set to '.$val[1].EOL;
+                    echo 'Meta setting '.$val[0].' set to '.$val[1].EOL;
                 else{
                     echo 'Failed to set meta setting '.$val[0].' to '.$val[1].EOL;
                     $res = false;

@@ -7,9 +7,7 @@ namespace IOFrame\Handlers{
     if(!defined('abstractObjectsHandler'))
         require 'abstractObjectsHandler.php';
 
-    /** The menu handler is meant to handle simple menus, typically stored in the CORE_VALUES tables as single entries.
-     *  Basically, much of the functionality here is extremely simple, since the \ docs menu is just a single JSON entry
-     *  in CORE_VALUES.
+    /** The menu handler is meant to handle simple menus.
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
@@ -101,16 +99,13 @@ namespace IOFrame\Handlers{
          * @param array $params
          *              'safeStr' - bool, whether item is stored in safestring by default.
          * @returns int|array JSON decoded object of the form:
-         * {
-         *     {
-         *          ['identifier]: <string, "identifier"  of the menu item used for stuff like routing. Assumed to not contain "/".>
+         *     <identifier string, "identifier" of the menu item used for stuff like routing. Assumed to not contain "/"> : {
          *          ['title': <string, Title of the menu item>]
-         *          ['children': <array, objects of the same structure as this one>]
          *          ['meta': <associated array of meta information>]
+         *          ['children': <array, objects of the same structure as this one>]
+         *          ['order': comma separated list of children identifiers]
          *          //Potentially more stuff, depending on the extending class
-         *     },
-         *     ...
-         * }
+         *      }
          * Or one of the following codes:
          *      -3 Menu not a valid json somehow
          *      -2 Menu not found for some reason
@@ -245,7 +240,6 @@ namespace IOFrame\Handlers{
                     }
                 }
             }
-
             $existingMenu = json_encode($existingMenu);
             if($safeStr)
                 $existingMenu = IOFrame\Util\str2SafeStr($existingMenu);

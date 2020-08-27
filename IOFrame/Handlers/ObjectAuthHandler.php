@@ -673,7 +673,7 @@ namespace IOFrame\Handlers{
          *               0 User has one/all of the actions in the specified category/object.
          *               1 User does not have one/all of the actions in the specified category/object.
          */
-        function useHasActions(string $category, int $id, string $object, array $actions, array $params){
+        function userHasActions(string $category, int $id, string $object, array $actions, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?

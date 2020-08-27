@@ -151,7 +151,7 @@ namespace IOFrame\Util{
          * 'LENGTHB', 'LASTVAL', 'NEXTVAL','PERCENTILE_CONT','PERCENTILE_DISC', 'DEFAULT'];
          * $limit2 = ['=', '<=>', '!=', '<=', '>=', '<', '>', 'IS', 'IS NOT', 'LIKE', 'NOT LIKE', 'RLIKE', 'NOT RLIKE' ':=', 'ATAN', 'LOG', 'ROUND',
          * 'TRUNCATE', 'FROM_UNIXTIME', 'WEEK', 'YEARWEEK', 'BIT_COUNT','COMPRESS','DES_DECRYPT', 'JSON_KEYS', 'JSON_LENGTH',
-         * 'JSON_OBJECTAGG', 'JSON_DETAILED', 'REGEXP', 'RLIKE', 'NOT REGEXP', 'NOT RLIKE', 'SOUNDS LIKE', 'AS', 'MEDIAN OVER',
+         * 'JSON_OBJECTAGG', 'JSON_DETAILED', 'REGEXP',, 'NOT REGEXP',, 'SOUNDS LIKE', 'AS', 'MEDIAN OVER',
          * 'STRCMP', 'IFNULL', 'NULLIF', 'CONCAT', 'FIND_IN_SET', 'INSTR', 'LEFT', 'RIGHT', 'REPEAT', 'MOD', 'ATAN2', 'POW',
          * 'POWER', 'ADDDATE', 'DATE_ADD', 'SUBDATE', 'DATE_SUB', 'ADDTIME', 'DATEDIFF', 'DATE_FORMAT', 'EXTRACT',  'GET_FORMAT',
          * 'MAKEDATE', 'PERIOD_ADD', 'PERIOD_DIFF', 'STR_TO_DATE', 'SUBTIME', 'TIMEDIFF', 'TIME_FORMAT', 'CONVERT', 'CAST',
@@ -1649,19 +1649,7 @@ namespace IOFrame\Util{
                         $outputClues = [];
                         break;
 
-                    case('RLIKE'):
-                        $argRange = [2, 2];
-                        $type = 'connector';
-                        $outputClues = [];
-                        break;
-
                     case('NOT REGEXP'):
-                        $argRange = [2, 2];
-                        $type = 'connector';
-                        $outputClues = [];
-                        break;
-
-                    case('NOT RLIKE'):
                         $argRange = [2, 2];
                         $type = 'connector';
                         $outputClues = [];

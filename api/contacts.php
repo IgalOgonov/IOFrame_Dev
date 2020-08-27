@@ -6,17 +6,19 @@
  *
  * Parameters:
  * "action"     - Requested action - described bellow
- * "contactType"- String, contacts type. While not needed for getting a specific contact (or all types), it's needed for
+ * "contactType"- String, contacts type. While not needed for getting a specific contact (or contact types), it's needed for
  *                anything that changes contact state.
  *
  *_________________________________________________
  * getContactTypes
+ *      Get all contact types
  *      Returns:
  *          Array of Strings - all contact types available
  *
  *      Examples: action=getContactTypes
  *_________________________________________________
  * getContacts
+ *      Get all or some contacts
  *      params - ALL optional:
  *          'contactType' => String, defaults to current contact type - overrides current contact type if provided
  *          'firstNameLike' => String, default null - returns results where first name  matches a regex.
@@ -33,7 +35,7 @@
  *          ------ Using the parameters bellow disables caching ------
  *          'fullNameLike' => String, default null - returns results where first name together with last name matche a regex.
  *          'companyNameIDLike' => String, Unix timestamp, default null - returns results where company name together with company ID matche a regex.
- *          'orderBy'            - string, defaults to null. Possible values are 'Created','Last_Changed','Email',
+ *          'orderBy'            - string, defaults to null. Possible values are 'Created','Last_Updated','Email',
  *                                  'Country','City' and 'Company_Name'.
  *                                'Local' and 'Address'(default)
  *          'orderType'          - bool, defaults to null.  0 for 'ASC', 1 for 'DESC'
@@ -139,7 +141,7 @@
  *_________________________________________________
  * deleteContacts
  *      Deletes contacts.
- *      Note that ALL the contacts deleted using this will be of the same contactType specified with the request.
+ *      Note that the contacts deleted using this will be ONLY of the same contactType specified with the request.
  *      params:
  *          'identifiers' => string, JSON encoded array of the form [<string: identifier>, ...]
  *      returns:

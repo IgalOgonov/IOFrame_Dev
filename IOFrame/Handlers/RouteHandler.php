@@ -92,6 +92,7 @@ namespace IOFrame\Handlers{
          * @param array $params
          *          'activate' => whether to activate route on creation
          *          'safeStr' => Convert from/to safeStr. Applies to route only!
+         *          'index' => int, default -1, IF activating - index asin OrderHandler->pushToOrderMultiple() at which to insert route to order
          *
          *  @returns int
          * -1 - could not connect to db
@@ -466,8 +467,9 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $index = isset($params['index'])? $params['index'] : false;
 
-            $this->pushToOrderMultiple($IDs,['test'=>$test,$verbose=>'verbose']);
+            $this->pushToOrderMultiple($IDs,['test'=>$test,'verbose'=>$verbose, 'index'=>$index]);
 
         }
 

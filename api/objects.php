@@ -174,8 +174,8 @@
  *              where all is self explanatory if you know the structure of the objects class.
  *
  *              Returns:
- *                  A JSON array of the objects, of the form {"ID":"ID",...}, if $time < Last_Changed
- *                  0 if Last_Changed < $time
+ *                  A JSON array of the objects, of the form {"ID":"ID",...}, if $time < Last_Updated
+ *                  0 if Last_Updated < $time
  *                  1 if the page doesn't exist
  *          Examples:
  *              action=ga&params={"page":"CV/CV.php","date":0}&req=test

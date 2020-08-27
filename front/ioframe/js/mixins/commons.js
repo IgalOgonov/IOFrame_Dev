@@ -29,6 +29,8 @@ const IOFrameCommons = {
             let extraEvents = params.extraEvents || false;
             let urlPrefix = params.urlPrefix === undefined ? document.rootURI : params.urlPrefix;
             let apiURL = urlPrefix + apiName;
+            if(verbose)
+                console.log('Sending API request to '+apiURL);
             updateCSRFToken().then(
                 function(token){
                     data.append('CSRF_token', token);

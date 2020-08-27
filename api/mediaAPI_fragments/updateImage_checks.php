@@ -1,7 +1,7 @@
 <?php
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
-require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+require_once __DIR__ . '/../../IOFrame/Handlers/ext/htmlpurifier/HTMLPurifier.standalone.php';
 $config = HTMLPurifier_Config::createDefault();
 $config->set('HTML.AllowedElements', []);
 $purifier = new HTMLPurifier($config);

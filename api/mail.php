@@ -2,7 +2,7 @@
 /* Current API for sending mails, and modifying mail templates.
  *________________________________________
  * mailTo
- *      - Sends an ASYNC mail to a user.
+ *      - Sends a mail to a user.
  *          mail                                - string, mail address to mail to
  *          secToken                            - string, security token
  *          subj                                - string, mail subject
@@ -68,7 +68,7 @@
  *          <ID> ID of the newly created template otherwise.
  *________________________________________
  * updateTemplate
- *      - Creates a new template
+ *      - Updates a template
  *          id - int, id of the template.
  *          title - string, title of the template.
  *          content - string, content of the template.

@@ -15,8 +15,7 @@ namespace IOFrame{
     const SEC_MODE_2 = 'medium';  //TODO IMPLEMENT
     const SEC_MODE_3 = 'high';    //TODO IMPLEMENT
     const DB_FIELD_SEPARATOR = '#&%#'; //For DB purposes
-    const DB_LOCK_FILE =  __DIR__.'\..\localFiles\nodeDatabase.lock'; //locks database operations inside the node.
-////--------------------Correct EOL - CLI vs Server--------------------
+    ////--------------------Correct EOL - CLI vs Server--------------------
     if(!defined('EOL')){
         if (php_sapi_name() == "cli") {
             define("EOL",PHP_EOL);

@@ -10,15 +10,13 @@ namespace IOFrame{
     use Monolog\Handler\IOFrameHandler;
 
     /**
-     * To be extended by modules operate user info (login, register, etc)
+     * To be extended by modules which operate on the DB
      * @author Igal Ogonov <igal1333@hotmail.com>
      * @license LGPL
      * @license https://opensource.org/licenses/LGPL-3.0 GNU Lesser General Public License version 3
      */
     abstract class abstractDB extends abstractLogger
     {
-
-
 
         /** Default limit to getting stuff from the DB.
          * */

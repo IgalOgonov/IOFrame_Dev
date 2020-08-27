@@ -9,17 +9,16 @@
  *
  * Parameters:
  * "action"     - Requested action - described bellow
- * "params"     - Parameters, depending on action - described bellow
  * "type"   - string, each action here has an associated item type. The following types are valid:
  *                'categories','objects','actions','groups','objectUsers','objectGroups','userGroups'
  *_________________________________________________
  * getItems
- *      Gets items. The type of the items depends on itemType.
+ *      Gets items. The type of the items depends on the type parameter.
  *      Actions and objects regex is /^[a-zA-Z][a-zA-Z0-9\.\-\_ ]{1,255}$/, while for Titles it's the same but max length is 1024.
  *
  *      params:
  *      keys - array of keys, can be empty to get all items. If not empty, it's an array of arrays, each member
- *            represents the requested identifiers, and is of the following form, depending on itemType:
+ *            represents the requested identifiers, and is of the following form, depending on the type parameter:
  *          'categories': [<int, category>]
  *          'objects': [<int, category>,<string, object>]
  *          'actions': [<int, category>,<string, action>]
@@ -31,7 +30,7 @@
  *      limit - can be passed as explicit parameters when not getting specific items - those are SQL pagination parameters.
  *              Default 50.
  *      offset - related to limit
- *      orderBy - string, default null , when not getting specific items. Possible columns to order by, depending on itemType:
+ *      orderBy - string, default null , when not getting specific items. Possible columns to order by, depending on the type parameter:
  *          'categories': ['category']
  *          'objects': ['category','object']
  *          'actions': ['category','action']
@@ -42,7 +41,7 @@
  *          * common filters are 'created' and 'updated'
  *      orderType - int, default null, when not getting specific items - possible values 0 and 1 - 0 is 'ASC', 1 is 'DESC'
  *      filters - array of filters, defaults to []. If not empty, it's an associative array, each member
- *            represents a specific filter depending on itemType:
+ *            represents a specific filter depending on the type parameter:
  *          'categories': [
  *                      'titleLike' => <string, valid regex>,
  *                      'categoryIs' => <int, specific category>,
@@ -242,7 +241,7 @@
  *          type=userGroups&action=getItems&keys=[[1,"test_1",1],[1,"test_1",2],[1,"test_4",5]]
  *_________________________________________________
  * setItems [CSRF protected]
- *       Set items. The type of the items depends on itemType.
+ *       Set items. The type of the items depends on the type parameter.
  *
  *      params:
  *      update - bool, default false - if true, will only update existing items. Overrides "override" in that case.
@@ -328,11 +327,11 @@
  *      type=userGroups&action=setItems&inputs=[{"category":1,"object":"test_1","userID":1,"group":1},{"category":1,"object":"test_1","userID":1,"group":2},{"category":1,"object":"test_1","userID":2,"group":1}]
  *_________________________________________________
  * deleteItems [CSRF protected]
- *      Deletes items. The type of the items depends on itemType.
+ *      Deletes items. The type of the items depends on the type parameter.
  *
  *      params:
  *      items - array of keys. Array of arrays, each member represents the requested identifiers, and is of the following form
- *           depending on itemType:
+ *           depending on the type parameter:
  *          'categories' : [
  *                      'category' => <int, specific category>,
  *                      ]
@@ -382,10 +381,10 @@
  *      type=userGroups&action=deleteItems&items=[{"category":1,"object":"test_1","userID":1,"group":1},{"category":1,"object":"test_1","userID":1,"group":2},{"category":1,"object":"test_1","userID":2,"group":1}]
  *_________________________________________________
  * moveItems [CSRF protected]
- *       Moves some types of items. The type of the items depends on itemType.
+ *       Moves some types of items. The type of the items depends on the type parameter.
  *
  *      params:
- *      items - Same as deleteItems - array of arrays, each member an identifier, depending on itemType:
+ *      items - Same as deleteItems - array of arrays, each member an identifier, depending on the type parameter:
  *          'categories' : [
  *                      'category' => <int, specific category>,
  *                      ]

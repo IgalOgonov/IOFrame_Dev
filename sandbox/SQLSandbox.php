@@ -13,7 +13,7 @@ try {
     foreach(['siteSettings','localSettings'] as $name){
         $tname = strtolower($SQLHandler->getSQLPrefix().SETTINGS_TABLE_PREFIX.$name);
         $testQuery.= $SQLHandler->selectFromTable($tname,
-                [ [$tname, [['settingKey', '_Last_Changed', '='],['settingValue',$testMetaTime,'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'],
+                [ [$tname, [['settingKey', '_Last_Updated', '='],['settingValue',$testMetaTime,'>='],'AND'], ['settingKey','settingValue'], [], 'SELECT'], 'EXISTS'],
                 ['settingKey','settingValue', '\''.$name.'\' as Source'],
                 ['justTheQuery'=>true,'test'=>false]).' UNION ';
     }
@@ -40,7 +40,7 @@ try {
 
     $temp = $SQLHandler->selectFromTable(
         $tableName,
-        [[$tableName, [['Map_Name', "cp/objects.php", '='], ['Last_Changed', $testMetaTime, '>'], 'AND'], ['Map_Name'], [], 'SELECT'], 'EXISTS'],
+        [[$tableName, [['Map_Name', "cp/objects.php", '='], ['Last_Updated', $testMetaTime, '>'], 'AND'], ['Map_Name'], [], 'SELECT'], 'EXISTS'],
         [],
         ['test'=>true]
     );

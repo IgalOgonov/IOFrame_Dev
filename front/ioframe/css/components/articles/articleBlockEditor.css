@@ -76,7 +76,7 @@
 }
 .article-block.edit > form > div > textarea,
 .article-block.create > form > div > textarea{
-    min-height: 55px;
+    min-height: 155px;
     max-width: 100%;
     min-width: 100px;
 }
@@ -100,6 +100,8 @@
     transition: 0.2s ease-in-out;
     background: var(--shadow-dark-1);
 }
+
+
 /* Preview */
 /*Gallery/Article Selector*/
 .article-block.edit form > .selector-container:not(.image-selector) > button{
@@ -237,6 +239,8 @@
 }
 .article-block.view > .markdown a:visited {
     color: var(--secondary-color-3) !important;
+}
+.article-block.view > .markdown :not(pre) > code{
 }
 
 /*Youtube*/

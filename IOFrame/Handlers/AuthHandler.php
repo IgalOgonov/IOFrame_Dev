@@ -229,7 +229,7 @@ namespace IOFrame\Handlers{
                     array_push($groupsToCheckCond,[$usersGroupsTable.'.Auth_Group',[$groupName,'STRING'],'=']);
                     $tempCond = [];
                     array_push($tempCond,[$groupsActionsTable.'.Auth_Group',[$groupName,'STRING'],'=']);
-                    array_push($tempCond,[$groupTable.'.Last_Changed',[(string)$this->lastUpdatedGroups[$groupName],'STRING'],'>=']);
+                    array_push($tempCond,[$groupTable.'.Last_Updated',[(string)$this->lastUpdatedGroups[$groupName],'STRING'],'>=']);
                     array_push($tempCond,'AND');
                     array_push($groupsToGetConditions,$tempCond);
                 }
@@ -243,7 +243,7 @@ namespace IOFrame\Handlers{
                             $usersGroupsTable.' INNER JOIN '.$userTable.' ON '.$userTable.'.ID = '.$usersGroupsTable.'.ID',
                             [
                                 [$userTable.'.ID',$userID,'='],
-                                [$userTable.'.Last_Changed',$userLastChanged,'>'],
+                                [$userTable.'.Last_Updated',$userLastChanged,'>'],
                                 'AND'
                             ],
                             [$usersGroupsTable.'.Auth_Group'],
@@ -269,7 +269,7 @@ namespace IOFrame\Handlers{
                         $usersGroupsTable.' INNER JOIN '.$userTable.' ON '.$userTable.'.ID = '.$usersGroupsTable.'.ID',
                         [
                             [$usersGroupsTable.'.ID',$userID,'='],
-                            [$userTable.'.Last_Changed',$userLastChanged,'>'],
+                            [$userTable.'.Last_Updated',$userLastChanged,'>'],
                             'AND'
                         ],
                         [$usersGroupsTable.'.Auth_Group'],
@@ -299,7 +299,7 @@ namespace IOFrame\Handlers{
                             $usersActionsTable.' INNER JOIN '.$userTable.' ON '.$userTable.'.ID = '.$usersActionsTable.'.ID',
                             [
                                 [$usersActionsTable.'.ID',$userID,'='],
-                                [$userTable.'.Last_Changed',$userLastChanged,'>'],
+                                [$userTable.'.Last_Updated',$userLastChanged,'>'],
                                 'AND'
                             ],
                             [$usersActionsTable.'.Auth_Action'],
@@ -1262,7 +1262,7 @@ namespace IOFrame\Handlers{
             if($res)
                 $res = $this->SQLHandler->updateTable(
                     $userTable,
-                    ['Last_Changed = "'.time().'"'],
+                    ['Last_Updated = "'.time().'"'],
                     [
                         'ID',
                         '('.$this->SQLHandler->selectFromTable(
@@ -1701,7 +1701,7 @@ namespace IOFrame\Handlers{
             if($res)
                 $res = $this->SQLHandler->updateTable(
                     $userTable,
-                    ['Last_Changed = "'.time().'"'],
+                    ['Last_Updated = "'.time().'"'],
                     [
                         'ID',
                         $this->SQLHandler->selectFromTable(
@@ -1839,7 +1839,7 @@ namespace IOFrame\Handlers{
                 if($targetType != 'groupActions')
                     $res = $this->SQLHandler->insertIntoTable(
                         $users,
-                        ['ID', 'Last_Changed'],
+                        ['ID', 'Last_Updated'],
                         [[$identifier,[(string)time(),'STRING']]],
                         ['test'=>$test,'verbose'=>$verbose,'onDuplicateKey'=>true]
                     );
@@ -1847,18 +1847,18 @@ namespace IOFrame\Handlers{
                 else{
                     $res = $this->SQLHandler->insertIntoTable(
                         $users,
-                        ['ID', 'Last_Changed'],
+                        ['ID', 'Last_Updated'],
                         $this->SQLHandler->selectFromTable(
                             $usersGroups,
                             ['Auth_Group',$identifier,'='],
-                            ['ID','"'.time().'" AS Last_Changed'],
+                            ['ID','"'.time().'" AS Last_Updated'],
                             ['justTheQuery'=>true,'useBrackets'=>false,'DISTINCT'=>true]
                         ),
                         [
                             'test'=>$test,
                             'verbose'=>$verbose,
                             'onDuplicateKey'=>true,
-                            'onDuplicateKeyExp'=>'ID=VALUES(ID), Last_Changed=VALUES(Last_Changed)'
+                            'onDuplicateKeyExp'=>'ID=VALUES(ID), Last_Updated=VALUES(Last_Updated)'
                         ]
                     );
                 }

@@ -11,14 +11,22 @@ if(!isset($minifyOptions['js']))
 if(!isset($minifyOptions['css']))
     $minifyOptions['css'] = null;
 
+//Defined to be by frontEndResourceTemplateManager later - can also changed if we minify resources into a single file
+$JSOrder = $JS;
+$CSSOrder = $CSS;
+
 foreach(['js','css'] as $resourceType){
     if($minifyOptions[$resourceType] && is_array($minifyOptions[$resourceType])){
         //Minified file name
         if($minifyOptions[$resourceType]['name']){
-            if($resourceType === 'js')
+            if($resourceType === 'js'){
                 $JSOptions['minifyName'] = $minifyOptions[$resourceType]['name'];
-            else
+                $JSOrder = [$JSOptions['minifyName']];
+            }
+            else{
                 $CSSOptions['minifyName'] = $minifyOptions[$resourceType]['name'];
+                $CSSOrder = [$CSSOptions['minifyName']];
+            }
 
             //Minified file folder - defaults to 'min'
             if($minifyOptions[$resourceType]['folder']){
@@ -47,6 +55,8 @@ $frontEndResourceTemplateManager = new IOFrame\Util\frontEndResourceTemplateMana
     [
         'JSResources' => $JSResources,
         'CSSResources' => $CSSResources,
+        'JSOrder' => $JSOrder,
+        'CSSOrder' => $CSSOrder,
         'dirToRoot' => $dirToRoot,
         'JSResourceRoot' => $IOFrameJSRoot,
         'CSSResourceRoot' => $IOFrameCSSRoot

@@ -63,17 +63,7 @@ namespace IOFrame{
                 $this->maxCacheSize = $this->siteSettings->getSetting('maxCacheSize');
         }
 
-        function getCacheTTL(){
-            return $this->cacheTTL;
-        }
-
-        function setCacheTTL(int $cacheTTL){
-            $this->cacheTTL =$cacheTTL;
-        }
-
-
-
-        /** Gets the requested objects/maps/groups from the db/cache.
+        /** Gets the requested items from the db/cache.
          *  @param array params ['type'] is the type of targets.
          * @param array $targets Array of keys. If empty, will ignore the cache and get everything from the DB.
          * @param string|array $keyCol Key column name

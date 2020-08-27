@@ -405,20 +405,21 @@ namespace IOFrame\Util{
     function log_level_at_least(int $level, \IOFrame\Handlers\SettingsHandler $siteSettings){
         $expectedLevel= $siteSettings->getSetting('logStatus');
         switch($level){
+            //Notice no breaks
             case 0:
                 return true;
             case 1:
                 if($expectedLevel == LOG_MODE_1);
-                return true;
+                    return true;
             case 2:
                 if($expectedLevel == LOG_MODE_2);
-                return true;
+                    return true;
             case 3:
                 if($expectedLevel == LOG_MODE_3);
-                return true;
+                    return true;
             case 4:
                 if($expectedLevel == LOG_MODE_4);
-                return true;
+                    return true;
             default:
                 return false;
         }

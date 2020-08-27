@@ -5,7 +5,7 @@ $setParams = [
     'update'=>($inputs['update'] !== null ? (bool)$inputs['update'] : false)
 ];
 
-require_once __DIR__ . '/../../IOFrame/Util/ext/htmlpurifier/HTMLPurifier.standalone.php';
+require_once __DIR__ . '/../../IOFrame/Handlers/ext/htmlpurifier/HTMLPurifier.standalone.php';
 $config = HTMLPurifier_Config::createDefault();
 $config->set('HTML.AllowedElements', []);
 $purifier = new HTMLPurifier($config);

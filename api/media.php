@@ -1,6 +1,5 @@
 <?php
-/* This the the API that handles all the user related functions.
- * Many of the procedures here are timing safe, meaning they will return in constant times (well, constant intervals)
+/* This the the API that handles all the media related functions.
  *
  *      See standard return values at defaultInputResults.php
  *_________________________________________________
@@ -58,7 +57,7 @@
  *          105 Image upload would work locally, but gallery does not exist
  *_________________________________________________
  * getImages
- *      - Gets ALL available images/folders at an address (defaults to root image folder).
+ *      - Gets ALL available images/folders at a local  address (defaults to root image folder), or ALL db images/links.
  *        address: string, default '' - if not empty, will return images at the folder specified by address, RELATIVE to image root.
  *                                  The default root image folder is <SERVER_ROOT>.'/front/ioframe/img'.
  *        getDB: bool, default false - if the address is empty, and this is true, will get ALL available media, not the local one.
@@ -109,7 +108,7 @@
  *
  *_________________________________________________
  * getDBMedia
- *      - Gets a database media file
+ *      - Gets a database media file (returns the media file itself)
  *        address:  string, image address (identifier)
  *        resourceType:  string, default 'img' - resource type
  *
@@ -178,7 +177,7 @@
  *      *note - DOES NOT TELL YOU if a resource does not exist locally - will simply ignore it.
  *_________________________________________________
  * incrementImages
- *      - Increments image versions images.
+ *      - Increments image versions.
  *        addresses:  (json) Array of strings - addresses you want to delete.
  *
  *        Examples: action=incrementImages&addresses=["docs/installScreenshots/testFolder/Test Filename.png","test2.png"]
@@ -233,7 +232,7 @@
  *
  *_________________________________________________
  * getGallery
- *      - Gets image gallery by name.
+ *      - Gets image gallery, members included.
  *        gallery: String, name of the gallery to get
  *
  *        Examples: action=getGallery&gallery=Test Gallery
@@ -251,7 +250,7 @@
  *      OR code 1, if the gallry does not exist
  *_________________________________________________
  * setGallery
- *      - Creates an image gallery by name.
+ *      - Creates/updated an image gallery.
  *        gallery: String, name of the gallery to create
  *        overwrite: bool, default false - will allow overwriting existing galleries
  *        update: bool, default false - will only update existing galleries
@@ -313,7 +312,7 @@
  *              1 - Collection does not exist
  *_________________________________________________
  * moveImageInGallery
- *      - Moves an image at a certain index to another index ina gallery.
+ *      - Moves an image at a certain index to another index in a gallery.
  *        gallery: String, name of the gallery
  *        from: int, index to move from.
  *        to: int, index to move to.
@@ -345,7 +344,7 @@
  *                  2 - Collection does not exist
  *_________________________________________________
  * createFolder
- *      - Creates a new folder
+ *      - Creates a new local folder
  *        relativeAddress: String, default '' - where the folder is to be created
  *        name: String, default 'New Folder' - name of the new folder
  *

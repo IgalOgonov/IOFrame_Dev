@@ -7,7 +7,7 @@ CONST CONTACTS_MODIFY = 'CONTACTS_MODIFY';
 /* Input */
 CONST REGEX_REGEX = '^[\w\-\.\_ ]{1,128}$';
 CONST CONTACT_TYPE_REGEX = '^[a-zA-Z]\w{0,63}$';
-CONST IDENTIFIER_REGEX = '^[a-zA-Z][\w ]{0,255}$';
+CONST IDENTIFIER_REGEX = '^[\w ]{1,256}$';
 CONST NAME_REGEX = '^[a-zA-Z][a-zA-Z \-\.]{1,63}$';
 CONST PHONE_REGEX = '^\+?\d{6,20}$';
 CONST COUNTRY_REGEX = '^[a-zA-Z][\w \-\.]{0,63}$';

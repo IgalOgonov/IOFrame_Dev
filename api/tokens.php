@@ -93,8 +93,8 @@
  *      Examples:
  *          action=setTokens&tokens={"test1":{"action":"test action 1","uses":10,"ttl":4000},"test2":{"action":"test action 2","uses":1,"ttl":3600},"test3":{"action":"test action 3","ttl":4500}}
  *_________________________________________________
- * deleteTokens
- *      Deletes specific tokens
+ * deleteTokensDeletes specific tokens
+ *
  *      params:
  *              tokens - string, array of token names
  *
@@ -107,7 +107,7 @@
 
  *_________________________________________________
  * deleteExpiredTokens
- *      Deletes specific tokens
+ *      Deletes expired tokens
  *      params:
  *              time - int|string, defaults to time() - time before which tokens are considered expired.
  *

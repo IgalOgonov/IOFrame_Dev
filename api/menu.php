@@ -1,8 +1,9 @@
 <?php
-/* This the the API that handles all the docs related functions.
+/* This the the API that handles all the menu related functions.
  *
- *      See standard return values at defaultInputResults.php
- *  Everything except getting a SPECIFIC menu requires admin auth for now.
+ *  See standard return values at defaultInputResults.php
+ *  Everything except getting a SPECIFIC menu requires admin auth in this API - however, while all menus aren't listed by default,
+ *  you mustn't rely on them being truly hidden from attackers.
  *
  * Parameters:
  * "action"     - Requested action - described bellow
@@ -46,7 +47,7 @@
  *          action=getMenus
  *_________________________________________________
  * setMenus [CSRF protected]
- *      - Creates new menus.
+ *      - Creates new / updates existing menus.
  *      params:
  *          inputs- JSON encoded array of objects, each object of the form:
  *              {
@@ -86,7 +87,7 @@
  *      action=deleteMenus&menus=["test_menu_2"]
  *_________________________________________________
  * getMenu
- *      - Gets the current menu
+ *      - Gets a specific menu
  *      params:
  *          identifier - string, menu identifier - required.
  *
@@ -112,7 +113,7 @@
  *          action=getMenu&identifier=test_menu
  *_________________________________________________
  * setMenuItems [CSRF protected]
- *      - Sets (or unsets) multiple menu item.
+ *      - Sets (or unsets) multiple menu items (children in the menu tree).
  *      params:
  *          identifier - string, menu identifier - required.
  *          inputs- JSON encoded array of objects, each object of the form:
