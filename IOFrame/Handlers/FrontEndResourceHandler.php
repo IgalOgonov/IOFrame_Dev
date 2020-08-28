@@ -909,7 +909,6 @@ namespace IOFrame\Handlers{
                 }
             }
 
-            $mutex->deleteMutex();
             return $results;
         }
 

@@ -171,7 +171,7 @@ require __DIR__.'/../IOFrame/Handlers/ContactHandler.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'contactsAPI_fragments/definitions.php';
+require 'contacts_fragments/definitions.php';
 
 if($test)
     echo 'Testing mode!'.EOL;
@@ -200,8 +200,8 @@ $ContactHandler = new IOFrame\Handlers\ContactHandler(
 
 switch($action){
     case 'getContactTypes':
-        require 'contactsAPI_fragments/getContactTypes_auth.php';
-        require 'contactsAPI_fragments/getContactTypes_execution.php';
+        require 'contacts_fragments/getContactTypes_auth.php';
+        require 'contacts_fragments/getContactTypes_execution.php';
         echo json_encode($result);
         break;
 
@@ -210,22 +210,22 @@ switch($action){
             "createdAfter","changedBefore","changedAfter","includeRegex","excludeRegex","fullNameLike","companyNameIDLike",
             "orderBy","orderType","limit","offset"];
 
-        require 'contactsAPI_Fragments/translationTable.php';
+        require 'contacts_fragments/translationTable.php';
         require 'setExpectedInputs.php';
-        require 'contactsAPI_fragments/getContacts_auth.php';
-        require 'contactsAPI_fragments/getContacts_checks.php';
-        require 'contactsAPI_fragments/getContacts_execution.php';
+        require 'contacts_fragments/getContacts_auth.php';
+        require 'contacts_fragments/getContacts_checks.php';
+        require 'contacts_fragments/getContacts_execution.php';
         echo json_encode($result);
         break;
 
     case 'getContact':
         $arrExpected =["id"];
 
-        require 'contactsAPI_Fragments/translationTable.php';
+        require 'contacts_fragments/translationTable.php';
         require 'setExpectedInputs.php';
-        require 'contactsAPI_fragments/getContact_auth.php';
-        require 'contactsAPI_fragments/getContact_checks.php';
-        require 'contactsAPI_fragments/getContact_execution.php';
+        require 'contacts_fragments/getContact_auth.php';
+        require 'contacts_fragments/getContact_checks.php';
+        require 'contacts_fragments/getContact_execution.php';
         echo json_encode($result);
         break;
 
@@ -236,9 +236,9 @@ switch($action){
             "zipCode","companyName","companyID","contactInfo","address","extraInfo","update","override"];
 
         require 'setExpectedInputs.php';
-        require 'contactsAPI_fragments/setContact_auth.php';
-        require 'contactsAPI_fragments/setContact_checks.php';
-        require 'contactsAPI_fragments/setContact_execution.php';
+        require 'contacts_fragments/setContact_auth.php';
+        require 'contacts_fragments/setContact_checks.php';
+        require 'contacts_fragments/setContact_execution.php';
         echo json_encode($result);
         break;
 
@@ -248,9 +248,9 @@ switch($action){
         $arrExpected =["identifiers"];
 
         require 'setExpectedInputs.php';
-        require 'contactsAPI_fragments/deleteContacts_auth.php';
-        require 'contactsAPI_fragments/deleteContacts_checks.php';
-        require 'contactsAPI_fragments/deleteContacts_execution.php';
+        require 'contacts_fragments/deleteContacts_auth.php';
+        require 'contacts_fragments/deleteContacts_checks.php';
+        require 'contacts_fragments/deleteContacts_execution.php';
         echo $result? $result : '0';
         break;
 
@@ -260,9 +260,9 @@ switch($action){
         $arrExpected =["identifier","newIdentifier"];
 
         require 'setExpectedInputs.php';
-        require 'contactsAPI_fragments/renameContact_auth.php';
-        require 'contactsAPI_fragments/renameContact_checks.php';
-        require 'contactsAPI_fragments/renameContact_execution.php';
+        require 'contacts_fragments/renameContact_auth.php';
+        require 'contacts_fragments/renameContact_checks.php';
+        require 'contacts_fragments/renameContact_execution.php';
         echo $result? $result : '0';
         break;
 

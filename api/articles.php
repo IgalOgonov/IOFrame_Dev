@@ -442,7 +442,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'articlesAPI_fragments/definitions.php';
+require 'articles_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ArticleHandler.php';
 
 if($test)
@@ -461,9 +461,9 @@ switch($action){
             "changedBefore","changedAfter","authAtMost","authIn","weightIn","offset","limit"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/getArticles_checks.php';
-        require 'articlesAPI_fragments/getArticles_auth.php';
-        require 'articlesAPI_fragments/getArticles_execution.php';
+        require 'articles_fragments/getArticles_checks.php';
+        require 'articles_fragments/getArticles_auth.php';
+        require 'articles_fragments/getArticles_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -477,9 +477,9 @@ switch($action){
         $arrExpected =["id","articleAddress","authAtMost","ignoreOrphan","preloadGalleries"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/getArticle_checks.php';
-        require 'articlesAPI_fragments/getArticle_auth.php';
-        require 'articlesAPI_fragments/getArticle_execution.php';
+        require 'articles_fragments/getArticle_checks.php';
+        require 'articles_fragments/getArticle_auth.php';
+        require 'articles_fragments/getArticle_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -496,9 +496,9 @@ switch($action){
             "thumbnailAddress","blockOrder","weight","language"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/setArticle_checks.php';
-        require 'articlesAPI_fragments/setArticle_auth.php';
-        require 'articlesAPI_fragments/setArticle_execution.php';
+        require 'articles_fragments/setArticle_checks.php';
+        require 'articles_fragments/setArticle_auth.php';
+        require 'articles_fragments/setArticle_execution.php';
 
 
         echo ($result === 0)?
@@ -512,9 +512,9 @@ switch($action){
         $arrExpected =["articles","permanentDeletion"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/deleteArticles_checks.php';
-        require 'articlesAPI_fragments/deleteArticles_auth.php';
-        require 'articlesAPI_fragments/deleteArticles_execution.php';
+        require 'articles_fragments/deleteArticles_checks.php';
+        require 'articles_fragments/deleteArticles_auth.php';
+        require 'articles_fragments/deleteArticles_execution.php';
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
@@ -531,9 +531,9 @@ switch($action){
             "otherArticleId"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/setArticleBlock_checks.php';
-        require 'articlesAPI_fragments/setArticleBlock_auth.php';
-        require 'articlesAPI_fragments/setArticleBlock_execution.php';
+        require 'articles_fragments/setArticleBlock_checks.php';
+        require 'articles_fragments/setArticleBlock_auth.php';
+        require 'articles_fragments/setArticleBlock_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -549,9 +549,9 @@ switch($action){
         $arrExpected =["articleId","deletionTargets","permanentDeletion"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/deleteArticleBlocks_checks.php';
-        require 'articlesAPI_fragments/deleteArticleBlocks_auth.php';
-        require 'articlesAPI_fragments/deleteArticleBlocks_execution.php';
+        require 'articles_fragments/deleteArticleBlocks_checks.php';
+        require 'articles_fragments/deleteArticleBlocks_auth.php';
+        require 'articles_fragments/deleteArticleBlocks_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -567,9 +567,9 @@ switch($action){
         $arrExpected =["articleId","from","to"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/moveBlockInArticle_checks.php';
-        require 'articlesAPI_fragments/moveBlockInArticle_auth.php';
-        require 'articlesAPI_fragments/moveBlockInArticle_execution.php';
+        require 'articles_fragments/moveBlockInArticle_checks.php';
+        require 'articles_fragments/moveBlockInArticle_auth.php';
+        require 'articles_fragments/moveBlockInArticle_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -582,9 +582,9 @@ switch($action){
         $arrExpected =["articleId"];
 
         require 'setExpectedInputs.php';
-        require 'articlesAPI_fragments/cleanArticleBlocks_checks.php';
-        require 'articlesAPI_fragments/cleanArticleBlocks_auth.php';
-        require 'articlesAPI_fragments/cleanArticleBlocks_execution.php';
+        require 'articles_fragments/cleanArticleBlocks_checks.php';
+        require 'articles_fragments/cleanArticleBlocks_auth.php';
+        require 'articles_fragments/cleanArticleBlocks_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);

@@ -188,7 +188,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'authAPI_fragments/definitions.php';
+require 'auth_fragments/definitions.php';
 
 if($test)
     echo 'Testing mode!'.EOL;
@@ -211,76 +211,76 @@ foreach($commons as $common){
 
 switch($action){
     case 'getRank':
-        require 'authAPI_fragments/getRank_execution.php';
+        require 'auth_fragments/getRank_execution.php';
         echo  ($result)? $result : '0';
         break;
 
     case 'isLoggedIn':
-        require 'authAPI_fragments/isLoggedIn_execution.php';
+        require 'auth_fragments/isLoggedIn_execution.php';
         echo ($result)? '1' : '0';
         break;
 
     case 'modifyUserRank':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/modifyUserRank_auth.php';
-        require 'authAPI_fragments/modifyUserRank_checks.php';
-        require 'authAPI_fragments/modifyUserRank_execution.php';
+        require 'auth_fragments/modifyUserRank_auth.php';
+        require 'auth_fragments/modifyUserRank_checks.php';
+        require 'auth_fragments/modifyUserRank_execution.php';
         echo ($result)? '1' : '0';
         break;
 
     case 'getUsers':
-        require 'authAPI_fragments/get_auth.php';
-        require 'authAPI_fragments/get_checks.php';
-        require 'authAPI_fragments/getUsers_execution.php';
+        require 'auth_fragments/get_auth.php';
+        require 'auth_fragments/get_checks.php';
+        require 'auth_fragments/getUsers_execution.php';
         echo json_encode($result);
         break;
 
     case 'getUsersWithActions':
-        require 'authAPI_fragments/get_auth.php';
-        require 'authAPI_fragments/get_checks.php';
-        require 'authAPI_fragments/getUsersWithActions_execution.php';
+        require 'auth_fragments/get_auth.php';
+        require 'auth_fragments/get_checks.php';
+        require 'auth_fragments/getUsersWithActions_execution.php';
         echo json_encode($result);
         break;
 
     case 'getActions':
-        require 'authAPI_fragments/getActions_auth.php';
-        require 'authAPI_fragments/getActions_checks.php';
-        require 'authAPI_fragments/getActions_execution.php';
+        require 'auth_fragments/getActions_auth.php';
+        require 'auth_fragments/getActions_checks.php';
+        require 'auth_fragments/getActions_execution.php';
         echo json_encode($result);
         break;
 
     case 'setActions':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/set_auth.php';
-        require 'authAPI_fragments/set_checks.php';
-        require 'authAPI_fragments/setActions_execution.php';
+        require 'auth_fragments/set_auth.php';
+        require 'auth_fragments/set_checks.php';
+        require 'auth_fragments/setActions_execution.php';
         echo ($result)? '1' : '0';
         break;
 
     case 'deleteActions':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/delete_auth.php';
-        require 'authAPI_fragments/delete_checks.php';
-        require 'authAPI_fragments/deleteActions_execution.php';
+        require 'auth_fragments/delete_auth.php';
+        require 'auth_fragments/delete_checks.php';
+        require 'auth_fragments/deleteActions_execution.php';
         echo ($result)? '1' : '0';
         break;
 
 
     case 'getGroups':
-        require 'authAPI_fragments/get_auth.php';
-        require 'authAPI_fragments/get_checks.php';
-        require 'authAPI_fragments/getGroups_execution.php';
+        require 'auth_fragments/get_auth.php';
+        require 'auth_fragments/get_checks.php';
+        require 'auth_fragments/getGroups_execution.php';
         echo json_encode($result);
         break;
 
 
     case 'getGroupActions':
-        require 'authAPI_fragments/get_auth.php';
-        require 'authAPI_fragments/get_checks.php';
-        require 'authAPI_fragments/getGroupActions_execution.php';
+        require 'auth_fragments/get_auth.php';
+        require 'auth_fragments/get_checks.php';
+        require 'auth_fragments/getGroupActions_execution.php';
         echo json_encode($result);
         break;
 
@@ -288,9 +288,9 @@ switch($action){
     case 'setGroups':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/set_auth.php';
-        require 'authAPI_fragments/set_checks.php';
-        require 'authAPI_fragments/setGroups_execution.php';
+        require 'auth_fragments/set_auth.php';
+        require 'auth_fragments/set_checks.php';
+        require 'auth_fragments/setGroups_execution.php';
         echo ($result)? '1' : '0';
         break;
 
@@ -298,9 +298,9 @@ switch($action){
     case 'deleteGroups':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/delete_auth.php';
-        require 'authAPI_fragments/delete_checks.php';
-        require 'authAPI_fragments/deleteGroups_execution.php';
+        require 'auth_fragments/delete_auth.php';
+        require 'auth_fragments/delete_checks.php';
+        require 'auth_fragments/deleteGroups_execution.php';
         echo ($result)? '1' : '0';
         break;
 
@@ -308,9 +308,9 @@ switch($action){
     case 'modifyUserActions':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/modify_auth.php';
-        require 'authAPI_fragments/modify_checks.php';
-        require 'authAPI_fragments/modifyUserActions_execution.php';
+        require 'auth_fragments/modify_auth.php';
+        require 'auth_fragments/modify_checks.php';
+        require 'auth_fragments/modifyUserActions_execution.php';
         echo ($result)? '1' : '0';
         break;
 
@@ -318,18 +318,18 @@ switch($action){
     case 'modifyUserGroups':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/modify_auth.php';
-        require 'authAPI_fragments/modify_checks.php';
-        require 'authAPI_fragments/modifyUserGroups_execution.php';
+        require 'auth_fragments/modify_auth.php';
+        require 'auth_fragments/modify_checks.php';
+        require 'auth_fragments/modifyUserGroups_execution.php';
         echo ($result)? '1' : '0';
         break;
 
     case 'modifyGroupActions':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'authAPI_fragments/modify_auth.php';
-        require 'authAPI_fragments/modify_checks.php';
-        require 'authAPI_fragments/modifyGroupActions_execution.php';
+        require 'auth_fragments/modify_auth.php';
+        require 'auth_fragments/modify_checks.php';
+        require 'auth_fragments/modifyGroupActions_execution.php';
         echo ($result)? '1' : '0';
         break;
 

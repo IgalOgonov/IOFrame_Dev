@@ -227,7 +227,7 @@ require __DIR__.'/../IOFrame/Handlers/PurchaseOrderHandler.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'ordersAPI_fragments/definitions.php';
+require 'orders_fragments/definitions.php';
 
 
 
@@ -268,9 +268,9 @@ switch($action){
         $arrExpected =["id","includeOrderUsers"];
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/getOrder_validation_checks.php';
-        require 'ordersAPI_fragments/getOrder_auth_checks.php';
-        require 'ordersAPI_fragments/getOrder_execution.php';
+        require 'orders_fragments/getOrder_validation_checks.php';
+        require 'orders_fragments/getOrder_auth_checks.php';
+        require 'orders_fragments/getOrder_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -283,9 +283,9 @@ switch($action){
         $arrExpected = array_merge(["ids","getLimitedInfo","typeIs","statusIs"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/getOrders_auth_checks.php';
-        require 'ordersAPI_fragments/getOrders_validation_checks.php';
-        require 'ordersAPI_fragments/getOrders_execution.php';
+        require 'orders_fragments/getOrders_auth_checks.php';
+        require 'orders_fragments/getOrders_validation_checks.php';
+        require 'orders_fragments/getOrders_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -304,9 +304,9 @@ switch($action){
             array_push($arrExpected,'id');
 
         require 'setExpectedInputs.php';
-    require 'ordersAPI_fragments/setOrder_auth_checks.php';
-        require 'ordersAPI_fragments/setOrder_validation_checks.php';
-        require 'ordersAPI_fragments/setOrder_execution.php';
+    require 'orders_fragments/setOrder_auth_checks.php';
+        require 'orders_fragments/setOrder_validation_checks.php';
+        require 'orders_fragments/setOrder_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -319,9 +319,9 @@ switch($action){
         $arrExpected = array_merge(["ids","typeIs","statusIs","returnIDMeta"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/archiveOrders_auth_checks.php';
-        require 'ordersAPI_fragments/getOrders_validation_checks.php';
-        require 'ordersAPI_fragments/archiveOrders_execution.php';
+        require 'orders_fragments/archiveOrders_auth_checks.php';
+        require 'orders_fragments/getOrders_validation_checks.php';
+        require 'orders_fragments/archiveOrders_execution.php';
 
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
@@ -330,9 +330,9 @@ switch($action){
         $arrExpected = array_merge(["userID","returnOrders","getLimitedInfo","relationType"],$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/getUserOrders_validation_checks.php';
-        require 'ordersAPI_fragments/getUserOrders_auth_checks.php';
-        require 'ordersAPI_fragments/getUserOrders_execution.php';
+        require 'orders_fragments/getUserOrders_validation_checks.php';
+        require 'orders_fragments/getUserOrders_auth_checks.php';
+        require 'orders_fragments/getUserOrders_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -346,9 +346,9 @@ switch($action){
         $arrExpected =["userID","orderID","relationType","meta"];
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/setUserOrder_auth_checks.php';
-        require 'ordersAPI_fragments/setUserOrder_validation_checks.php';
-        require 'ordersAPI_fragments/setUserOrder_execution.php';
+        require 'orders_fragments/setUserOrder_auth_checks.php';
+        require 'orders_fragments/setUserOrder_validation_checks.php';
+        require 'orders_fragments/setUserOrder_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -361,9 +361,9 @@ switch($action){
         $arrExpected =["userID","orderID"];
 
         require 'setExpectedInputs.php';
-        require 'ordersAPI_fragments/removeUserFromOrder_auth_checks.php';
-        require 'ordersAPI_fragments/removeUserFromOrder_validation_checks.php';
-        require 'ordersAPI_fragments/removeUserFromOrder_execution.php';
+        require 'orders_fragments/removeUserFromOrder_auth_checks.php';
+        require 'orders_fragments/removeUserFromOrder_validation_checks.php';
+        require 'orders_fragments/removeUserFromOrder_execution.php';
 
         echo ($result === 0)?
             '0' : $result;

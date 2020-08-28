@@ -346,7 +346,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'securityAPI_fragments/definitions.php';
+require 'security_fragments/definitions.php';
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
@@ -370,8 +370,8 @@ switch($action){
         $arrExpected = [];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getRulebookCategories_auth.php';
-        require 'securityAPI_fragments/getRulebookCategories_execution.php';
+        require 'security_fragments/getRulebookCategories_auth.php';
+        require 'security_fragments/getRulebookCategories_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -386,9 +386,9 @@ switch($action){
         $arrExpected = ["category","type"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getRulebookRules_auth.php';
-        require 'securityAPI_fragments/getRulebookRules_checks.php';
-        require 'securityAPI_fragments/getRulebookRules_execution.php';
+        require 'security_fragments/getRulebookRules_auth.php';
+        require 'security_fragments/getRulebookRules_checks.php';
+        require 'security_fragments/getRulebookRules_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -403,9 +403,9 @@ switch($action){
         $arrExpected = ["inputs","override","update"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/setRulebookRules_auth.php';
-        require 'securityAPI_fragments/setRulebookRules_checks.php';
-        require 'securityAPI_fragments/setRulebookRules_execution.php';
+        require 'security_fragments/setRulebookRules_auth.php';
+        require 'security_fragments/setRulebookRules_checks.php';
+        require 'security_fragments/setRulebookRules_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -420,9 +420,9 @@ switch($action){
         $arrExpected = ["inputs"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteRulebookRules_auth.php';
-        require 'securityAPI_fragments/deleteRulebookRules_checks.php';
-        require 'securityAPI_fragments/deleteRulebookRules_execution.php';
+        require 'security_fragments/deleteRulebookRules_auth.php';
+        require 'security_fragments/deleteRulebookRules_checks.php';
+        require 'security_fragments/deleteRulebookRules_execution.php';
 
         echo !$result? '0' : $result;
         break;
@@ -434,9 +434,9 @@ switch($action){
         $arrExpected = ["inputs","limit","offset"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getEventsMeta_auth.php';
-        require 'securityAPI_fragments/getEventsMeta_checks.php';
-        require 'securityAPI_fragments/getEventsMeta_execution.php';
+        require 'security_fragments/getEventsMeta_auth.php';
+        require 'security_fragments/getEventsMeta_checks.php';
+        require 'security_fragments/getEventsMeta_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -451,9 +451,9 @@ switch($action){
         $arrExpected = ["inputs","override","update"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/setEventsMeta_auth.php';
-        require 'securityAPI_fragments/setEventsMeta_checks.php';
-        require 'securityAPI_fragments/setEventsMeta_execution.php';
+        require 'security_fragments/setEventsMeta_auth.php';
+        require 'security_fragments/setEventsMeta_checks.php';
+        require 'security_fragments/setEventsMeta_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -468,9 +468,9 @@ switch($action){
         $arrExpected = ["inputs"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteEventsMeta_auth.php';
-        require 'securityAPI_fragments/deleteEventsMeta_checks.php';
-        require 'securityAPI_fragments/deleteEventsMeta_execution.php';
+        require 'security_fragments/deleteEventsMeta_auth.php';
+        require 'security_fragments/deleteEventsMeta_checks.php';
+        require 'security_fragments/deleteEventsMeta_execution.php';
 
         echo !$result? '0' : $result;
         break;
@@ -484,9 +484,9 @@ switch($action){
         $arrExpected = ["ips","reliable","type","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getIPs_auth.php';
-        require 'securityAPI_fragments/getIPs_checks.php';
-        require 'securityAPI_fragments/getIPs_execution.php';
+        require 'security_fragments/getIPs_auth.php';
+        require 'security_fragments/getIPs_checks.php';
+        require 'security_fragments/getIPs_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -501,9 +501,9 @@ switch($action){
         $arrExpected = ["ranges","type","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/getIPRanges_auth.php';
-        require 'securityAPI_fragments/getIPRanges_checks.php';
-        require 'securityAPI_fragments/getIPRanges_execution.php';
+        require 'security_fragments/getIPRanges_auth.php';
+        require 'security_fragments/getIPRanges_checks.php';
+        require 'security_fragments/getIPRanges_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -519,9 +519,9 @@ switch($action){
         $arrExpected = ["ip","type","reliable","ttl"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/setIP_auth.php';
-        require 'securityAPI_fragments/setIP_checks.php';
-        require 'securityAPI_fragments/setIP_execution.php';
+        require 'security_fragments/setIP_auth.php';
+        require 'security_fragments/setIP_checks.php';
+        require 'security_fragments/setIP_execution.php';
 
         echo !$result? '0' : $result;
         break;
@@ -533,9 +533,9 @@ switch($action){
         $arrExpected = ["ip"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteIP_auth.php';
-        require 'securityAPI_fragments/deleteIP_checks.php';
-        require 'securityAPI_fragments/deleteIP_execution.php';
+        require 'security_fragments/deleteIP_auth.php';
+        require 'security_fragments/deleteIP_checks.php';
+        require 'security_fragments/deleteIP_execution.php';
 
         echo !$result? '0' : $result;
         break;
@@ -548,9 +548,9 @@ switch($action){
         $arrExpected = ["prefix","from","to","newFrom","newTo","type","ttl"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/setIPRange_auth.php';
-        require 'securityAPI_fragments/setIPRange_checks.php';
-        require 'securityAPI_fragments/setIPRange_execution.php';
+        require 'security_fragments/setIPRange_auth.php';
+        require 'security_fragments/setIPRange_checks.php';
+        require 'security_fragments/setIPRange_execution.php';
 
         echo !$result? '0' : $result;
         break;
@@ -562,9 +562,9 @@ switch($action){
         $arrExpected = ["prefix","from","to"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteIPRange_auth.php';
-        require 'securityAPI_fragments/deleteIPRange_checks.php';
-        require 'securityAPI_fragments/deleteIPRange_execution.php';
+        require 'security_fragments/deleteIPRange_auth.php';
+        require 'security_fragments/deleteIPRange_checks.php';
+        require 'security_fragments/deleteIPRange_execution.php';
 
             echo !$result? '0' : $result;
         break;
@@ -576,8 +576,8 @@ switch($action){
         $arrExpected = ["range"];
 
         require 'setExpectedInputs.php';
-        require 'securityAPI_fragments/deleteExpired_auth.php';
-        require 'securityAPI_fragments/deleteExpired_execution.php';
+        require 'security_fragments/deleteExpired_auth.php';
+        require 'security_fragments/deleteExpired_execution.php';
 
             echo !$result? '0' : $result;
         break;

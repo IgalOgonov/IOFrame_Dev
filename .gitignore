@@ -9,3 +9,4 @@ cli/watcher-json/
 *min.js
 *min.css
 !vue.min.js
+!marked.min.js

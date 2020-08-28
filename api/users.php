@@ -178,7 +178,7 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'userAPI_fragments/definitions.php';
+require 'user_fragments/definitions.php';
 require 'CSRF.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
 
@@ -203,9 +203,9 @@ switch($action){
             'isBanned','isSuspicious','createdBefore','createdAfter','orderBy','orderType', 'limit','offset' ];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/getUsers_auth.php';
-        require 'userAPI_fragments/getUsers_checks.php';
-        require 'userAPI_fragments/getUsers_execution.php';
+        require 'user_fragments/getUsers_auth.php';
+        require 'user_fragments/getUsers_checks.php';
+        require 'user_fragments/getUsers_execution.php';
 
         echo json_encode($result);
         break;
@@ -213,9 +213,9 @@ switch($action){
         $arrExpected = ['id','username','email','active','created','bannedDate','suspiciousDate'];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/updateUser_auth.php';
-        require 'userAPI_fragments/updateUser_checks.php';
-        require 'userAPI_fragments/updateUser_execution.php';
+        require 'user_fragments/updateUser_auth.php';
+        require 'user_fragments/updateUser_checks.php';
+        require 'user_fragments/updateUser_execution.php';
 
         echo json_encode($result);
         break;
@@ -224,9 +224,9 @@ switch($action){
         $arrExpected =["u","m","p"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/addUser_auth.php';
-        require 'userAPI_fragments/addUser_checks.php';
-        require 'userAPI_fragments/addUser_execution.php';
+        require 'user_fragments/addUser_auth.php';
+        require 'user_fragments/addUser_checks.php';
+        require 'user_fragments/addUser_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -250,10 +250,10 @@ switch($action){
         $arrExpected =["userID","m","p","sesKey"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/logUser_pre_checks_auth.php';
-        require 'userAPI_fragments/logUser_checks.php';
-        require 'userAPI_fragments/logUser_post_checks_auth.php';
-        require 'userAPI_fragments/logUser_execution.php';
+        require 'user_fragments/logUser_pre_checks_auth.php';
+        require 'user_fragments/logUser_checks.php';
+        require 'user_fragments/logUser_post_checks_auth.php';
+        require 'user_fragments/logUser_execution.php';
 
         if($result === 1){
             if(!defined('SecurityHandler'))
@@ -294,8 +294,8 @@ switch($action){
         $arrExpected =["id","code","mail","async"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/reset_checks.php';
-        require 'userAPI_fragments/pwdReset_execution.php';
+        require 'user_fragments/reset_checks.php';
+        require 'user_fragments/pwdReset_execution.php';
 
 
         //This procedure can only return after N seconds exactly
@@ -314,9 +314,9 @@ switch($action){
         $arrExpected =["newPassword"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/changePassword_auth.php';
-        require 'userAPI_fragments/changePassword_checks.php';
-        require 'userAPI_fragments/changePassword_execution.php';
+        require 'user_fragments/changePassword_auth.php';
+        require 'user_fragments/changePassword_checks.php';
+        require 'user_fragments/changePassword_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -327,8 +327,8 @@ switch($action){
         $arrExpected =["id","code","mail"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/regConfirm_checks.php';
-        require 'userAPI_fragments/regConfirm_execution.php';
+        require 'user_fragments/regConfirm_checks.php';
+        require 'user_fragments/regConfirm_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -339,8 +339,8 @@ switch($action){
         $arrExpected =["id","code","mail","async"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/reset_checks.php';
-        require 'userAPI_fragments/mailReset_execution.php';
+        require 'user_fragments/reset_checks.php';
+        require 'user_fragments/mailReset_execution.php';
 
         //This procedure can only return after N seconds exactly
         $timingManager->waitUntilIntervalElapsed(1);
@@ -357,9 +357,9 @@ switch($action){
         $arrExpected =["newMail"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/changeMail_auth.php';
-        require 'userAPI_fragments/changeMail_checks.php';
-        require 'userAPI_fragments/changeMail_execution.php';
+        require 'user_fragments/changeMail_auth.php';
+        require 'user_fragments/changeMail_checks.php';
+        require 'user_fragments/changeMail_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -372,10 +372,10 @@ switch($action){
         $arrExpected =["minutes","id"];
 
         require 'setExpectedInputs.php';
-        require 'userAPI_fragments/banUser_pre_checks_auth.php';
-        require 'userAPI_fragments/banUser_checks.php';
-        require 'userAPI_fragments/banUser_post_checks_auth.php';
-        require 'userAPI_fragments/banUser_execution.php';
+        require 'user_fragments/banUser_pre_checks_auth.php';
+        require 'user_fragments/banUser_checks.php';
+        require 'user_fragments/banUser_post_checks_auth.php';
+        require 'user_fragments/banUser_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;

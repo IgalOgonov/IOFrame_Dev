@@ -12,8 +12,6 @@ if(!defined('UserHandler'))
 if(!defined('PluginHandler'))
     require 'IOFrame/Handlers/PluginHandler.php';
 
-//require 'procedures/updateGeoIP.php';
-
 //--------------------Initialize Current DIR--------------------
 $baseUrl = IOFrame\Util\replaceInString('\\','/',__DIR__).'/';
 
@@ -66,14 +64,6 @@ if(!is_dir('localFiles/plugins')){
     fclose(fopen('localFiles/plugins/settings','w'));
 }
 
-//--------------------Create and update GeoIP--------------------
-//if(!is_dir('localFiles/geoip-db')){
-//    if(!mkdir('localFiles/geoip-db'))
-//        die('Cannot create geoIP directory for some reason - most likely insufficient user privileges, or it already exists');
-//}
-//Only do this once during the install, cli or not
-//if(!file_exists($baseUrl.'localFiles/geoip-db/GeoLite2-Country.mmdb'))
-    //updateGeoIP($baseUrl);
 
 //--------------------Create empty plugin order--------------------
 if(!is_dir('localFiles/plugin_order')){

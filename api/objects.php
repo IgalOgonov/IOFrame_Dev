@@ -238,58 +238,58 @@ if(!isset($siteSettings))
 
 switch($action){
     case "r":
-        require 'objectAPI_fragments/r_checks.php';
-        require 'objectAPI_fragments/r_execution.php';
-        require 'objectAPI_fragments/read_parse.php';
+        require 'objects_fragments/r_checks.php';
+        require 'objects_fragments/r_execution.php';
+        require 'objects_fragments/read_parse.php';
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
     case "rg":
-        require 'objectAPI_fragments/rg_checks.php';
-        require 'objectAPI_fragments/rg_execution.php';
-        require 'objectAPI_fragments/read_parse.php';
+        require 'objects_fragments/rg_checks.php';
+        require 'objects_fragments/rg_execution.php';
+        require 'objects_fragments/read_parse.php';
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         break;
     case "c":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'objectAPI_fragments/c_auth.php';
-        require 'objectAPI_fragments/c_checks.php';
-        require 'objectAPI_fragments/c_execution.php';
+        require 'objects_fragments/c_auth.php';
+        require 'objects_fragments/c_checks.php';
+        require 'objects_fragments/c_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
     case "u":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'objectAPI_fragments/u_auth.php';
-        require 'objectAPI_fragments/u_checks.php';
-        require 'objectAPI_fragments/u_execution.php';
+        require 'objects_fragments/u_auth.php';
+        require 'objects_fragments/u_checks.php';
+        require 'objects_fragments/u_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
     case "d":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'objectAPI_fragments/d_auth.php';
-        require 'objectAPI_fragments/d_checks.php';
-        require 'objectAPI_fragments/d_execution.php';
+        require 'objects_fragments/d_auth.php';
+        require 'objects_fragments/d_checks.php';
+        require 'objects_fragments/d_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
     case "a":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'objectAPI_fragments/a_auth.php';
-        require 'objectAPI_fragments/a_checks.php';
-        require 'objectAPI_fragments/a_execution.php';
+        require 'objects_fragments/a_auth.php';
+        require 'objects_fragments/a_checks.php';
+        require 'objects_fragments/a_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
     case "ga":
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'objectAPI_fragments/ga_checks.php';
-        require 'objectAPI_fragments/ga_execution.php';
+        require 'objects_fragments/ga_checks.php';
+        require 'objects_fragments/ga_execution.php';
         echo json_encode($result);
         break;
     default:

@@ -171,7 +171,7 @@ if(!defined('coreInit'))
 require __DIR__.'/defaultInputChecks.php';
 require __DIR__.'/defaultInputResults.php';
 require __DIR__.'/CSRF.php';
-require 'menuAPI_fragments/definitions.php';
+require 'menu_fragments/definitions.php';
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
@@ -192,9 +192,9 @@ switch($action){
         $arrExpected =["offset","limit"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/getMenus_checks.php';
-        require 'menuAPI_fragments/getMenus_auth.php';
-        require 'menuAPI_fragments/getMenus_execution.php';
+        require 'menu_fragments/getMenus_checks.php';
+        require 'menu_fragments/getMenus_auth.php';
+        require 'menu_fragments/getMenus_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
@@ -210,9 +210,9 @@ switch($action){
         $arrExpected =["inputs","override","update"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/setMenus_checks.php';
-        require 'menuAPI_fragments/setMenus_auth.php';
-        require 'menuAPI_fragments/setMenus_execution.php';
+        require 'menu_fragments/setMenus_checks.php';
+        require 'menu_fragments/setMenus_auth.php';
+        require 'menu_fragments/setMenus_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
@@ -228,9 +228,9 @@ switch($action){
         $arrExpected =["menus"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/deleteMenus_checks.php';
-        require 'menuAPI_fragments/deleteMenus_auth.php';
-        require 'menuAPI_fragments/deleteMenus_execution.php';
+        require 'menu_fragments/deleteMenus_checks.php';
+        require 'menu_fragments/deleteMenus_auth.php';
+        require 'menu_fragments/deleteMenus_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -243,9 +243,9 @@ switch($action){
         $arrExpected =["identifier"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/getMenu_checks.php';
-        require 'menuAPI_fragments/getMenu_auth.php';
-        require 'menuAPI_fragments/getMenu_execution.php';
+        require 'menu_fragments/getMenu_checks.php';
+        require 'menu_fragments/getMenu_auth.php';
+        require 'menu_fragments/getMenu_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP);
@@ -261,9 +261,9 @@ switch($action){
         $arrExpected =["identifier","inputs"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/setMenuItems_checks.php';
-        require 'menuAPI_fragments/setMenuItems_auth.php';
-        require 'menuAPI_fragments/setMenuItems_execution.php';
+        require 'menu_fragments/setMenuItems_checks.php';
+        require 'menu_fragments/setMenuItems_auth.php';
+        require 'menu_fragments/setMenuItems_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -276,9 +276,9 @@ switch($action){
         $arrExpected =["identifier","blockIdentifier","sourceAddress","targetAddress","orderIndex"];
 
         require 'setExpectedInputs.php';
-        require 'menuAPI_fragments/moveMenuBranch_checks.php';
-        require 'menuAPI_fragments/moveMenuBranch_auth.php';
-        require 'menuAPI_fragments/moveMenuBranch_execution.php';
+        require 'menu_fragments/moveMenuBranch_checks.php';
+        require 'menu_fragments/moveMenuBranch_auth.php';
+        require 'menu_fragments/moveMenuBranch_execution.php';
 
         echo ($result === 0)?
             '0' : $result;

@@ -99,9 +99,9 @@ else
 switch($action){
 
     case 'getSetting':
-        require 'settingsAPI_fragments/get_auth.php';
-        require 'settingsAPI_fragments/get_checks.php';
-        require 'settingsAPI_fragments/getSetting_execution.php';
+        require 'settings_fragments/get_auth.php';
+        require 'settings_fragments/get_checks.php';
+        require 'settings_fragments/getSetting_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
@@ -110,18 +110,18 @@ switch($action){
     case 'getSettings':
         if($action === 'getSettingsMeta')
             $target = 'metaSettings';
-        require 'settingsAPI_fragments/get_auth.php';
-        require 'settingsAPI_fragments/get_checks.php';
-        require 'settingsAPI_fragments/getSettings_execution.php';
+        require 'settings_fragments/get_auth.php';
+        require 'settings_fragments/get_checks.php';
+        require 'settings_fragments/getSettings_execution.php';
         echo json_encode($result);
         break;
 
     case 'setSetting':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'settingsAPI_fragments/set_auth.php';
-        require 'settingsAPI_fragments/set_checks.php';
-        require 'settingsAPI_fragments/setSetting_execution.php';
+        require 'settings_fragments/set_auth.php';
+        require 'settings_fragments/set_checks.php';
+        require 'settings_fragments/setSetting_execution.php';
         echo $result === true ?
             '1' : '0';
         break;
@@ -129,9 +129,9 @@ switch($action){
     case 'unsetSetting':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
-        require 'settingsAPI_fragments/unset_auth.php';
-        require 'settingsAPI_fragments/unset_checks.php';
-        require 'settingsAPI_fragments/unsetSetting_execution.php';
+        require 'settings_fragments/unset_auth.php';
+        require 'settings_fragments/unset_checks.php';
+        require 'settings_fragments/unsetSetting_execution.php';
         echo ($result === false)?
             '0' : $result;
         break;

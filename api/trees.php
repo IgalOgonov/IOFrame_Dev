@@ -141,7 +141,7 @@ require __DIR__ . '/../IOFrame/Util/validator.php';
 //If it's a test call..
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'treeAPI_fragments/definitions.php';
+require 'tree_fragments/definitions.php';
 require 'CSRF.php';
 
 if($test){

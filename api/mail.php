@@ -105,7 +105,7 @@ require __DIR__ . '/../IOFrame/Handlers/MailHandler.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'mailAPI_fragments/definitions.php';
+require 'mail_fragments/definitions.php';
 
 if($test){
     echo 'Testing mode!'.EOL;
@@ -125,9 +125,9 @@ switch($action){
         $arrExpected = ["mail","secToken","subj","mName1","mName2","type","templateNum","mBody","varArray"];
 
         require 'setExpectedInputs.php';
-        require 'mailAPI_fragments/mailTo_checks.php';
-        require 'mailAPI_fragments/mailTo_auth.php';
-        require 'mailAPI_fragments/mailTo_execution.php';
+        require 'mail_fragments/mailTo_checks.php';
+        require 'mail_fragments/mailTo_auth.php';
+        require 'mail_fragments/mailTo_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -137,9 +137,9 @@ switch($action){
         $arrExpected = ["ids","limit","offset","createdAfter","createdBefore","changedAfter","changedBefore","includeRegex","excludeRegex"];
 
         require 'setExpectedInputs.php';
-        require 'mailAPI_fragments/getTemplates_auth.php';
-        require 'mailAPI_fragments/getTemplates_checks.php';
-        require 'mailAPI_fragments/getTemplates_execution.php';
+        require 'mail_fragments/getTemplates_auth.php';
+        require 'mail_fragments/getTemplates_checks.php';
+        require 'mail_fragments/getTemplates_execution.php';
 
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         break;
@@ -153,9 +153,9 @@ switch($action){
         $arrExpected = ["id","title","content"];
 
         require 'setExpectedInputs.php';
-        require 'mailAPI_fragments/setTemplate_auth.php';
-        require 'mailAPI_fragments/setTemplate_checks.php';
-        require 'mailAPI_fragments/setTemplate_execution.php';
+        require 'mail_fragments/setTemplate_auth.php';
+        require 'mail_fragments/setTemplate_checks.php';
+        require 'mail_fragments/setTemplate_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -169,9 +169,9 @@ switch($action){
         $arrExpected = ["ids"];
 
         require 'setExpectedInputs.php';
-        require 'mailAPI_fragments/deleteTemplates_auth.php';
-        require 'mailAPI_fragments/deleteTemplates_checks.php';
-        require 'mailAPI_fragments/deleteTemplates_execution.php';
+        require 'mail_fragments/deleteTemplates_auth.php';
+        require 'mail_fragments/deleteTemplates_checks.php';
+        require 'mail_fragments/deleteTemplates_execution.php';
 
         echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         break;

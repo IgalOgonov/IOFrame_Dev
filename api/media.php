@@ -367,7 +367,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'mediaAPI_fragments/definitions.php';
+require 'media_fragments/definitions.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
 
 if(!isset($_REQUEST["action"]))
@@ -402,9 +402,9 @@ switch($action){
         $arrExpected =["type","items","address","imageQualityPercentage","gallery","overwrite"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/uploadMedia_auth.php';
-        require 'mediaAPI_fragments/uploadMedia_checks.php';
-        require 'mediaAPI_fragments/uploadMedia_execution.php';
+        require 'media_fragments/uploadMedia_auth.php';
+        require 'media_fragments/uploadMedia_checks.php';
+        require 'media_fragments/uploadMedia_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -417,19 +417,19 @@ switch($action){
         $arrExpected =["address","resourceType","lastChanged"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/getDBMedia_pre_checks_auth.php';
-        require 'mediaAPI_fragments/getDBMedia_checks.php';
-        require 'mediaAPI_fragments/getDBMedia_post_checks_auth.php';
-        require 'mediaAPI_fragments/getDBMedia_execution.php';
+        require 'media_fragments/getDBMedia_pre_checks_auth.php';
+        require 'media_fragments/getDBMedia_checks.php';
+        require 'media_fragments/getDBMedia_post_checks_auth.php';
+        require 'media_fragments/getDBMedia_execution.php';
         break;
 
     case 'getImages':
         $arrExpected =["address","includeLocal","getDB","dataType"];
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/getImages_checks.php';
-        require 'mediaAPI_fragments/getImages_auth.php';
-        require 'mediaAPI_fragments/getImages_execution.php';
+        require 'media_fragments/getImages_checks.php';
+        require 'media_fragments/getImages_auth.php';
+        require 'media_fragments/getImages_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -450,9 +450,9 @@ switch($action){
 
         require 'setExpectedInputs.php';
         // This one is too specific to
-        require 'mediaAPI_fragments/updateImage_checks.php';
-        require 'mediaAPI_fragments/updateImage_auth.php';
-        require 'mediaAPI_fragments/updateImage_execution.php';
+        require 'media_fragments/updateImage_checks.php';
+        require 'media_fragments/updateImage_auth.php';
+        require 'media_fragments/updateImage_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -465,9 +465,9 @@ switch($action){
         $arrExpected =["oldAddress","newAddress","copy","remote"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/moveImage_checks.php';
-        require 'mediaAPI_fragments/moveImage_auth.php';
-        require 'mediaAPI_fragments/moveImage_execution.php';
+        require 'media_fragments/moveImage_checks.php';
+        require 'media_fragments/moveImage_auth.php';
+        require 'media_fragments/moveImage_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -480,9 +480,9 @@ switch($action){
         $arrExpected =["addresses","remote"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/deleteImages_checks.php';
-        require 'mediaAPI_fragments/deleteImages_auth.php';
-        require 'mediaAPI_fragments/deleteImages_execution.php';
+        require 'media_fragments/deleteImages_checks.php';
+        require 'media_fragments/deleteImages_auth.php';
+        require 'media_fragments/deleteImages_execution.php';
 
 
         if(is_array($result))
@@ -499,9 +499,9 @@ switch($action){
         $arrExpected =["addresses","remote"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/incrementImages_auth.php';
-        require 'mediaAPI_fragments/incrementImages_checks.php';
-        require 'mediaAPI_fragments/incrementImages_execution.php';
+        require 'media_fragments/incrementImages_auth.php';
+        require 'media_fragments/incrementImages_checks.php';
+        require 'media_fragments/incrementImages_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -514,9 +514,9 @@ switch($action){
         $arrExpected =["address"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/getImageGalleries_checks.php';
-        require 'mediaAPI_fragments/getImageGalleries_auth.php';
-        require 'mediaAPI_fragments/getImageGalleries_execution.php';
+        require 'media_fragments/getImageGalleries_checks.php';
+        require 'media_fragments/getImageGalleries_auth.php';
+        require 'media_fragments/getImageGalleries_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -530,9 +530,9 @@ switch($action){
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/getGalleries_auth.php';
-        require 'mediaAPI_fragments/getGalleries_checks.php';
-        require 'mediaAPI_fragments/getGalleries_execution.php';
+        require 'media_fragments/getGalleries_auth.php';
+        require 'media_fragments/getGalleries_checks.php';
+        require 'media_fragments/getGalleries_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -545,9 +545,9 @@ switch($action){
         $arrExpected =["gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/getGallery_checks.php';
-        require 'mediaAPI_fragments/getGallery_auth.php';
-        require 'mediaAPI_fragments/getGallery_execution.php';
+        require 'media_fragments/getGallery_checks.php';
+        require 'media_fragments/getGallery_auth.php';
+        require 'media_fragments/getGallery_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -566,9 +566,9 @@ switch($action){
         }
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/setGallery_checks.php';
-        require 'mediaAPI_fragments/setGallery_auth.php';
-        require 'mediaAPI_fragments/setGallery_execution.php';
+        require 'media_fragments/setGallery_checks.php';
+        require 'media_fragments/setGallery_auth.php';
+        require 'media_fragments/setGallery_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -581,9 +581,9 @@ switch($action){
         $arrExpected =["gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/deleteGallery_checks.php';
-        require 'mediaAPI_fragments/deleteGallery_auth.php';
-        require 'mediaAPI_fragments/deleteGallery_execution.php';
+        require 'media_fragments/deleteGallery_checks.php';
+        require 'media_fragments/deleteGallery_auth.php';
+        require 'media_fragments/deleteGallery_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -596,9 +596,9 @@ switch($action){
         $arrExpected =["remote","addresses","gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/addToGallery_checks.php';
-        require 'mediaAPI_fragments/addToGallery_auth.php';
-        require 'mediaAPI_fragments/addToGallery_execution.php';
+        require 'media_fragments/addToGallery_checks.php';
+        require 'media_fragments/addToGallery_auth.php';
+        require 'media_fragments/addToGallery_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -614,9 +614,9 @@ switch($action){
         $arrExpected =["addresses","gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/removeFromGallery_checks.php';
-        require 'mediaAPI_fragments/removeFromGallery_auth.php';
-        require 'mediaAPI_fragments/removeFromGallery_execution.php';
+        require 'media_fragments/removeFromGallery_checks.php';
+        require 'media_fragments/removeFromGallery_auth.php';
+        require 'media_fragments/removeFromGallery_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -629,9 +629,9 @@ switch($action){
         $arrExpected =["from","to","gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/moveImageInGallery_checks.php';
-        require 'mediaAPI_fragments/moveImageInGallery_auth.php';
-        require 'mediaAPI_fragments/moveImageInGallery_execution.php';
+        require 'media_fragments/moveImageInGallery_checks.php';
+        require 'media_fragments/moveImageInGallery_auth.php';
+        require 'media_fragments/moveImageInGallery_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -644,9 +644,9 @@ switch($action){
         $arrExpected =["num1","num2","gallery"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/swapImagesInGallery_checks.php';
-        require 'mediaAPI_fragments/swapImagesInGallery_auth.php';
-        require 'mediaAPI_fragments/swapImagesInGallery_execution.php';
+        require 'media_fragments/swapImagesInGallery_checks.php';
+        require 'media_fragments/swapImagesInGallery_auth.php';
+        require 'media_fragments/swapImagesInGallery_execution.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -659,9 +659,9 @@ switch($action){
         $arrExpected =["relativeAddress","name"];
 
         require 'setExpectedInputs.php';
-        require 'mediaAPI_fragments/createFolder_auth.php';
-        require 'mediaAPI_fragments/createFolder_checks.php';
-        require 'mediaAPI_fragments/createFolder_execution.php';
+        require 'media_fragments/createFolder_auth.php';
+        require 'media_fragments/createFolder_checks.php';
+        require 'media_fragments/createFolder_execution.php';
 
         echo ($result === 0)?
             '0' : $result;

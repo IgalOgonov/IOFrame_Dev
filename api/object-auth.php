@@ -462,7 +462,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'objectAuthAPI_fragments/definitions.php';
+require 'objectAuth_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ObjectAuthHandler.php';
 
 if($test)
@@ -486,9 +486,9 @@ switch($action){
         $arrExpected =["keys","filters","orderBy","orderType","offset","limit"];
 
         require 'setExpectedInputs.php';
-        require 'objectAuthAPI_fragments/getItems_auth.php';
-        require 'objectAuthAPI_fragments/getItems_checks.php';
-        require 'objectAuthAPI_fragments/getItems_execution.php';
+        require 'objectAuth_fragments/getItems_auth.php';
+        require 'objectAuth_fragments/getItems_checks.php';
+        require 'objectAuth_fragments/getItems_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
@@ -504,9 +504,9 @@ switch($action){
         $arrExpected =["inputs","update","override"];
 
         require 'setExpectedInputs.php';
-        require 'objectAuthAPI_fragments/setItems_auth.php';
-        require 'objectAuthAPI_fragments/setItems_checks.php';
-        require 'objectAuthAPI_fragments/setItems_execution.php';
+        require 'objectAuth_fragments/setItems_auth.php';
+        require 'objectAuth_fragments/setItems_checks.php';
+        require 'objectAuth_fragments/setItems_execution.php';
 
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
@@ -522,9 +522,9 @@ switch($action){
         $arrExpected =["items"];
 
         require 'setExpectedInputs.php';
-        require 'objectAuthAPI_fragments/deleteItems_auth.php';
-        require 'objectAuthAPI_fragments/deleteItems_checks.php';
-        require 'objectAuthAPI_fragments/deleteItems_execution.php';
+        require 'objectAuth_fragments/deleteItems_auth.php';
+        require 'objectAuth_fragments/deleteItems_checks.php';
+        require 'objectAuth_fragments/deleteItems_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;
@@ -536,9 +536,9 @@ switch($action){
         $arrExpected =["items","inputs"];
 
         require 'setExpectedInputs.php';
-        require 'objectAuthAPI_fragments/moveItems_auth.php';
-        require 'objectAuthAPI_fragments/moveItems_checks.php';
-        require 'objectAuthAPI_fragments/moveItems_execution.php';
+        require 'objectAuth_fragments/moveItems_auth.php';
+        require 'objectAuth_fragments/moveItems_checks.php';
+        require 'objectAuth_fragments/moveItems_execution.php';
         echo ($result === 0)?
             '0' : $result;
         break;

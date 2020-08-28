@@ -129,7 +129,7 @@ if(!defined('coreInit'))
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
-require 'tokensAPI_fragments/definitions.php';
+require 'tokens_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/TokenHandler.php';
 
 if(!isset($_REQUEST["action"]))
@@ -156,9 +156,9 @@ switch($action){
         $arrExpected = ["tokens","tokenLike","actionLike","usesAtLeast","usesAtMost","expiresBefore","expiresAfter","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
-        require 'tokensAPI_fragments/getTokens_auth.php';
-        require 'tokensAPI_fragments/getTokens_checks.php';
-        require 'tokensAPI_fragments/getTokens_execution.php';
+        require 'tokens_fragments/getTokens_auth.php';
+        require 'tokens_fragments/getTokens_checks.php';
+        require 'tokens_fragments/getTokens_execution.php';
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
         else
@@ -172,9 +172,9 @@ switch($action){
         $arrExpected = ["token","tokenAction","uses","ttl","overwrite","update"];
 
         require 'setExpectedInputs.php';
-        require 'tokensAPI_fragments/setToken_auth.php';
-        require 'tokensAPI_fragments/setToken_checks.php';
-        require 'tokensAPI_fragments/setToken_execution.php';
+        require 'tokens_fragments/setToken_auth.php';
+        require 'tokens_fragments/setToken_checks.php';
+        require 'tokens_fragments/setToken_execution.php';
         echo !$result? '0' : $result;
         break;
 
@@ -185,9 +185,9 @@ switch($action){
         $arrExpected = ["tokens","overwrite","update"];
 
         require 'setExpectedInputs.php';
-        require 'tokensAPI_fragments/setTokens_auth.php';
-        require 'tokensAPI_fragments/setTokens_checks.php';
-        require 'tokensAPI_fragments/setTokens_execution.php';
+        require 'tokens_fragments/setTokens_auth.php';
+        require 'tokens_fragments/setTokens_checks.php';
+        require 'tokens_fragments/setTokens_execution.php';
         if(is_array($result))
             echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
         else
@@ -201,9 +201,9 @@ switch($action){
         $arrExpected = ["tokens"];
 
         require 'setExpectedInputs.php';
-        require 'tokensAPI_fragments/deleteTokens_auth.php';
-        require 'tokensAPI_fragments/deleteTokens_checks.php';
-        require 'tokensAPI_fragments/deleteTokens_execution.php';
+        require 'tokens_fragments/deleteTokens_auth.php';
+        require 'tokens_fragments/deleteTokens_checks.php';
+        require 'tokens_fragments/deleteTokens_execution.php';
         echo !$result? '0' : $result;
         break;
 
@@ -214,9 +214,9 @@ switch($action){
         $arrExpected = ["time"];
 
         require 'setExpectedInputs.php';
-        require 'tokensAPI_fragments/deleteExpiredTokens_auth.php';
-        require 'tokensAPI_fragments/deleteExpiredTokens_checks.php';
-        require 'tokensAPI_fragments/deleteExpiredTokens_execution.php';
+        require 'tokens_fragments/deleteExpiredTokens_auth.php';
+        require 'tokens_fragments/deleteExpiredTokens_checks.php';
+        require 'tokens_fragments/deleteExpiredTokens_execution.php';
         echo !$result? '0' : $result;
         break;
 
