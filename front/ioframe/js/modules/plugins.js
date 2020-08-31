@@ -121,10 +121,15 @@ Vue.component('plugin', {
         <tr>\
           <td  class="plugin-icons"><img :src="iconURL"></td>\
           <td class = "plugin-names"><span class="plugin-name">{{computeName}}</span><a href="#" class="real-name-popup" :id="lowerCaseFilename">*</a></td>\
-          <td><span class ="plugin-summary">{{summary}}</span><br>\
-              <span class ="plugin-description">{{description}}</span>    </td>\
+          <td>\
+            <span class ="plugin-summary">{{summary}}</span><br>\
+            <span class ="plugin-version" v-text="\'Available Version: \'+version"></span> <span class ="plugin-version" v-if="currentVersion" v-text="\'Current Version: \'+currentVersion"></span><br>\
+            <span class ="plugin-description">{{description}}</span>    \
+          </td>\
           <td class ="plugin-statuses"> {{status}}</td>\
           <td class = "plugin-buttons">\
+            <button class="plugin-update plugin-button positive-1"  v-bind:class="{isActive:updateButton(\'once\'), isInactive:!updateButton(\'once\')}" @click="updateOnce">Update Once</button><br>\
+            <button class="plugin-update plugin-button positive-1"  v-bind:class="{isActive:updateButton(\'latest\'), isInactive:!updateButton(\'latest\')}" @click="updateLatest">Update To Latest Version</button><br>\
             <button class="plugin-quick-install plugin-button positive-1"  v-bind:class="{isActive:installButtons(\'quick\'), isInactive:!installButtons(\'quick\')}" @click="qinstall">Quick Install</button><br>\
             <button class="plugin-full-install plugin-button positive-1" v-bind:class="{isActive:installButtons(\'full\'), isInactive:!installButtons(\'full\')}" @click="finstall">Full Install</button>\
           </td>\
@@ -147,6 +152,12 @@ Vue.component('plugin', {
         funinstall: function(){
             eventHub.$emit('funinstall',this.filename);
         },
+        updateOnce: function(){
+            eventHub.$emit('updateOnce',this.filename);
+        },
+        updateLatest: function(){
+            eventHub.$emit('updateLatest',this.filename);
+        },
         installButtons: function(type){
             if(this.status == 'active')
                 return false;
@@ -160,6 +171,25 @@ Vue.component('plugin', {
                 default:
                     return true;
             }
+        },
+        updateButton: function(type){
+            if((this.status !== 'active') || (this.hasUpdateFiles === false) || !this.currentVersion)
+                return false;
+            //Check whether any updates are available
+            let hasSingleUpdate = false,
+                hasMultipleUpdates = false;
+            for(let index = 0; index < this.updateRanges.length; index++){
+                let range = typeof this.updateRanges[index] === 'number' ? [this.updateRanges[index],this.updateRanges[index]] : this.updateRanges[index];
+                if((this.currentVersion >= range[0]) && (this.currentVersion <= range[1])){
+                    if(!hasSingleUpdate){
+                        hasSingleUpdate = true;
+                        hasMultipleUpdates = (this.updateRanges[index+1] !== undefined);
+                        break;
+                    }
+                }
+            }
+            return type === 'once' ? hasSingleUpdate : hasMultipleUpdates;
+
         },
         uninstallButtons: function(type){
             switch(type){
@@ -178,6 +208,10 @@ Vue.component('plugin', {
         filename: String,
         status: String,
         version: Number,
+        currentVersion: {
+            type: Number,
+            default: 0
+        },
         summary: String,
         name: String,
         description: String,
@@ -185,6 +219,8 @@ Vue.component('plugin', {
         installStatus: String,
         icon: String,
         thumbnail: String,
+        hasUpdateFiles: Boolean,
+        updateRanges: Array,
         installOptions: Object,
         uninstallOptions: Object
     },
@@ -285,6 +321,22 @@ var pluginList = new Vue({
             Vue.set(pluginList , 'currentAction' , 'perform full uninstall on');
             this.showPrompt = true;
         },
+        //We are updating a plugin
+        updateOnce: function(plugin){
+            Vue.set(pluginList , 'currentOptions' ,{});
+            Vue.set(pluginList , 'currentPluginName' , pluginList.plugins[plugin].name);
+            Vue.set(pluginList , 'currentPlugin' , plugin);
+            Vue.set(pluginList , 'currentAction' , 'update (once)');
+            this.showPrompt = true;
+        },
+        //We are updating a plugin
+        updateLatest: function(plugin){
+            Vue.set(pluginList , 'currentOptions' ,{});
+            Vue.set(pluginList , 'currentPluginName' , pluginList.plugins[plugin].name);
+            Vue.set(pluginList , 'currentPlugin' , plugin);
+            Vue.set(pluginList , 'currentAction' , 'update (to latest version)');
+            this.showPrompt = true;
+        },
         //Toggle server response visibility
         toggleResponse: function(){
             this.showResponse = !this.showResponse;
@@ -319,11 +371,15 @@ var pluginList = new Vue({
                 case 'perform full uninstall on':
                     expectedOptions = 'fu';
                     break;
+                case 'update (once)':
+                case 'update (to latest version)':
+                    expectedOptions = 'update';
+                    break;
                 default:
                     console.log('Wrong action type!',this.currentAction);
                     return;
             }
-            if(expectedOptions!== 'fi' && expectedOptions !=='fu'){
+            if(expectedOptions!== 'fi' && expectedOptions !=='fu' && expectedOptions !=='update'){
                 let values = {};
                 for(let key in expectedOptions){
                     switch(expectedOptions[key]['type']){
@@ -483,7 +539,7 @@ var pluginList = new Vue({
                     }
                 );
             }
-            else{
+            else if(expectedOptions !=='update'){
                 let redirect;
                 switch (expectedOptions){
                     case 'fi':
@@ -505,6 +561,134 @@ var pluginList = new Vue({
                     default :
                         alertLog('Wrong installation option!','danger');
                 }
+            }
+            else{
+                if(this.testMode)
+                    console.log('Updating '+this.currentPlugin+(this.currentAction === 'update (once)' ? ' once' : ' to latest version'));
+                //----Time to send the request
+                let requestData = {};
+                //If we are running in test mode, specify it
+                if(this.testMode === true) //Test mode
+                    requestData['req'] = 'test';
+                //Set plagin name, action, options, and the url
+                requestData['action'] = 'update';
+                requestData['name'] = this.currentPlugin;
+                requestData['once'] = this.currentAction === 'update (once)';
+                let url=document.pathToRoot+'api\/plugins';
+                let sendData = '';
+                for (let key in requestData) {
+                    sendData += encodeURIComponent(key) + '=' +
+                        encodeURIComponent(requestData[key]) + '&';
+                };
+                updateCSRFToken().then(
+                    function(token){
+                        sendData += 'CSRF_token='+token;
+                        if(pluginList.testMode === true)
+                            console.log('Data to send:',sendData, 'Url: ', url);
+                        //Request itself
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('POST', url+'?'+sendData);
+                        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8;');
+                        xhr.send(null);
+                        xhr.onreadystatechange = function () {
+                            var DONE = 4; // readyState 4 means the request is done.
+                            var OK = 200; // status 200 is a successful return.
+                            if (xhr.readyState === DONE) {
+                                if (xhr.status === OK){
+                                    let response = xhr.responseText;
+                                    //How we handle it in test mode
+                                    if(pluginList.testMode === true){
+                                        pluginList.serverResponse = response;
+                                        pluginList.showResponse = true;
+                                    }
+                                    //How we handle it otherwise:
+                                    else switch(response){
+                                        case 'INPUT_VALIDATION_FAILURE':
+                                            alertLog('Some of your input is illegal or missing. Try updating again in test mode ' +
+                                                'to find the problem, or contact the plugin author.','danger');
+                                            break;
+                                        case 'AUTHENTICATION_FAILURE':
+                                            alertLog('Authentication failure. You are not authorized to update this plugin. Maybe you are logged out?','danger');
+                                            break;
+                                        case 'WRONG_CSRF_TOKEN':
+                                            alertLog('CSRF Token wrong! Try again, or refresh the page on continued failure.','danger');
+                                            break;
+                                        default :
+                                            if(!IsJsonString(response)){
+                                                alertLog('Unknown error occurred, showing at the bottom:.','danger');
+                                                pluginList.testMode = true;
+                                                pluginList.serverResponse = response;
+                                                pluginList.showResponse = true;
+                                                return;
+                                            }
+                                            response = JSON.parse(response);
+                                            let message = '';
+                                            let failure = '';
+                                            let messageType = (response['resultType'] !== 'success-partial' ? response['resultType'] : 'info');
+                                            switch (response['result']){
+                                                case 0:
+                                                    if(response['resultType'] === 'error')
+                                                        message = 'Plugin no longer seems to be installed!';
+                                                    else{
+                                                        message = 'Successfully updated to latest version, '+response['newVersion'];
+                                                        if(response['moreUpdates'])
+                                                            message += `<br>
+                                                            Plugin has a more recent version, that requires reinstalling it.`;
+                                                    }
+                                                    break;
+                                                case 1:
+                                                    message = 'Plugin update files are no longer valid!';
+                                                    break;
+                                                case 2:
+                                                    messageType = 'info';
+                                                    message = 'Plugin is already at latest version!';
+                                                    break;
+                                                case 3:
+                                                    failure = 'updating would violate existing dependencies!';
+                                                    if(response['resultType'] !== 'error')
+                                                        message = `Plugin was updated up to version `+response['newVersion']+`, then <br>
+                                                         updating stopped because `;
+                                                    else
+                                                        message = 'Updating failed because ';
+                                                    message += failure;
+                                                    break;
+                                                case 4:
+                                                    failure = `exception was thrown during update. Exception text: <br>
+                                                    `+response['exception'];
+                                                    if(response['resultType'] === 'error')
+                                                        message = `Plugin was updated up to version `+response['newVersion']+`, then <br>
+                                                         updating stopped because `;
+                                                        message = 'Updating failed because ';
+                                                    message += failure;
+                                                    break;
+                                                case 5:
+                                                    failure = `exception was thrown during update with the text text: <br>
+                                                    `+response['exception']+` <br>
+                                                    and rollback failed with exception: <br>
+                                                    `+response['exceptionInFallback'];
+                                                    if(response['resultType'] !== 'error')
+                                                        message = `Plugin was updated up to version `+response['newVersion']+`, then <br>
+                                                         updating critically failed because `;
+                                                    else
+                                                        message = 'Updating critically failed because ';
+                                                    message += failure;
+                                                    break;
+                                            }
+                                            alertLog(message,messageType);
+                                    }
+                                }
+                            } else {
+                                if(xhr.status < 200 || xhr.status > 299 ){
+                                    console.log('Failed to reach plugins, status: ' + xhr.status); // An error occurred during the request.
+                                    alertLog('Could not get plugins!','danger');
+                                }
+                            }
+                        };
+                    },
+                    function(reject){
+                        alertLog('CSRF token expired. Please refresh the page to submit the form.','danger');
+                    }
+                );
             }
         },
         //Sets the field of an option to a certein color
@@ -575,6 +759,8 @@ var pluginList = new Vue({
         eventHub.$on('finstall', this.finstall);
         eventHub.$on('quninstall', this.quninstall);
         eventHub.$on('funinstall', this.funinstall);
+        eventHub.$on('updateOnce', this.updateOnce);
+        eventHub.$on('updateLatest', this.updateLatest);
         this.updatePlugin();
     }
 });

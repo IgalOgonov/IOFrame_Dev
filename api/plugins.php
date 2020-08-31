@@ -131,6 +131,40 @@
  *      *--*
  *      Full Uninstall is available - just includes fullUninstall.php of the plugin 'name', if it exists
  *      Example: action=fullUninstall&name=testPlugin
+ *_________________________________________________
+ * update [CSRF protected]
+ *      - Updates a plugin
+ *        If the $name specified is a legal, installed plugin, updates it.
+ *        'name' should be a name of a legal plugin (you can get a list of legal ones through getAvailable API, too).
+ *        'once' can be set to true if you want to update the plugin only once (rather than to the highest possible version).
+ *
+ *         Returns an assoc array of the form
+ *      {
+ *          'resultType' => 'error' - on error code
+ *                          'success' - success with no errors
+ *                          'success-partial' - succeeded at least one iteration, then failed
+ *          'newVersion' => int, on any result that isn't an error, will return the new plugin version
+ *          'result' => On error, one of the following codes:
+ *                      0 plugin not installed
+ *                      1 One of the required update files is missing.
+ *                      2 No new updates possible for current version
+ *                      -- During each iteration --
+ *                      3 Updating would violate existing dependencies (maxVersion of dependant plugin).
+ *                      4 exception thrown during update - will also populate exception
+ *                      5 critical error - exception thrown during updateFallback - will also populate exceptionInFallback
+ *
+ *                      On success or partial success, possible codes are:
+ *                      0 plugin updated successfully
+ *                      3 same as earlier
+ *                      4 same as earlier
+ *                      5 same as earlier
+ *          'exception' => string, empty, populated on a specific update exception.
+ *          'exceptionInFallback' => string, empty, populated on a specific updateFallback exception.
+ *          'moreUpdates' => bool, only set to true if we stopped updating due to the version requirement chain being broken
+ *      }
+ *      Example: action=update&name=testPlugin
+ *      Example: action=update&name=testPlugin&once=true
+ *
  */
 
 if(!defined('coreInit'))
@@ -280,6 +314,20 @@ function checkInput($settings,$SQLHandler,$SessionHandler,$logger ,$test = false
             if(!isset($_REQUEST['name'])){
                 if($test)
                     echo 'Name must be specified with uninstall!'.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+            if(!validateThenRefreshCSRFToken($SessionHandler))
+                exit(WRONG_CSRF_TOKEN);
+            break;
+        case 'update':
+            if(!($AuthHandler->isAuthorized(0) || $AuthHandler->hasAction(PLUGIN_UNINSTALL_AUTH))){
+                if($test)
+                    echo 'Insufficient auth to use update!'.EOL;
+                exit(AUTHENTICATION_FAILURE);
+            }
+            if(!isset($_REQUEST['name'])){
+                if($test)
+                    echo 'Name must be specified with update!'.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
             if(!validateThenRefreshCSRFToken($SessionHandler))
@@ -566,6 +614,12 @@ switch($_REQUEST['action']){
         $url = $settings->getSetting('absPathToRoot').'plugins/'.$name.'/fullUninstall.php';
         if(file_exists($url))
             require($url);
+        break;
+    case 'update':
+        $name = $_REQUEST['name'];
+        (isset($_REQUEST['once']) && $_REQUEST['once'])?
+            $iterationLimit = 1 : $iterationLimit = -1;
+        echo json_encode($PluginHandler->update($name,['iterationLimit'=>$iterationLimit,'test'=>$test]));
         break;
     default:
         exit('Specified action is not recognized');

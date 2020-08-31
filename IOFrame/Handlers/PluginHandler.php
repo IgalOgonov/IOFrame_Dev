@@ -163,7 +163,8 @@ namespace IOFrame\Handlers{
      *
      *  ------------meta.json------------------ | REQUIRED
      *  This file is a JSON of the format:
-     * {"name":<Plugin Name>,
+     * {
+     *  "name":<Plugin Name>,
      *  "version":<Plugin Version>[,
      *  "summary":<A short plugin summary>,][
      *  "description":<A full plugin description>]
@@ -192,6 +193,44 @@ namespace IOFrame\Handlers{
      *              "maxVersion":20
      *            }
      * }
+     *
+     *  ------------update.php---------------- | OPTIONAL
+     *  This file will be included if a user chooses to update, and will be executed procedurally.
+     *  This file will have been included after the plugin current information is loaded into $plugInfo, which also contains the dependencies.
+     *  A variable with the current plugin version ($currentVersion) will also be passed, as well as $targetVersion (version to which the plugin should update).
+     *  By default,$targetVersion is one plus of the range the plugin's version is matching (explained in update.json), and is what $currentVersion becomes on a successful iteration.
+     *  The above can be changed if this script explicitly changes  $targetVersion.
+     *  Also by default, after a single successful iteration, if the new version matches the next range, the plugin will keep installing the next one,
+     *  and repeat this process until it has no more ranges to match.
+     *  IF ANY unhandled exception is thrown in this file, instead of crushing the handler will stop and execute updateFallback.php.
+     *  It is a **VERY** good idea to create temporary local back-ups (in localFiles/temp, typically) of every local file or table variable
+     *  changed during each update iteration, so that updateFallback.php can use them on a failed update - they can be deleted on a successful one.
+     *
+     *  ------------updateFallback.php-------------- | OPTIONAL (REQUIRED if update.php is present)
+     *  This file will be included and procedurally executed if the update fails at some point and throws an exception.
+     *  The variables $currentVersion and  $targetVersion are passed by the update function, and is automatically calculated (the upper range to which the update failed, plus one).
+     *  It's up to updateFallback.php to clean up the failed update at that range based on the above 2 variables, without
+     *  leaving behind any mess or damaging the potential already-successful updates.
+     *
+     *  ------------update.json------------------ | OPTIONAL (REQUIRED if update.php is present)
+     *  This file is a JSON array of ranges the format:
+     * [
+     *  <int, one specific version that can be updated to the next version>
+     *  OR
+     *  <int[], update range of the form [<int, lowest version for this range>,<int, highest version for this range>]>
+     * ]
+     * Each version/range represents the version that can be updated.
+     * A single version represents a possible version the plugin needs to be in order to be updated, while a range represents
+     * a range of versions.
+     * From here, a single version will be treated as a range where 2 of the numbers are the same, and also called "range".
+     * The list needs to be sorted (by the range minimal version), but wont be validated (as at worst, the site admin wont be able to update the plugin when needed).
+     * A plugin can be updated if its version (from meta.json) is inside one of the ranges - otherwise, it cannot be updated.
+     * Also, any update iteration that would break one of the plugins dependencies (if any of those have a "maxVersion") would also fail.
+     * The plugin's version will always be updated to one above the range it matches, unless explicitly changed by the update script.
+     * If the new version matches the next range, it will (by default) keep updating until it reaches the end of the chain of matches.
+     * If the chain of versions is broken in a few places, it likely means you need to completely reinstall the plugin
+     * to get it to its latest version.
+     *
      *  ------------icon.png|jpg|bmp|gif------- | OPTIONAL
      *  The icon is meant to represent the plugin in a small list - 64x64
      *
@@ -297,18 +336,22 @@ namespace IOFrame\Handlers{
             //'absent' if there is a plugin listed as active, but does not exist
             //Change legal to active if it's installed on the list
             if(count($plugList->getSettings())>0 && $name == ''){
-                foreach($plugList->getSettings() as $plugin => $status){
-                    if(!(array_key_exists($plugin,$res)))
+                foreach($plugList->getSettings() as $plugin => $pluginArr){
+                    if(!(array_key_exists($plugin,$res) || !IOFrame\Util\is_json($pluginArr)))
                         $res[$plugin] = 'absent';
-                    else
+                    else{
+                        $status = json_decode($pluginArr,true)['status'];
                         if($status == 'installed' && $res[$plugin] == 'legal')
                             $res[$plugin] = 'active';
+                    }
                 }
             }
-            else if ($name != '')
-                if($plugList->getSetting($name) == 'installed' && isset($res[$name]))
+            else if ($name != ''){
+                $pluginArr = $plugList->getSetting($name);
+                if(IOFrame\Util\is_json($pluginArr) && json_decode($pluginArr,true)['status'] == 'installed' && isset($res[$name]))
                     if($res[$name] == 'legal')
                         $res[$name] = 'active';
+            }
             if($name != '' && count($res) == 0){
                 $res[$name] = 'absent';
             }
@@ -322,16 +365,20 @@ namespace IOFrame\Handlers{
          * the Active plugins should be a subset of the Available+legal plugins. The format is [<Plugin Name>][<Plugin Info as JSON>]
          * If $name is specified, returns a single plugin's info, as a 2D assoc array of size 1 of the following format
          * $res[0] =
-         * { "fileName":<Name of folder or listed in /localFiles/plugins>
+         * {
+         *   "fileName":<Name of folder or listed in /localFiles/plugins>
          *   "status": <active/legal/illegal/absent/zombie/installing>,
          *   "name": <Plugin Name>,
          *   "version": <Plugin Version>,
          *   ["summary": <Summary of the plugin>,]
          *   ["description": <A full description of the plugin>,]
+         *   ["currentVersion": <The current version of an installed plugin>,]
          *   "icon": <image type>,
          *   "thumbnail": <image type>,
          *   "uninstallOptions": <JSON string>
          *   "installOptions": <JSON string>
+         *   "hasUpdateFiles": <bool, true or false, depending on whether the update files and updateRanges if of the valid format>
+         *   ["updateRanges": ARRAY of ranges]
          * }
          *
          *  The status can be:
@@ -365,7 +412,7 @@ namespace IOFrame\Handlers{
                 $name = $params['name'] : $name = '';
 
             $res = array();
-            $plugList = new SettingsHandler($this->settings->getSetting('absPathToRoot').'/'.SETTINGS_DIR_FROM_ROOT.'plugins/');  //Listed plugins
+            $plugList = new SettingsHandler($this->settings->getSetting('absPathToRoot').'/'.SETTINGS_DIR_FROM_ROOT.'/plugins/');  //Listed plugins
             $url = $this->settings->getSetting('absPathToRoot').PLUGIN_FOLDER_PATH.PLUGIN_FOLDER_NAME;   //Plugin folder
             $names = array();
             //Single plugin case
@@ -385,6 +432,8 @@ namespace IOFrame\Handlers{
                 $res[$num] = $this->getAvailable(['name'=>$name]);
                 $res[$num]['fileName'] = $name;
                 $res[$num]['status'] = $res[$num][$name];
+                if($res[$num]['status'] === 'active')
+                    $res[$num]['currentVersion']= (int)(json_decode($plugList->getSetting($name),true)['version']);
                 if($res[$num][$name] == 'absent' || $res[$num][$name] == 'illegal'){
                     //Do nothing else if the plugin is absent or illegal
                 }
@@ -393,13 +442,29 @@ namespace IOFrame\Handlers{
                     $uninstallOpt = 'uninstallOptions';
                     $fileUrl = $url.$name;
                     $LockHandler = new LockHandler($fileUrl);
+
                     //Get the meta data and update it
                     $meta = json_decode($this->FileHandler->readFileWaitMutex($fileUrl,'meta.json',[]),true);
                     // Important to escape using htmlspecialchars, in case meta.json contains some nasty stuff
                     $res[$num]['name']=htmlspecialchars($meta['name']);
-                    $res[$num]['version']=$meta['version'];
+                    $res[$num]['version']=(int)$meta['version'];
                     if(isset($meta['summary']))  $res[$num]['summary']=htmlspecialchars($meta['summary']);
                     if(isset($meta['description']))  $res[$num]['description']=htmlspecialchars($meta['description']);
+                    //Get current version if installed
+                    //Check whether the plugin has the update files
+                    $updateRanges = json_decode($this->FileHandler->readFileWaitMutex($fileUrl,'update.json',[]),true);
+                    if(
+                        file_exists($fileUrl.'/update.php') &&
+                        file_exists($fileUrl.'/updateFallback.php') &&
+                        $this->validatePluginFile($updateRanges,'updateRanges',['isFile'=>true,'test'=>$test,'verbose'=>$verbose])
+                    ){
+                        $res[$num]['hasUpdateFiles'] = true;
+                        $res[$num]['updateRanges'] = $updateRanges;
+                    }
+                    else{
+                        $res[$num]['hasUpdateFiles'] = false ;
+                    }
+
                     //Start by checking if the plugin has fullInstall, quickInstall, or both - has to have one at least, because it's legal
                     if(file_exists($fileUrl.'/fullUninstall.php')){
                         file_exists($fileUrl.'/quickUninstall.php')                       ?
@@ -556,18 +621,19 @@ namespace IOFrame\Handlers{
             $url = $this->settings->getSetting('absPathToRoot').PLUGIN_FOLDER_PATH.PLUGIN_FOLDER_NAME.$name.'/';   //Plugin folder
             $LockHandler = new LockHandler($url);
             $plugList = new SettingsHandler($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/plugins/');
-            $plugName = $this->getInfo(['name'=>$name])[0];
+            $plugInfo = $this->getInfo(['name'=>$name])[0];
 
             //-------Check if the plugin is installed
-            if($plugList->getSetting($name) == 'installed' || $plugList->getSetting($name) == 'zombie' || $plugList->getSetting($name) == 'installing'){
+            $status = json_decode($plugList->getSetting($name),true)['status'];
+            if($status == 'installed' || $status == 'zombie' || $status == 'installing'){
                 if($verbose)
                     echo 'Plugin '.$name.' is either installed, installing or zombie!'.EOL;
                 return 1;
             }
 
             //-------Check if the plugin is illegal with override off, or the install is missing
-            if($plugName['status'] != 'legal'){
-                if($override && $plugName['status'] == 'illegal' &&
+            if($plugInfo['status'] != 'legal'){
+                if($override && $plugInfo['status'] == 'illegal' &&
                     file_exists($url.'quickInstall.php'))
                     $goOn = true;
                 else
@@ -582,8 +648,8 @@ namespace IOFrame\Handlers{
             }
 
             //-------Validate dependencies
-            if(isset($plugName['dependencies']))
-                $dependencies = $plugName['dependencies'];
+            if(isset($plugInfo['dependencies']))
+                $dependencies = $plugInfo['dependencies'];
             else
                 $dependencies = [];
             if($this->validateDependencies($name,['dependencyArray'=>$dependencies,'test'=>$test,'verbose'=>$verbose]) > 1)
@@ -595,7 +661,7 @@ namespace IOFrame\Handlers{
 
             //-------Change plugin to "installing"
             if(!$test)
-                $plugList->setSetting($name,'installing',['createNew'=>true]);
+                $plugList->setSetting($name,json_encode(['status'=>'installing','version'=>$plugInfo['version']]),['createNew'=>true]);
 
             //-------Time to validate (then update) definitions if the exist
             if(file_exists($url.'definitions.json')){
@@ -669,7 +735,7 @@ namespace IOFrame\Handlers{
 
             //-------Change plugin to "installed"
             if(!$test)
-                $plugList->setSetting($name,'installed',['createNew'=>true]);
+                $plugList->setSetting($name,json_encode(['status'=>'installed','version'=>$plugInfo['version']]),['createNew'=>true]);
 
             //-------Add to order list - globally, and potentially locally
             if(!$local)
@@ -738,16 +804,16 @@ namespace IOFrame\Handlers{
             $depUrl = $this->settings->getSetting('absPathToRoot').'localFiles/pluginDependencyMap/';
             $LockHandler = new LockHandler($url);
             $plugList = new SettingsHandler($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/plugins/');
-            $plugName = $this->getInfo(['name'=>$name])[0];
+            $plugInfo = $this->getInfo(['name'=>$name])[0];
 
             //-------Check if the plugin is absent - or if override is false while the plugin isn't listed installed.
-            $goOn = ($plugName['status'] != 'absent');
-            if($goOn && !$override && $plugName['status'] != 'active')
+            $goOn = ($plugInfo['status'] != 'absent');
+            if($goOn && !$override && $plugInfo['status'] != 'active')
                 $goOn = false;
             if(!$goOn){
                 if($verbose)
                     echo 'Plugin '.$name.' absent, can not uninstall!'.EOL;
-                if(($plugName['status'] == 'absent') && !$test) //Only remove the plugin from the list if its actually absent
+                if(($plugInfo['status'] == 'absent') && !$test) //Only remove the plugin from the list if its actually absent
                     $plugList->setSetting($name,null);
                 return 1;
             }
@@ -769,7 +835,7 @@ namespace IOFrame\Handlers{
 
             //-------Change plugin to "zombie"
             if(!$test)
-                $plugList->setSetting($name,'zombie');
+                $plugList->setSetting($name,json_encode(['status'=>'zombie','version'=>(isset($plugInfo['version'])?$plugInfo['version']:0)]));
 
             //-------Validate options
             if(!$this->validateOptions('uninstallOptions',$url,$name,$options,['test'=>$test,'verbose'=>$verbose]))
@@ -862,6 +928,196 @@ namespace IOFrame\Handlers{
                 $plugList->setSetting($name,null);
 
             return 0;
+        }
+
+        /** Updates a plugin
+         * If the $name specified is a legal, installed plugin, tries to update it.
+         *
+         * 1) Checks that the plugin is installed
+         * 2) Ensures all update files are present and of the valid format.
+         * 3) Checks whether there even is anything new to update - if yes, calculates $targetVersion,
+         *    the version the next update iteration would bring this plugin to.
+         * 4) Enters the following loop, which lasts for $params['iterationLimit'] iterations (or independent of it),
+         *    or until the plugin can no longer be updated, the earliest of the two:
+         *      4.1) Requires update.php, which should be a procedural file doing the actual updating.
+         *           It is farther explained at the top of this class.
+         *      4.2) Assuming no exception was thrown, sets "result" to 0, "resultType" to 'success' and "newVersion" to $targetVersion.
+         *      4.3) Updates the plugin version in its meta.json file - throws an exception on failure.
+         *      4.4) Checks whether there is another version to update to - breaks the loop if no, calculates next $targetVersion if yes.
+         *      At any point, if any exception is thrown, the following happens:
+         *      4['exception'] - sets "result" to 4, populates "exception", updates "resultType" and requires updateFallback.php, then returns.
+         *                       If updateFallback throws an exception the following happens:
+         *                       4['exceptionInFallback'] - sets "result" to 5, populates "exceptionInFallback", updates "resultType" and returns.
+         *
+         * @param string $name Name of the plugin to update
+         * @param array $params Parameters of the form:
+         *              'iterationLimit' => int, default -1. The maximum number of update iterations (explained earlier). -1 means "no limit"
+         *              'local' => Updates plugin locally as opposed to adding it to globally. Defaults to true in CLI mode, false otherwise.
+         *
+         * @returns array Returns an assoc array of the form
+         * [
+         *      'resultType' => 'error' - on error code
+         *                      'success' - success with no errors
+         *                      'success-partial' - succeeded at least one iteration, then failed
+         *      'newVersion' => int, on any result that isn't an error, will return the new plugin version
+         *      'result' => On error, one of the following codes:
+         *                  0 plugin not installed
+         *                  1 One of the required update files is missing.
+         *                  2 No new updates possible for current version
+         *                  -- During each iteration --
+         *                  3 Updating would violate existing dependencies (maxVersion of dependant plugin).
+         *                  4 exception thrown during update - will also populate exception
+         *                  5 critical error - exception thrown during updateFallback - will also populate exceptionInFallback
+         *
+         *                  On success or partial success, possible codes are:
+         *                  0 plugin updated successfully
+         *                  3 same as earlier
+         *                  4 same as earlier
+         *                  5 same as earlier
+         *
+         *      'exception' => string, empty, populated on a specific update exception.
+         *      'exceptionInFallback' => string, empty, populated on a specific updateFallback exception.
+         *      'moreUpdates' => bool, only set to true if we stopped updating due to the version requirement chain being broken
+         * ]
+         * */
+        function update(string $name, array $params = []){
+
+            //Set defaults
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])?
+                $params['verbose'] : $test ? true : false;
+            $iterationLimit = isset($params['iterationLimit'])? $params['iterationLimit'] : -1;
+
+            if(isset($params['local']))
+                $local = $params['local'];
+            else
+                if (php_sapi_name() == "cli") {
+                    $local = true;
+                } else {
+                    $local = false;
+                }
+
+            $res = [
+                'resultType'=>'error',
+                'newVersion'=>-1,
+                'result'=>0,
+                'exception' => '',
+                'exceptionInFallback' => '',
+                'moreUpdates' => false
+            ];
+
+            $url = $this->settings->getSetting('absPathToRoot').PLUGIN_FOLDER_PATH.PLUGIN_FOLDER_NAME.$name.'/';   //Plugin folder
+            $plugList = new SettingsHandler($this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/plugins/');
+            $plugInfo = $this->getInfo(['name'=>$name])[0];
+            $dep = $this->checkDependencies($name,['validate'=>false]);
+            if(IOFrame\Util\is_json($dep))
+                $dep = json_decode($dep,true);
+            else
+                $dep = [];
+
+            //-------Check if the plugin is installed
+            if(!$plugInfo['status'] === 'active'){
+                if($verbose)
+                    echo 'Plugin '.$name.' is not installed!'.EOL;
+                return $res;
+            }
+            else
+                $res['result'] = 1;
+
+            $currentVersion = (int)$plugInfo['currentVersion'];
+            $targetVersion = 0;
+            $currentRangeIndex = 0;
+
+            //-------Check if update files are valid
+            if(!$plugInfo['hasUpdateFiles']){
+                if($verbose)
+                    echo 'Plugin '.$name.' has no valid update files!'.EOL;
+                return $res;
+            }
+            else
+                $res['result'] = 2;
+
+            //-------Check if  a new update is possible -also initiate target version
+            foreach($plugInfo['updateRanges'] as $index => $range){
+                if(gettype($range) === 'integer')
+                    $plugInfo['updateRanges'][$index] = [$range,$range];
+                else
+                    $plugInfo['updateRanges'][$index] = [(int)$range[0],(int)$range[1]];
+                $range = $plugInfo['updateRanges'][$index];
+                if($targetVersion > 0)
+                    continue;
+                if( ($currentVersion >= $range[0]) && ($currentVersion <= $range[1])){
+                    $currentRangeIndex = $index;
+                    $targetVersion = $range[1] + 1;
+                }
+            }
+            if($targetVersion <= 0){
+                if($verbose)
+                    echo 'Plugin '.$name.' has no new updates!'.EOL;
+                return $res;
+            }
+
+            //Continue until iteration limit is 0 (wont happen if it's -1) - however, will also stop who no more valid updates are available
+            while( ($iterationLimit-- !== 0) && ($targetVersion > 0)){
+                //-------Validate dependencies
+                foreach($dep as $dependency => $range){
+                    $range = json_decode($range,true);
+                    if(!empty($range['maxVersion']) && ($targetVersion > $range['maxVersion']) ){
+                        if($verbose)
+                            echo 'Plugin '.$dependency.' depends on '.$name.'\'s version to be at most '.$range['maxVersion'].EOL;
+                        $res['result'] = 3;
+                        $res['resultType'] = $res['resultType'] === 'success' ? 'success-partial' : 'error';
+                        return $res;
+                    }
+                }
+
+                //-------Try to update
+                try{
+                    require $url.'update.php';
+                    $res['result'] = 0;
+                    $res['resultType'] = 'success';
+                    $res['newVersion'] = $targetVersion;
+
+                    //Important to ensure we succeeded at updating the meta
+                    $currentSetting = json_decode($plugList->getSetting($name),true);
+                    if(!$plugList->setSetting($name,json_encode(array_merge($currentSetting,['version'=>$targetVersion])),['test'=>$test]))
+                        throw new \Exception("Could not update plugin meta to new version!");
+                    $currentVersion = $targetVersion;
+
+                    //See if there is a new target version
+                    $currentRangeIndex += 1;
+                    if(!isset($plugInfo['updateRanges'][$currentRangeIndex]))
+                        $targetVersion = 0;
+                    elseif($plugInfo['updateRanges'][$currentRangeIndex][0] > $targetVersion){
+                        $targetVersion = 0;
+                        $res['moreUpdates'] = true;
+                    }
+                    else{
+                        $targetVersion = $plugInfo['updateRanges'][$currentRangeIndex][1] + 1;
+                    }
+                }
+                catch (\Exception $e){
+                    try{
+                        if($verbose)
+                            echo 'Plugin '.$name.' update failure - exception thrown in update script '.EOL;
+                        $res['result'] = 4;
+                        $res['exception'] = $e->getMessage();
+                        $res['resultType'] = $res['resultType'] === 'success' ? 'success-partial' : 'error';
+                        require $url.'updateFallback.php';
+                        return $res;
+                    }
+                    catch (\Exception $e){
+                        if($verbose)
+                            echo 'Plugin '.$name.' update critical failure - exception thrown in fallBack '.EOL;
+                        $res['result'] = 5;
+                        $res['exceptionInFallback'] = $e->getMessage();
+                        $res['resultType'] = $res['resultType'] === 'success' ? 'success-partial' : 'error';
+                        return $res;
+                    }
+                }
+            }
+
+            return $res;
         }
 
         /** See OrderHandler documentation
@@ -1219,7 +1475,7 @@ namespace IOFrame\Handlers{
             isset($params['isFile'])?
                 $isFile = $params['isFile'] : $isFile = false;
             $res = false;
-            $supportedTypes = ['meta','installOptions','uninstallOptions','definitions','dependencies'];
+            $supportedTypes = ['meta','installOptions','uninstallOptions','definitions','dependencies','updateRanges'];
             if(!in_array($type,$supportedTypes))
                 return $res;
             if(!$isFile){
@@ -1233,7 +1489,7 @@ namespace IOFrame\Handlers{
                     }
                     else{
                         if($verbose)
-                            echo 'File contents are not a JSON!'.EOL;
+                            echo 'File contents if '.$type.' are not a JSON!'.EOL;
                         return false;
                     }
                 }
@@ -1386,6 +1642,48 @@ namespace IOFrame\Handlers{
                                     $res = false;
                                 }
                             }
+                        }
+                    }
+                    break;
+                case 'updateRanges':
+                    $res = true;
+                    //Just make sure the file is json and all definitions start with a upper case latter, and contain only word characters.
+                    if(!is_array($fileContents)){
+                        if($verbose)
+                            echo 'updateRanges file isnt an array!'.EOL;
+                        $res = false;
+                    }
+                    else{
+                        $currentVal = 0;
+                        foreach($fileContents as $index => $val){
+
+                            if(is_array($val)){
+                                if(count($val) !== 2){
+                                    if($verbose)
+                                        echo 'updateRanges range '.$index.' does not have 2 members!'.EOL;
+                                    $res = false;
+                                }
+                                if(!filter_var($val[1],FILTER_VALIDATE_INT)){
+                                    if($verbose)
+                                        echo 'updateRanges maximum version at index '.$index.' not an integer!'.EOL;
+                                    $res = false;
+                                }
+                                $val = $val[0];
+                            }
+
+                            if(!filter_var($val,FILTER_VALIDATE_INT)){
+                                if($verbose)
+                                    echo 'updateRanges minimal version at index '.$index.' not an integer!'.EOL;
+                                $res = false;
+                            }
+
+                            if($currentVal >=$val){
+                                if($verbose)
+                                    echo 'updateRanges minimal version at index '.$index.' is not larger than previous minimal version!'.EOL;
+                                $res = false;
+                            }
+                            else
+                                $currentVal = $val;
                         }
                     }
                     break;
@@ -1566,9 +1864,9 @@ namespace IOFrame\Handlers{
                 $dependencyArray = $params['dependencyArray'] : $dependencyArray = [];
             //Validate dependency array
             if(!is_array($dependencyArray) || count($dependencyArray) == 0){
-                $plugName = $this->getInfo(['name'=>$name])[0];
-                if(isset($plugName['dependencies']))
-                    $dependencies = $plugName['dependencies'];
+                $plugInfo = $this->getInfo(['name'=>$name])[0];
+                if(isset($plugInfo['dependencies']))
+                    $dependencies = $plugInfo['dependencies'];
                 else{
                     if($verbose)
                         echo 'Plugin '.$name.' or its dependency file do not exist!'.EOL;
@@ -1729,10 +2027,5 @@ namespace IOFrame\Handlers{
 
 
 }
-
-
-
-
-
 
 ?>

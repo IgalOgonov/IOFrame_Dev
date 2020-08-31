@@ -73,6 +73,12 @@
     font-weight: 700;
 }
 
+#plugins .plugin-version {
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0px 5px 0px 0px;
+}
+
 #plugins .isInactive{
     display: none;
 }

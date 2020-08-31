@@ -26,9 +26,11 @@ foreach($routes as $index => $routeArray){
     //Map routes
     $router->map( $routeArray['Method'], $routeArray['Route'], $routeArray['Match_Name'], $routeArray['Map_Name']);
 };
+
 //Get URI, and possible fix it
 $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 $uri = preg_replace('/\/\/+/','/',$uri);
+
 //Match and set parameters/target if we got a match
 $match = $router->match($uri);
 
@@ -42,7 +44,6 @@ if( is_array($match)) {
 
 //Get required matches from the db/cache
 $matches = $RouteHandler->getMatches($matchNames);
-
 //If the correct match is found, process it
 if(isset($matches[$routeTarget]) && is_array($matches[$routeTarget])){
 

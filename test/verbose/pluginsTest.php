@@ -165,5 +165,16 @@ echo EOL.'Check dependencies of objects: '.EOL;  $PluginHandler->checkDependenci
 
 $optArr = array();
 $optArr['testOption'] = 'hoho haha';
-echo EOL.'Test plugin install:'.EOL.$PluginHandler->install('testPlugin',$optArr,['override'=>false,'test'=>true]).'<br>';
-echo EOL.'Test plugin uninstall:'.EOL.$PluginHandler->uninstall('testPlugin',$optArr,['override'=>false,'test'=>true]).'<br>';
+
+echo EOL.'Test plugin install:'.EOL.$PluginHandler->install('testPlugin',$optArr,['override'=>false,'test'=>true]).EOL;
+
+echo EOL.'Test plugin 2 install:'.EOL.$PluginHandler->install('testPlugin2',$optArr,['override'=>false,'test'=>true]).EOL;
+
+echo EOL.'Test plugin update (should reach version 20, but not 21 due to testPlugin2):'.EOL;
+var_dump($PluginHandler->update('testPlugin',['test'=>true]));
+
+echo EOL.'Test plugin update (2 iterations):'.EOL;
+var_dump($PluginHandler->update('testPlugin',['test'=>true,'iterationLimit'=>2]));
+
+echo EOL.'Test plugin 2 update (should fail critically):'.EOL;
+var_dump($PluginHandler->update('testPlugin2',['test'=>true]));

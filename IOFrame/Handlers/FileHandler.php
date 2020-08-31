@@ -38,7 +38,7 @@ namespace IOFrame\Handlers{
 
             try{
                 $myFile = @fopen($url.$fileName,"r");
-                if(filesize($url.$fileName) == 0)
+                if(@filesize($url.$fileName) == 0)
                     return '';
                 if(!$myFile)
                     throw new \Exception("Cannot open file ".$url.$fileName);
@@ -91,7 +91,7 @@ namespace IOFrame\Handlers{
             if($LockHandler->waitForMutex(['sec'=>$sec])){
                 try{
                     $myFile = @fopen($url.$fileName,"r");
-                    if(filesize($url.$fileName) == 0)
+                    if(@filesize($url.$fileName) == 0)
                         return '';
                     if(!$myFile)
                         throw new \Exception("Cannot open file ".$url.$fileName);
