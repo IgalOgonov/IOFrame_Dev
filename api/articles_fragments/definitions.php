@@ -134,7 +134,7 @@ $blocksResultsColumnMap = [
         'resultName'=>'meta',
         'groupBy'=>'resource',
         'type'=>'json',
-        'validChildren'=>['caption','alt','name','height','width','autoplay','loop','mute'],
+        'validChildren'=>['caption','alt','name','height','width','autoplay','controls','loop','mute'],
     ],
     'Resource_Last_Updated' => [
         'resultName'=>'updated',
@@ -148,13 +148,13 @@ $blocksResultsColumnMap = [
     'Resource_Collection_Meta'=>[
         'resultName'=>'meta',
         'type'=>'json',
-        'validChildren'=>['caption','name','autoplay','loop'],
+        'validChildren'=>['caption','name','autoplay','controls','loop'],
         'groupBy'=>'collection',
     ],
     'Meta'=>[
         'resultName'=>'meta',
         'type'=>'json',
-        'validChildren'=>['caption','alt','name','height','width','autoplay','loop','mute'],
+        'validChildren'=>['caption','alt','name','height','width','autoplay','controls','loop','mute'],
     ],
     'Other_Article_ID'=>[
         'resultName'=>'id',
@@ -219,7 +219,7 @@ $blocksResultsColumnMap = [
 $metaMap = [
     'articleTextContent' => ['subtitle','alt','caption','name'],
     'thumbnailMeta' => ['alt','caption','name'],
-    'blockMeta' => ['alt','caption','name','height','width','mute','loop','autoplay','embed','center','preview','fullScreenOnClick','slider'],
+    'blockMeta' => ['alt','caption','name','height','width','mute','loop','autoplay','controls','embed','center','preview','fullScreenOnClick','slider'],
     'blockCollectionMeta' => ['caption'],
     'otherArticleThumbnailMeta' => ['alt','caption','name'],
 ];

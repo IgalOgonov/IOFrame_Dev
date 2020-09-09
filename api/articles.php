@@ -315,6 +315,7 @@
  *          autoplay : whether to autoplay
  *          mute: whether to start muted
  *          loop: whether to loop
+ *          controls: whether to show controls
  *      'youtube':
  *          text: string, identifier of the youtube video
  *          caption : string, block caption, overrides original
@@ -323,6 +324,7 @@
  *          autoplay : whether to autoplay
  *          mute: whether to start muted
  *          loop: whether to loop
+ *          controls: whether to show controls
  *          embed: whether the embedded version should be rendered (only relevant when the full one can be rendered instead)
  *      'article':
  *          caption : string, article caption, overrides original
@@ -527,7 +529,7 @@ switch($action){
             exit(WRONG_CSRF_TOKEN);
 
         $arrExpected =["create","safe","articleId","blockId","orderIndex","type","text","blockResourceAddress","caption","alt","name",
-            "blockCollectionName","height","width","autoplay","mute","loop","embed","center","preview","fullScreenOnClick","slider",
+            "blockCollectionName","height","width","autoplay","controls","mute","loop","embed","center","preview","fullScreenOnClick","slider",
             "otherArticleId"];
 
         require 'setExpectedInputs.php';

@@ -6,12 +6,22 @@ require_once __DIR__ . '/../../IOFrame/Handlers/ext/htmlpurifier/HTMLPurifier.st
 $config = HTMLPurifier_Config::createDefault();
 $config->set('HTML.AllowedElements', []);
 $purifier = new HTMLPurifier($config);
+//Category
+if($inputs['category'] !== null){
+    if(!in_array($inputs['category'],['img','vid'])){
+        if($test)
+            echo 'Upload category must be either "img" or "vid"!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+}
+else
+    $inputs['category'] = 'img';
 
 //Type
 if($inputs['type'] !== null){
     if(!in_array($inputs['type'],['local','db','link'])){
         if($test)
-            echo 'Upload type must be either "local" or "db"!'.EOL;
+            echo 'Upload type must be either "local" or "db" or "link"!'.EOL;
         exit(INPUT_VALIDATION_FAILURE);
     }
 }
@@ -32,7 +42,6 @@ else
 
 foreach($inputs['items'] as $uploadName => $itemArray){
 
-
     $purifyArr = ['caption','name','alt'];
     $nameArr = ['name'];
     $captionArr = ['caption'];
@@ -45,7 +54,7 @@ foreach($inputs['items'] as $uploadName => $itemArray){
     }
 
     foreach($purifyArr as $param){
-        if($itemArray[$param] !== null)
+        if(!empty($itemArray[$param]))
             $itemArray[$param] = $purifier->purify($itemArray[$param]);
     }
 
@@ -57,22 +66,24 @@ foreach($inputs['items'] as $uploadName => $itemArray){
 
     if(isset($itemArray['filename'])){
 
-        if($inputs['type'] !== 'link')
+        if($inputs['type'] !== 'link'){
             if(!preg_match('/'.UPLOAD_FILENAME_REGEX.'/',$itemArray['filename'])){
                 if($test)
                     echo 'Invalid upload file name for '.$uploadName.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
-        else
+        }
+        else{
             if(!filter_var($itemArray['filename'], FILTER_VALIDATE_URL)){
                 if($test)
                     echo 'Invalid url '.$uploadName.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
+        }
 
         if( !( $auth->hasAction(IMAGE_FILENAME_AUTH) || $auth->isAuthorized(0) ) ){
             if($test)
-                echo 'Cannot upload images with specific filename!'.EOL;
+                echo 'Cannot upload media with specific filename!'.EOL;
             exit(AUTHENTICATION_FAILURE);
         }
     }
@@ -82,34 +93,18 @@ foreach($inputs['items'] as $uploadName => $itemArray){
         exit(INPUT_VALIDATION_FAILURE);
     }
 
-    if(isset($itemArray['alt'])){
-
-        if(strlen($itemArray['alt'])>IMAGE_ALT_MAX_LENGTH){
-            if($test)
-                echo 'Invalid image alt tag for '.$uploadName.EOL;
-            exit(INPUT_VALIDATION_FAILURE);
-        }
-
-        if( !( $auth->hasAction(IMAGE_ALT_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot upload images with specific alt tags!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
-        }
-
-    }
-
     foreach($nameArr as $nameParam)
         if(isset($itemArray[$nameParam])){
 
             if(strlen($itemArray[$nameParam])>IMAGE_NAME_MAX_LENGTH){
                 if($test)
-                    echo 'Invalid image name for '.$uploadName.EOL;
+                    echo 'Invalid media name for '.$uploadName.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
 
             if( !( $auth->hasAction(IMAGE_NAME_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
                 if($test)
-                    echo 'Cannot upload images with specific name!'.EOL;
+                    echo 'Cannot upload media with specific name!'.EOL;
                 exit(AUTHENTICATION_FAILURE);
             }
 
@@ -121,18 +116,63 @@ foreach($inputs['items'] as $uploadName => $itemArray){
 
             if(strlen($itemArray[$captionParam])>IMAGE_CAPTION_MAX_LENGTH){
                 if($test)
-                    echo 'Invalid image caption for '.$uploadName.EOL;
+                    echo 'Invalid media caption for '.$uploadName.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
 
             if( !( $auth->hasAction(IMAGE_CAPTION_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
                 if($test)
-                    echo 'Cannot upload images with specific captions!'.EOL;
+                    echo 'Cannot upload media with specific captions!'.EOL;
                 exit(AUTHENTICATION_FAILURE);
             }
 
             $inputs['items'][$uploadName][$captionParam] = $itemArray[$captionParam];
         }
+
+    if($inputs['category'] === 'img'){
+        if(isset($itemArray['alt'])){
+
+            if(strlen($itemArray['alt'])>IMAGE_ALT_MAX_LENGTH){
+                if($test)
+                    echo 'Invalid media alt tag for '.$uploadName.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+
+            if( !( $auth->hasAction(IMAGE_ALT_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
+                if($test)
+                    echo 'Cannot upload media with specific alt tags!'.EOL;
+                exit(AUTHENTICATION_FAILURE);
+            }
+
+        }
+    }
+    elseif($inputs['category'] === 'vid'){
+        $booleanArr = [
+            'autoplay'=>false,
+            'loop'=>true,
+            'mute'=>true,
+            'controls'=>false
+        ];
+        foreach($booleanArr as $boolName => $defaultValue){
+            $inputs['items'][$uploadName][$boolName] = isset($itemArray[$boolName])?(bool)$itemArray[$boolName] : $defaultValue;
+        }
+        if(isset($itemArray['poster'])){
+            if(!filter_var($itemArray['poster'], FILTER_VALIDATE_URL)){
+                if($test)
+                    echo 'poster must be an media URL!'.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+        }
+        if(isset($itemArray['preload'])){
+            if(!in_array($itemArray['preload'],['none'.'auto','metadata'])){
+                if($test)
+                    echo 'preload must be "none", "auto" or "metadata"!'.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+            else
+                $inputs['items'][$uploadName]['preload'] = 'auto';
+        }
+    }
 }
 
 if($inputs['type'] !== 'link'){
@@ -142,7 +182,7 @@ if($inputs['type'] !== 'link'){
 
     if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['address'])){
         if($test)
-            echo 'Invalid address name for image upload!'.EOL;
+            echo 'Invalid address name for media upload!'.EOL;
         exit(INPUT_VALIDATION_FAILURE);
     }
 
@@ -165,7 +205,7 @@ if($inputs['overwrite'] === null)
 else{
     if( !( $auth->hasAction(IMAGE_OVERWRITE_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
         if($test)
-            echo 'Cannot overwrite images!'.EOL;
+            echo 'Cannot overwrite media!'.EOL;
         exit(AUTHENTICATION_FAILURE);
     }
     else
@@ -186,14 +226,20 @@ if($inputs['gallery'] !== null){
 if($inputs['type'] !== 'link' && is_array($_FILES))
     foreach($_FILES as $name=>$fileArray){
         $extension = @array_pop(explode('.',$fileArray['name'])); //Yes I know only variables should be passed by reference stfu
-        if(!in_array($extension,ALLOWED_EXTENSIONS_IMAGES)){
+        if(
+            ($inputs['category'] === 'img' && !in_array($extension,ALLOWED_EXTENSIONS_IMAGES)) ||
+            ($inputs['category'] === 'vid' && !in_array($extension,ALLOWED_EXTENSIONS_VIDEO))
+        ){
             if($test)
                 echo 'File type of '.$name.' not allowed!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
-        elseif(explode('/',$fileArray['type'])[0] !== 'image'){
+        elseif(
+            ($inputs['category'] === 'img' && explode('/',$fileArray['type'])[0] !== 'image') ||
+            ($inputs['category'] === 'vid' && explode('/',$fileArray['type'])[0] !== 'video')
+        ){
             if($test)
-                echo 'Data type of '.$name.' must be image!'.EOL;
+                echo 'Data type of '.$name.' must be '.($inputs['category'] === 'img' ? 'image' : 'video').'!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
     }

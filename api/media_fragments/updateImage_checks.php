@@ -28,32 +28,76 @@ else{
 
 //Alt and Name
 $meta = [];
-$expected = ['name','alt','caption'];
+$expected = ['name','caption'];
+if($action === 'updateVideo')
+    array_push($expected,'autoplay','loop','mute','controls','poster','preload');
+else
+    array_push($expected,'alt');
+$purify = ['name','alt','caption'];
 foreach($languages as $lang){
     array_push($expected,$lang.'_name');
+    array_push($purify,$lang.'_name');
     array_push($expected,$lang.'_caption');
+    array_push($purify,$lang.'_caption');
 }
 $anythingSet = false;
 foreach($expected as $attr)
     if($inputs[$attr] !== null){
         $anythingSet = true;
-        $inputs[$attr] = $purifier->purify($inputs[$attr]);
+        if(in_array($attr,$purify))
+            $inputs[$attr] = $purifier->purify($inputs[$attr]);
     }
+
+if($action === 'updateImage'){
+    if($inputs['alt'] !== null){
+
+        if(strlen($inputs['alt'])>IMAGE_ALT_MAX_LENGTH){
+            if($test)
+                echo 'Invalid media alt tag for '.$uploadName.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+
+        if( !( $auth->hasAction(IMAGE_ALT_AUTH) || $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
+            if($test)
+                echo 'Cannot upload media with specific alt tags!'.EOL;
+            exit(AUTHENTICATION_FAILURE);
+        }
+        $meta['alt'] = $inputs['alt'];
+    }
+}
+elseif($action === 'updateVideo'){
+    $booleanArr = [
+        'autoplay',
+        'loop',
+        'mute',
+        'controls'
+    ];
+    foreach($booleanArr as $boolName){
+        if($inputs[$boolName] !== null)
+            $meta[$boolName] = (bool)$inputs[$boolName];
+    }
+    if($inputs['poster'] !== null){
+        if(!filter_var($inputs['poster'], FILTER_VALIDATE_URL)){
+            if($test)
+                echo 'poster must be an media URL!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        $meta['poster'] = $inputs['poster'];
+    }
+    if($inputs['preload'] !== null){
+        if(!in_array($inputs['preload'],['none','auto','metadata'])){
+            if($test)
+                echo 'preload must be "none", "auto" or "metadata"!'.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+        $meta['preload'] = $inputs['preload'];
+    }
+}
 
 if(!$inputs['deleteEmpty'] && !$anythingSet ){
     if($test)
         echo 'With deleteEmpty, at least one meta attribute needs to be set!'.EOL;
     exit(INPUT_VALIDATION_FAILURE);
-}
-
-if($inputs['alt'] !== null){
-    if(strlen($inputs['alt'])>IMAGE_ALT_MAX_LENGTH){
-        if($test)
-            echo 'Maximum alt length: '.IMAGE_ALT_MAX_LENGTH.EOL;
-        exit(INPUT_VALIDATION_FAILURE);
-    }
-
-    $meta['alt'] = $inputs['alt'];
 }
 
 $nameArr = ['name'];
@@ -67,6 +111,7 @@ foreach($nameArr as $nameParam)
                 echo 'Maximum name length: '.IMAGE_NAME_MAX_LENGTH.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
+        $meta[$nameParam] = $inputs[$nameParam];
     }
 
 
@@ -81,6 +126,7 @@ foreach($captionArr as $captionParam)
                 echo 'Maximum caption length: '.IMAGE_CAPTION_MAX_LENGTH.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
+        $meta[$captionParam] = $inputs[$captionParam];
     }
 
 if($inputs['deleteEmpty']){
@@ -89,6 +135,5 @@ if($inputs['deleteEmpty']){
             $meta[$attr] = null;
         };
 }
-
 
 $meta = json_encode($meta);

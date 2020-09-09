@@ -26,6 +26,11 @@ Vue.component('media-viewer', {
             type: Boolean,
             default: true
         },
+        //Whether we are dealing with images or videos - possible values are 'img' and 'vid'
+        mediaType: {
+            type: String,
+            default: 'img'
+        },
         //Elements we are displaying
         displayElements: {
             type: Object,
@@ -115,10 +120,10 @@ Vue.component('media-viewer', {
     template: '\
          <div class="media-viewer">\
             <div class="media-url-container" v-if="allowSearching">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\')" @click.prevent="goToRoot">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\')" @click.prevent="folderUp">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\')" @click.prevent="changeURLRequest(url)">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\')" @click.prevent="toggleEditing">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\',\'img\')" @click.prevent="goToRoot">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\',\'img\')" @click.prevent="folderUp">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\',\'img\')" @click.prevent="changeURLRequest(url)">\
+                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\',\'img\')" @click.prevent="toggleEditing">\
                 <input class="media-url" type="text" :value="url" placeholder="Media Folder" :disabled="!editing">\
                 <button v-if="editing" class="media-url-change" @click.prevent="changeURL">Go</button>\
             </div>\
@@ -136,8 +141,8 @@ Vue.component('media-viewer', {
                      </div>\
                     <div class="thumbnail-container">\
                         <img \
-                            v-if="!item.folder" \
-                            :src="item.local? absoluteMediaURL(item.relativeAddress) : (item.dataType? calculateDBImageLink(item) : item.identifier)"\
+                            v-if="item.folder" \
+                            :src="absoluteMediaURL(\'icons/folder.png\',\'img\')"\
                             :draggable="draggable"\
                             ondragstart="eventHub.$emit(\'dragStart\',event)"\
                             ondragenter="eventHub.$emit(\'dragEnter\',event)"\
@@ -146,8 +151,8 @@ Vue.component('media-viewer', {
                             ondragover="event.preventDefault()"\
                         >\
                         <img \
-                            v-else="" \
-                            :src="absoluteMediaURL(\'icons/folder.png\')"\
+                            v-else-if="mediaType === \'img\'" \
+                            :src="item.local? absoluteMediaURL(item.relativeAddress) : (item.dataType? calculateDBImageLink(item) : item.identifier)"\
                             :draggable="draggable"\
                             ondragstart="eventHub.$emit(\'dragStart\',event)"\
                             ondragenter="eventHub.$emit(\'dragEnter\',event)"\
@@ -155,6 +160,17 @@ Vue.component('media-viewer', {
                             ondrop="eventHub.$emit(\'dragDrop\',event)"\
                             ondragover="event.preventDefault()"\
                         >\
+                        <video \
+                            v-else-if="mediaType === \'vid\'" \
+                            :src="item.local? absoluteMediaURL(item.relativeAddress) : (item.dataType? calculateDBImageLink(item) : item.identifier)"\
+                            preload="metadata"\
+                            :draggable="draggable"\
+                            ondragstart="eventHub.$emit(\'dragStart\',event)"\
+                            ondragenter="eventHub.$emit(\'dragEnter\',event)"\
+                            ondragleave="eventHub.$emit(\'dragLeave\',event)"\
+                            ondrop="eventHub.$emit(\'dragDrop\',event)"\
+                            ondragover="event.preventDefault()"\
+                        ></video>\
                     </div>\
                      <figcaption v-if="showNames" v-text="extractName(item)"></figcaption>\
                 </figure>\
@@ -198,7 +214,7 @@ Vue.component('media-viewer', {
             //TODO Signify we're waiting for a response
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'getImages');
+            data.append('action', (this.mediaType === 'img' ? 'getImages' : 'getVideos'));
             if(url!=='')
                 data.append('address', url);
             //Api url
@@ -302,8 +318,8 @@ Vue.component('media-viewer', {
             eventHub.$emit('changeURLRequest', request);
             this.imagesCropped = false;
         },
-        absoluteMediaURL:function(relativeURL){
-            return this.sourceURL()+'img/'+relativeURL;
+        absoluteMediaURL:function(relativeURL , type = this.mediaType){
+            return this.sourceURL()+type+'/'+relativeURL;
         },
         createDisplayName:function(relativeURL){
             return relativeURL.split('/').pop();
@@ -320,6 +336,8 @@ Vue.component('media-viewer', {
                         let thumbnail = element.querySelector('.thumbnail-container');
                         let image = thumbnail.querySelector('img');
                         let verbose = this.verbose;
+                        if(!image)
+                            continue;
                         image.onload = function () {
                             let naturalWidth = image.naturalWidth;
                             let naturalHeight = image.naturalHeight;
@@ -352,7 +370,7 @@ Vue.component('media-viewer', {
             return getReadableSize(bytes);
         },
         calculateDBImageLink: function(item){
-            let url = document.rootURI+'api/media?action=getDBMedia&address='+item.identifier;
+            let url = document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&resourceType='+this.mediaType;
             if(item.lastChanged)
                 url = url+'&lastChanged='+item.lastChanged.toString();
             return url;

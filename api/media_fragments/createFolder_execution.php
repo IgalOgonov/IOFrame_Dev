@@ -8,6 +8,6 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 $result = $FrontEndResourceHandler->createFolder(
     $inputs['relativeAddress'],
     $inputs['name'],
-    'img',
+    $inputs['category'],
     ['test'=>$test]
 );

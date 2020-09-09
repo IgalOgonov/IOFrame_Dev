@@ -5,8 +5,9 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result = $FrontEndResourceHandler->setGallery(
+$result = $FrontEndResourceHandler->setFrontendResourceCollection(
     $inputs['gallery'],
+    ($action === 'setGallery' ? 'img':'vid'),
     $meta,
     [ 'test'=>$test,'update'=>$inputs['update'],'overwrite'=>$inputs['overwrite'] ]
 );

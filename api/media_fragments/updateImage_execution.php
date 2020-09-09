@@ -8,6 +8,6 @@ $result = $FrontEndResourceHandler->setResources(
     [
         ['address'=>$inputs['address'],'text'=>$meta]
     ],
-    'img',
+    ($action === 'moveImage' ? 'img' : 'vid'),
     ['test'=>$test,'update'=>true]
 )[$inputs['address']];

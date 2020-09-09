@@ -14,6 +14,11 @@ Vue.component('gallery-editor', {
         identifier: {
             type: String
         },
+        //Whether we are dealing with image galleries or video galleries - possible values are 'img' and 'vid'
+        galleryType: {
+            type: String,
+            default: 'img'
+        },
         //Gallery members
         galleryMembers: {
             type: Array,
@@ -122,6 +127,7 @@ Vue.component('gallery-editor', {
                 <div  v-else=""
                 is="media-viewer"
                 class="gallery-viewer"
+                :media-type="galleryType"
                 :display-elements-ordered="galleryMembers"
                 :multiple-targets="selected"
                 :select-multiple="allowSelectMultiple"
@@ -144,6 +150,7 @@ Vue.component('gallery-editor', {
 
                     <div  v-if="viewerType === 'local'"
                     is="media-viewer"
+                    :media-type="galleryType"
                     :url="view.url"
                     :target="view.target"
                     :display-elements="view.elements"
@@ -189,7 +196,7 @@ Vue.component('gallery-editor', {
 
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'setGallery');
+            data.append('action', this.galleryType === 'img' ? 'setGallery' : 'setVideoGallery');
             data.append('gallery', this.gallery.identifier);
             data.append('update', true);
             for(let i in this.galleryNames){
@@ -249,7 +256,7 @@ Vue.component('gallery-editor', {
 
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'getGallery');
+            data.append('action', this.galleryType === 'img' ? 'getGallery' : 'getVideoGallery');
             data.append('gallery', this.gallery.identifier);
             //Api url
             let apiURL = document.pathToRoot+"api/media";

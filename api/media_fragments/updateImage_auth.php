@@ -8,11 +8,26 @@ if(false){
 }
 else{
 
-    if($inputs['alt'] !== null){
-        if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_ALT_AUTH) || $auth->isAuthorized(0) ) ){
-            if($test)
-                echo 'Cannot change image alt tag!'.EOL;
-            exit(AUTHENTICATION_FAILURE);
+    if($action === 'updateImage'){
+        if($inputs['alt'] !== null){
+            if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) ||  $auth->hasAction(IMAGE_ALT_AUTH) || $auth->isAuthorized(0) ) ){
+                if($test)
+                    echo 'Cannot change image alt tag!'.EOL;
+                exit(AUTHENTICATION_FAILURE);
+            }
+        }
+    }
+    elseif($action === 'updateVideo'){
+
+        $videoMeta = ["autoplay","loop","mute","controls","poster","preload"];
+        foreach($videoMeta as $attr){
+            if($inputs[$attr] !== null){
+                if( !( $auth->hasAction(IMAGE_UPDATE_AUTH) || $auth->isAuthorized(0) ) ){
+                    if($test)
+                        echo 'Cannot change video  meta!'.EOL;
+                    exit(AUTHENTICATION_FAILURE);
+                }
+            }
         }
     }
 

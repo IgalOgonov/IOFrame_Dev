@@ -5,9 +5,10 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result = $FrontEndResourceHandler->moveGalleryOrder(
+$result = $FrontEndResourceHandler->moveFrontendResourceCollectionOrder(
     $inputs['from'],
     $inputs['to'],
     $inputs['gallery'],
+    ($action === 'moveImageInGallery' ? 'img':'vid'),
     ['test'=>$test]
 );

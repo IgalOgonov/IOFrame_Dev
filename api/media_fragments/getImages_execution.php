@@ -29,9 +29,17 @@ if($inputs['getDB']){
     $requestParams['ignoreLocal'] = $inputs['includeLocal']? false : true;
 }
 
-$result = $FrontEndResourceHandler->getImages(
-    $inputs['addresses'],
-    $requestParams
+$result = (
+    $action === 'getImages' ?
+        $FrontEndResourceHandler->getImages(
+            $inputs['addresses'],
+            $requestParams
+        )
+        :
+        $FrontEndResourceHandler->getVideos(
+            $inputs['addresses'],
+            $requestParams
+        )
 );
 
 //Remove the root folder itself, if we got it
@@ -56,10 +64,16 @@ foreach($result as $address => $infoArray){
     if(\IOFrame\Util\is_json($meta)){
         $meta = json_decode($meta,true);
 
-        $expected = ['name','alt','caption','size'];
+        $expected = ['name','caption','size'];
         foreach($languages as $lang){
             array_push($expected,$lang.'_name');
             array_push($expected,$lang.'_caption');
+        }
+        if($action === 'getImages'){
+            array_push($expected,'alt');
+        }
+        elseif($action === 'getVideos'){
+            array_push($expected,'autoplay','loop','mute','controls','autoplay','poster','preload');
         }
 
         foreach($expected as $attr){

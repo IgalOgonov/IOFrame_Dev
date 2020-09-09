@@ -426,6 +426,16 @@ button.negative-2:hover{
 *{
     scrollbar-color: var(--thumbBG) var(--scrollbarBG);
 }
+::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+    background: var(--scrollbarBG);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--thumbBG);
+    -webkit-border-radius: 1ex;
+}
+
 
 /* Forms */
 form label{
@@ -475,8 +485,11 @@ select{
     -webkit-appearance: none;
     appearance: none;
 }
-select:hover{
+select:not([disabled]):hover{
     background: var(--main-color-4);
+}
+select[disabled]{
+    background: var(--secondary-color-2);
 }
 
 /*Standard media sizes*/

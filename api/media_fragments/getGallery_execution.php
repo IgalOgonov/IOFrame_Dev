@@ -4,8 +4,9 @@ if(!defined('FrontEndResourceHandler'))
 
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result = $FrontEndResourceHandler->getGallery(
-    $inputs['gallery'],
+$result = $FrontEndResourceHandler->getFrontendResourceCollections(
+    [$inputs['gallery']],
+    ($action === 'getGallery' ? 'img':'vid'),
     ['test'=>$test,'includeGalleryInfo'=>true]
 );
 
@@ -47,7 +48,11 @@ foreach($result as $resultName => $infoArray){
         unset($parsedResults[$resultName]['meta']);
         if(\IOFrame\Util\is_json($meta)){
             $meta = json_decode($meta,true);
-            $expected = ['name','alt','caption','size'];
+            $expected = ['name','caption','size'];
+            if($action === 'getGallery')
+                array_push($expected,'alt');
+            else
+                array_push($expected,'autoplay','loop','mute','controls','poster','preload');
             foreach($languages as $lang){
                 array_push($expected,$lang.'_name');
                 array_push($expected,$lang.'_caption');

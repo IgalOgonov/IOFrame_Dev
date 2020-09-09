@@ -8,10 +8,11 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 $result = $inputs['remote'] ?
     $FrontEndResourceHandler->deleteResources(
         $inputs['addresses'],
-        'img',
+        ($action === 'deleteImages' ? 'img' : 'vid'),
         ['test' => $test]
     ) :
-    $FrontEndResourceHandler->deleteImages(
+    $FrontEndResourceHandler->deleteFrontendResourceFiles(
         $inputs['addresses'],
+        ($action === 'deleteImages' ? 'img' : 'vid'),
         ['test' => $test]
     );

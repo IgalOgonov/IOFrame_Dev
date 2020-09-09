@@ -24,10 +24,12 @@ if(
 
     //If a user requested a resource with a specific 'lastChanged' time, it is safe to assume he'll get a different one (thus different URL) once the image changes
     if($inputs['lastChanged'] !== null){
-        header('Cache-Control: public, max-age=2419200');
+        header('Cache-Control: public, max-age=241920000, immutable');
         //Yeah, those fucking headers aren't gonna ruin my cache control
-        header('Expires: '.date("r", (time()+2419200)));
-        header('Pragma: ');
+        header('Expires: '.date("r", (time()+241920000)));
+        //Yes, I am aware only "no-cache" is valid
+        header('Pragma: cache');
+
     }
     else{
         header('Cache-Control: no-store');

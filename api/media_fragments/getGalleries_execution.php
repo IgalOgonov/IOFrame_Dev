@@ -25,9 +25,17 @@ if($inputs['excludeRegex'] !== null)
 if($inputs['includeLocal'])
     $requestParams['ignoreLocal'] = false;
 
-$result = $FrontEndResourceHandler->getGalleries(
-    [],
-    $requestParams
+$result = (
+    $action === 'getGalleries' ?
+        $FrontEndResourceHandler->getGalleries(
+            [],
+            $requestParams
+        )
+        :
+        $FrontEndResourceHandler->getVideoGalleries(
+            [],
+            $requestParams
+        )
 );
 
 //Parse results

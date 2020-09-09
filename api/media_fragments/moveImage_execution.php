@@ -12,11 +12,13 @@ $result = $inputs['remote'] ?
     $FrontEndResourceHandler->renameResource(
         $inputs['oldAddress'],
         $inputs['newAddress'],
-        'img',
+        ($action === 'moveImage' ? 'img' : 'vid'),
         ['test'=>$test, 'copy'=>$copy]
     ):
-    $FrontEndResourceHandler->moveImage(
+    $FrontEndResourceHandler->moveFrontendResourceFile(
         $inputs['oldAddress'],
         $inputs['newAddress'],
+        ($action === 'moveImage' ? 'img' : 'vid'),
         ['test'=>$test, 'copy'=>$copy]
-    );
+    )
+    ;

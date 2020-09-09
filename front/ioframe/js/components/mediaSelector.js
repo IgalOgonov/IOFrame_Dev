@@ -32,6 +32,11 @@ Vue.component('media-selector', {
             type: Boolean,
             default: false
         },
+        //Whether we are dealing with images or videos - possible values are 'img' and 'vid'
+        mediaType: {
+            type: String,
+            default: 'img'
+        },
         //Starting mode - view or view-db
         mode: {
             type: String,
@@ -164,10 +169,24 @@ Vue.component('media-selector', {
                         id: 'image',
                         custom: true,
                         title: 'Image',
-                        parser: function (item) {
-                            let src = item.dataType ? (document.rootURI + 'api/media?action=getDBMedia&address=' + item.identifier + '&lastChanged=' + item.lastChanged) : item.identifier;
-                            return '<img src="' + src + '">';
-                        }
+                        parser: (
+                            this.mediaType === 'img'?
+                                function (item) {
+                                    let src = item.dataType ?
+                                        (document.rootURI + 'api/media?action=getDBMedia&address=' + item.identifier + '&lastChanged=' + item.lastChanged+'&resourceType=img')
+                                        :
+                                        item.identifier;
+                                    return '<img src="' + src + '">';
+                                }
+                                :
+                                function (item) {
+                                    let src = item.dataType ?
+                                        (document.rootURI + 'api/media?action=getDBMedia&address=' + item.identifier + '&lastChanged=' + item.lastChanged+'&resourceType=vid')
+                                        :
+                                        item.identifier;
+                                    return '<video src="'+src+'" preload="metadata"></video>';
+                                }
+                        )
                     },
                     {
                         id: 'name',
@@ -554,22 +573,24 @@ Vue.component('media-selector', {
             for( let index in this.searchList.items ){
                 let element = searchItems[index];
                 let image = element.querySelector('img');
-                image.onload = function () {
-                    let naturalWidth = image.naturalWidth;
-                    let naturalHeight = image.naturalHeight;
-                    if(naturalWidth < 320){
-                        Vue.set(context.searchList.items[index],'small',true);
-                        if(verbose)
-                            console.log('setting image '+index+' as small');
-                    }
-                    else if(naturalHeight > naturalWidth){
-                        Vue.set(context.searchList.items[index],'vertical',true);
-                        if(verbose)
-                            console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
-                    }
-                };
-                if(image.complete)
-                    image.onload();
+                if(image){
+                    image.onload = function () {
+                        let naturalWidth = image.naturalWidth;
+                        let naturalHeight = image.naturalHeight;
+                        if(naturalWidth < 320){
+                            Vue.set(context.searchList.items[index],'small',true);
+                            if(verbose)
+                                console.log('setting image '+index+' as small');
+                        }
+                        else if(naturalHeight > naturalWidth){
+                            Vue.set(context.searchList.items[index],'vertical',true);
+                            if(verbose)
+                                console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
+                        }
+                    };
+                    if(image.complete)
+                        image.onload();
+                }
             };
         }
     },
@@ -596,6 +617,7 @@ Vue.component('media-selector', {
 
         <div v-if="currentMode==='view'"
             is="media-viewer"
+             :media-type="mediaType"
              :url="view.url"
              :target="view.target"
              :multiple-targets="view.multipleTargets"
@@ -613,7 +635,7 @@ Vue.component('media-selector', {
               :api-url="mediaURL"
               :extra-params="searchList.extraParams"
               :extra-classes="searchList.extraClasses"
-              api-action="getImages"
+              :api-action="mediaType === 'img' ? 'getImages' : 'getVideos'"
               :event-name="identifier+'SearchResults'"
               :page="searchList.page"
               :limit="searchList.limit"

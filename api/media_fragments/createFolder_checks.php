@@ -2,6 +2,17 @@
 if(!defined('validator'))
     require __DIR__ . '/../../IOFrame/Util/validator.php';
 
+//Category
+if($inputs['category'] !== null){
+    if(!in_array($inputs['category'],['img','vid'])){
+        if($test)
+            echo 'Upload category must be either "img" or "vid"!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+}
+else
+    $inputs['category'] = 'img';
+
 //Gallery
 if($inputs['relativeAddress'] !== null){
     if(!\IOFrame\Util\validator::validateRelativeDirectoryPath($inputs['relativeAddress'])){

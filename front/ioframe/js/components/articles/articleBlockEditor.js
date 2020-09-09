@@ -113,8 +113,8 @@ Vue.component('article-block-editor', {
                             value:'cover',
                         },
                         {
-                            title:'video',
-                            value:'Video',
+                            title:'Video',
+                            value:'video',
                         },
                         {
                             title:'Youtube',
@@ -306,6 +306,23 @@ Vue.component('article-block-editor', {
                         return newVal;
                     }
                 },
+                'meta.controls':{
+                    ignore: true,
+                    title: 'Show Controls?',
+                    type: 'boolean',
+                    onUpdate: {
+                        setName: 'controls'
+                    },
+                    parseOnGet: function(item){
+                        return item === undefined || item === null ? false : item;
+                    },
+                    parseOnChange:function(newVal,currentBlock){
+                        if(currentBlock.meta === undefined)
+                            currentBlock.meta = {};
+                        currentBlock.meta.autoplay = newVal;
+                        return newVal;
+                    }
+                },
                 'meta.loop':{
                     ignore: true,
                     title: 'Loop?',
@@ -454,7 +471,7 @@ Vue.component('article-block-editor', {
                 'image':{
                     checkedChanges: false,
                     render: function(context = this){
-                        let img = '<img src="'+context.extractImageAddress(context.currentBlock.resource)+'"';
+                        let img = '<img src="'+context.extractMediaAddress(context.currentBlock.resource)+'"';
                         let meta = context.currentBlock.meta;
                         let resourceMeta = context.currentBlock.resource.meta;
                         if(meta.alt)
@@ -470,7 +487,7 @@ Vue.component('article-block-editor', {
                     checkedChanges: false,
                     render: function(context = this){
                         let meta = context.currentBlock.meta;
-                        let div = '<div style="background-image:url(\''+context.extractImageAddress(context.currentBlock.resource)+'\');';
+                        let div = '<div style="background-image:url(\''+context.extractMediaAddress(context.currentBlock.resource)+'\');';
 
                         //TODO - all of the following are still not implemented at the backend
                         if(meta.fixed === undefined || meta.fixed)
@@ -525,7 +542,38 @@ Vue.component('article-block-editor', {
                 'video':{
                     checkedChanges: false,
                     render: function(context = this){
-                        return '';
+                        let vid = '<video src="'+context.extractMediaAddress(context.currentBlock.resource)+'"';
+                        let meta = context.currentBlock.meta;
+                        let resourceMeta = context.currentBlock.resource.meta;
+
+                        if(typeof meta.loop !== 'undefined')
+                            vid += 'loop ="'+(meta.loop? '1' : '0')+'"';
+                        else if(typeof resourceMeta.loop !== 'undefined')
+                            vid += 'loop ="'+(resourceMeta.loop? '1' : '0')+'"';
+
+                        if(typeof meta.mute !== 'undefined')
+                            vid += 'muted ="'+(meta.mute? '1' : '0')+'"';
+                        else if(typeof resourceMeta.mute !== 'undefined')
+                            vid += 'muted ="'+(resourceMeta.mute? '1' : '0')+'"';
+
+                        if(typeof meta.controls !== 'undefined')
+                            vid += (meta.controls? 'controls ="1"' : '');
+                        else if(typeof resourceMeta.controls !== 'undefined')
+                            vid += (resourceMeta.controls? 'controls ="1"' : '');
+
+                        if(typeof meta.autoplay !== 'undefined')
+                            vid += 'autoplay ="'+meta.autoplay+'"';
+                        else if(typeof resourceMeta.autoplay !== 'undefined')
+                            vid += 'autoplay ="'+resourceMeta.autoplay+'"';
+
+                        if(typeof meta.width !== 'undefined')
+                            vid += 'width ="'+meta.width+'"';
+                        if(typeof meta.height !== 'undefined')
+                            vid += 'height ="'+meta.height+'"';
+
+                        vid += '></video>';
+                        let caption = meta.caption? '<figcaption>'+meta.caption+'</figcaption>' : '';
+                        return '<div class="image-container">'+vid+'</div>'+caption;
                     }
                 },
                 'youtube':{
@@ -575,7 +623,7 @@ Vue.component('article-block-editor', {
                         let article = `
                         <a href="`+context.currentOptions.article.linkFunction(otherArticle.address)+`">
                             <h3 class="title">`+otherArticle.title+`</h3>
-                            <img class="thumbnail" src="`+(otherArticle.thumbnail.address? context.extractImageAddress(otherArticle.thumbnail) : context.sourceURL()+'img/icons/image-generic.svg')+`">
+                            <img class="thumbnail" src="`+(otherArticle.thumbnail.address? context.extractMediaAddress(otherArticle.thumbnail) : context.sourceURL()+'img/icons/image-generic.svg')+`">
                             `+creator+`
 
                         </a>`;
@@ -1141,6 +1189,7 @@ Vue.component('article-block-editor', {
                         'meta.height':this.currentBlock.meta.height,
                         'meta.width':this.currentBlock.meta.width,
                         'meta.mute':this.currentBlock.meta.mute,
+                        'meta.controls':this.currentBlock.meta.controls
                     };
                     if(this.currentBlock.type === 'youtube'){
                         checkMap['meta.embed'] = this.currentBlock.meta.embed;
@@ -1229,7 +1278,7 @@ Vue.component('article-block-editor', {
             for(let i in this.currentBlock.collection.members){
                 let image = this.currentBlock.collection.members[i];
                 let obj = {
-                    url:this.extractImageAddress(image)
+                    url:this.extractMediaAddress(image)
                 };
                 if(image.alt)
                     obj.alt = image.alt;
@@ -1239,6 +1288,25 @@ Vue.component('article-block-editor', {
         },
     },
     methods:{
+        //Allows controlling the video
+        videoControls: function(action){
+            const video = this.$el.querySelector('.image-selector .image-preview video');
+            switch (action){
+                case 'play':
+                    if(video.paused)
+                        video.play();
+                    else
+                        video.pause();
+                    break;
+                case 'mute':
+                    video.muted = !video.muted;
+                    break;
+                case 'rewind':
+                    video.currentTime = 0;
+                    video.pause();
+                    break;
+            }
+        },
         //Wrapper for item deletion
         handleItemPermDeletion: function(response){
             this.handleItemDeletion(response,true);
@@ -1546,6 +1614,7 @@ Vue.component('article-block-editor', {
                     break;
                 case 'image':
                 case 'cover':
+                case 'video':
                     target = this.mediaSelector;
                     newValue = target.newItem;
                     paramName = 'blockResourceAddress';
@@ -1621,6 +1690,7 @@ Vue.component('article-block-editor', {
             Vue.set(this.paramMap['meta.height'],'ignore',(['youtube','video'].indexOf(this.currentBlock.type) === -1));
             Vue.set(this.paramMap['meta.width'],'ignore',(['youtube','video'].indexOf(this.currentBlock.type) === -1));
             Vue.set(this.paramMap['meta.mute'],'ignore',(['youtube','video'].indexOf(this.currentBlock.type) === -1));
+            Vue.set(this.paramMap['meta.controls'],'ignore',(['youtube','video'].indexOf(this.currentBlock.type) === -1));
             Vue.set(this.paramMap['meta.autoplay'],'ignore',(['youtube','video','gallery'].indexOf(this.currentBlock.type) === -1));
             Vue.set(this.paramMap['meta.loop'],'ignore',(['youtube','video','gallery'].indexOf(this.currentBlock.type) === -1));
             Vue.set(this.paramMap['meta.loop'],'parseOnGet',this.currentBlock.type === 'gallery'?
@@ -1639,16 +1709,16 @@ Vue.component('article-block-editor', {
             this.$forceUpdate();
         },
         //Extracts the image address from an image object
-        extractImageAddress: function(item){
+        extractMediaAddress: function(item){
             if(this.verbose)
                 console.log('Extracting address from ',item);
             if(item === undefined || item.address === undefined)
                 return this.sourceURL()+'img/icons/image-generic.svg';
             let trueAddress = item.address;
             if(item.local)
-                trueAddress = this.sourceURL()+'img/'+trueAddress;
+                trueAddress = this.sourceURL()+(this.currentBlock.type !== 'video' ? 'img' : 'vid')+'/'+trueAddress;
             else if(item.dataType)
-                trueAddress = document.rootURI+'api/media?action=getDBMedia&address='+trueAddress+'&lastChanged='+item.updated;
+                trueAddress = document.rootURI+'api/media?action=getDBMedia&address='+trueAddress+'&lastChanged='+item.updated+'&resourceType='+(this.currentBlock.type !== 'video' ? 'img' : 'vid');
             return trueAddress;
         },
         //Changes creation block back to initial state
@@ -1919,7 +1989,7 @@ Vue.component('article-block-editor', {
             this.currentBlock.resource.address = item.relativeAddress? item.relativeAddress : item.identifier;
             this.currentBlock.resource.local = item.local;
             this.currentBlock.resource.dataType = item.dataType ? item.dataType : null;
-            this.currentBlock.resource.updated = item.updated;
+            this.currentBlock.resource.updated = item.lastChanged;
         },
         //Registers dynamic events
         registerDynamicEvents: function(){
@@ -2137,9 +2207,16 @@ Vue.component('article-block-editor', {
                         ></div>
                     </div>
                 </div>
-                <div class="selector-container image-selector" v-else-if="currentBlock.type === 'cover' || currentBlock.type === 'image'">
+                `+`
+                <div class="selector-container image-selector" v-else-if="currentBlock.type === 'cover' || currentBlock.type === 'image' || currentBlock.type === 'video'">
                     <div class="image-preview" :class="{changed:mediaSelector.changed}" @click.prevent="mediaSelector.open = true">
-                        <img :src="extractImageAddress(currentBlock.resource)"  @click.prevent="mediaSelector.open = true">
+                        <img v-if="currentBlock.type !== 'video'" :src="extractMediaAddress(currentBlock.resource)">
+                        <video v-else="" :src="currentBlock.resource ? extractMediaAddress(currentBlock.resource) : ''" :poster="currentBlock.resource ? '' : extractMediaAddress(currentBlock.resource)"></video>
+                    </div>
+                    <div v-if="currentBlock.type === 'video' && currentBlock.resource" class="video-controls">
+                        <button v-text="'Play / Pause'" class="positive-3" @click.prevent="videoControls('play')"></button>
+                        <button v-text="'Mute / Unmute'" class="positive-3" @click.prevent="videoControls('mute')"></button>
+                        <button v-text="'Rewind To Start'" class="cancel-1" @click.prevent="videoControls('rewind')"></button>
                     </div>
                     <div class="media selector-sub-container">
                         <div class="control-buttons" v-if="mediaSelector.open">
@@ -2149,6 +2226,7 @@ Vue.component('article-block-editor', {
                              v-if="mediaSelector.open"
                              is="media-selector"
                              :identifier="identifier+'-media-selector'"
+                             :media-type="currentBlock.type === 'video' ? 'vid' : 'img'"
                              :test="test"
                              :verbose="verbose"
                         ></div>

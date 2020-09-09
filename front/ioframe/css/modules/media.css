@@ -22,7 +22,7 @@
     min-width: 360px;
     margin: 5px;
 }
-#media .search-list .search-item span:not(.image) .search-item-title {
+#media .search-list .search-item span:not(.media) .search-item-title {
     display: inherit !important;
     padding: 0px 3px;
     background: var(--shadow-dark-1);
@@ -30,7 +30,7 @@
 #media .search-list .search-results > * > * {
     flex:0;
 }
-#media .search-list .search-results > .search-item > .image span {
+#media .search-list .search-results > .search-item > .media span {
     height: 250px;
     width: 320px;
     display: flex;
@@ -38,14 +38,14 @@
     justify-content: center;
     margin: 5px 0px;
 }
-#media .search-list .search-results > .search-item.vertical > .image span {
+#media .search-list .search-results > .search-item.vertical > .media span {
     flex-direction: row;
 }
-#media .search-list .search-results > .search-item.small > .image span {
+#media .search-list .search-results > .search-item.small > .media span {
     width: max-content;
     margin: 5px auto;
 }
-#media .search-list .search-results > .search-item > .image span img {
+#media .search-list .search-results > .search-item > .media span img {
     max-width: 100%;
     max-height: 100%;
 }
@@ -92,6 +92,19 @@
 .image-editor .info-container{
     display: flex;
     flex-wrap: wrap;
+}
+
+/*Video controls*/
+.image-uploader .video-controls,
+.image-editor .video-controls{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.image-uploader .video-controls > button,
+.image-editor .video-controls > button{
+    margin: 5px 10px;
+    padding: 5px 10px;
 }
 
 /* Properties */

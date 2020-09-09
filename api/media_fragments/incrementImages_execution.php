@@ -5,7 +5,8 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result =   $FrontEndResourceHandler->incrementImages(
+$result =   $FrontEndResourceHandler->incrementResourcesVersions(
     $inputs['addresses'],
+    ($action === 'incrementImages' ? 'img' : 'vid'),
     ['test'=>$test]
 );

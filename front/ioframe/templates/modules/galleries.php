@@ -50,10 +50,23 @@
         </button>
     </div>
 
+    <div class="types">
+        <span class="title">Media Type: </span>
+        <select class="types" v-model:value="currentType" :disabled="currentMode!=='search'">
+            <option
+                v-for="(item,index) in mediaTypes"
+                :value="index"
+                :class="{selected:currentType === index}"
+                v-text="item? item : ' - '"
+                >
+            </option>
+        </select>
+    </div>
+
     <div  v-if="currentMode==='search'"
           is="search-list"
           :api-url="mediaURL"
-          api-action="getGalleries"
+          :api-action="mediaAction"
           :page="page"
           :limit="limit"
           :total="total"
@@ -70,6 +83,7 @@
 
     <div  v-if="currentMode==='edit'"
           is="gallery-editor"
+          :gallery-type="currentType"
           :gallery="getSelectedGallery"
           :current-operation="currentOperation"
           :selected="selectedGalleryMembers"

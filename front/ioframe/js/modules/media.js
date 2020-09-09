@@ -66,14 +66,20 @@ var media = new Vue({
             },
             'edit':{
                 operations:{},
-                title:'View/Edit Image'
+                title:'View/Edit Media'
             },
             'upload':{
                 operations:{},
-                title:'Upload Image'
+                title:'Upload Media'
             }
         },
         currentMode: 'view',
+        //Types of media - Images or Videos
+        currentType:'img',
+        mediaTypes:{
+            img:'Images',
+            vid:'Videos'
+        },
         currentOperation: '',
         operationInput:'',
         mediaURL: document.rootURI + 'api/media',
@@ -158,9 +164,9 @@ var media = new Vue({
             //Result comunts to display, and how to parse them
             columns:[
                 {
-                    id:'image',
+                    id:'media',
                     custom:true,
-                    title:'Image',
+                    title:'Media',
                     parser:function(item){
                         let src = item.dataType? (document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&lastChanged='+item.lastChanged) : item.identifier;
                         return '<img src="'+src+'">';
@@ -275,10 +281,10 @@ var media = new Vue({
                     return 'Media';
                     break;
                 case 'edit':
-                    return 'Editing '+(this.lastMode === 'view' ? 'local' : 'remote')+' image';
+                    return 'Editing '+(this.lastMode === 'view' ? 'local' : 'remote')+' media';
                     break;
                 case 'upload':
-                    return 'Uploading '+(this.lastMode === 'view' ? 'local': 'remote')+' image ' ;
+                    return 'Uploading '+(this.lastMode === 'view' ? 'local': 'remote')+' media ' ;
                     break;
                 default:
             }
@@ -359,7 +365,7 @@ var media = new Vue({
                     (this.currentMode === 'view-db' && this.searchList.selected.length !== 1)
                 )
             ){
-                alertLog('Please select an image before you view/edit it!','info',document.querySelector('#media'));
+                alertLog('Please select the media before you view/edit it!','info',document.querySelector('#media'));
                 return;
             };
 
@@ -433,7 +439,7 @@ var media = new Vue({
                     if(source === destination)
                         alertLog('Cannot move to the same folder!','warning',document.querySelector('#media'));
                     else{
-                        data.append('action', 'moveImage');
+                        data.append('action', this.currentMode === 'img' ? 'moveImage' : 'moveVideo');
                         data.append('oldAddress', source);
                         data.append('newAddress', destination);
                         data.append('copy', false);
@@ -449,7 +455,7 @@ var media = new Vue({
                         this.cancelOperation();
                         return;
                     }
-                    data.append('action', 'moveImage');
+                    data.append('action', this.currentMode === 'img' ? 'moveImage' : 'moveVideo');
 
                     if(this.currentMode === 'view'){
                         let oldURL = this.view1.url;
@@ -490,7 +496,7 @@ var media = new Vue({
                     }
 
                     if(deletionTargets.length>0){
-                        data.append('action', 'deleteImages');
+                        data.append('action', this.currentMode === 'img' ? 'deleteImages' : 'deleteVideos');
                         data.append('addresses', JSON.stringify(deletionTargets));
                     }
                     data.append('remote', this.currentMode === 'view-db');
@@ -502,6 +508,7 @@ var media = new Vue({
                         console.log(this.operationInput,' already exists, cannot create folder!');
                     else{
                         data.append('action', 'createFolder');
+                        data.append('category', this.currentMode);
                         var url = this.view1.url;
                         if(url!== '')
                             data.append('relativeAddress', this.view1.url);
@@ -887,27 +894,59 @@ var media = new Vue({
             for( let index in this.searchList.items ){
                 let element = searchItems[index];
                 let image = element.querySelector('img');
-                image.onload = function () {
-                    let naturalWidth = image.naturalWidth;
-                    let naturalHeight = image.naturalHeight;
-                    if(naturalWidth < 320){
-                        Vue.set(context.searchList.items[index],'small',true);
-                        if(verbose)
-                            console.log('setting image '+index+' as small');
-                    }
-                    else if(naturalHeight > naturalWidth){
-                        Vue.set(context.searchList.items[index],'vertical',true);
-                        if(verbose)
-                            console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
-                    }
-                };
-                if(image.complete)
-                    image.onload();
+                if(image){
+                    image.onload = function () {
+                        let naturalWidth = image.naturalWidth;
+                        let naturalHeight = image.naturalHeight;
+                        if(naturalWidth < 320){
+                            Vue.set(context.searchList.items[index],'small',true);
+                            if(verbose)
+                                console.log('setting image '+index+' as small');
+                        }
+                        else if(naturalHeight > naturalWidth){
+                            Vue.set(context.searchList.items[index],'vertical',true);
+                            if(verbose)
+                                console.log('cropping image '+index+' vertically', naturalWidth, naturalHeight);
+                        }
+                    };
+                    if(image.complete)
+                        image.onload();
+                }
             };
         }
     },
     mounted: function(){
     },
+
     watch:{
-    }
+        'currentType':function(newType){
+            if(this.verbose)
+                console.log('Current type changed to ',newType);
+            this.cancelOperation();
+            Vue.set(this.view1,'elements', {});
+            Vue.set(this.view1,'url', '');
+            Vue.set(this.view1,'target', '');
+            Vue.set(this.view1,'upToDate', false);
+            Vue.set(this.view2,'elements', {});
+            Vue.set(this.view2,'url', '');
+            Vue.set(this.view2,'target', '');
+            Vue.set(this.view2,'upToDate', false);
+            Vue.set(this.searchList,'items', []);
+            Vue.set(this.searchList,'initiated', false);
+            Vue.set(this.searchList.columns[0],'parser',
+                (
+                newType === 'img' ?
+                    function(item){
+                        let src = item.dataType? (document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&resourceType=img&lastChanged='+item.lastChanged) : item.identifier;
+                        return '<img src="'+src+'">';
+                    }
+                    :
+                    function(item){
+                        let src = item.dataType? (document.rootURI+'api/media?action=getDBMedia&address='+item.identifier+'&resourceType=vid&lastChanged='+item.lastChanged) : item.identifier;
+                        return '<video src="'+src+'" preload="metadata">';
+                    }
+                )
+            );
+        }
+    },
 });

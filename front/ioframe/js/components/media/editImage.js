@@ -18,6 +18,12 @@ Vue.component('media-editor', {
             type: Boolean,
             default: false
         },
+        //Whether we are dealing with images or videos - possible values are 'img' and 'vid'
+        mediaType: {
+            type: String,
+            default: 'img'
+        },
+        //Identifier
         //Elements we are displaying
         image: {
             type: Object,
@@ -46,18 +52,12 @@ Vue.component('media-editor', {
             languages: JSON.parse(JSON.stringify(document.languages)),
             newImageInfo:{
                 name:'',
-                alt:'',
                 caption:''
             },
             expectedMeta:{
                 name:{
                     text:'Name',
                     placeholder:'Image has no name',
-                    type:'input'
-                },
-                alt:{
-                    text:'Alt',
-                    placeholder:'Image has no ALT',
                     type:'input'
                 },
                 caption:{
@@ -68,6 +68,8 @@ Vue.component('media-editor', {
             },
             h: 0,
             w: 0,
+            duration:0,
+            initiated:false,
             edited:false,
             //Galleries the image belongs to
             galleries: [],
@@ -78,7 +80,8 @@ Vue.component('media-editor', {
     template: `
          <div class="image-editor">
             <div class="image-container">
-                <img :src="imageURL">
+                <img  v-if="mediaType === 'img'" :src="imageURL">
+                <video v-else="" class="upload-preview" :src="imageURL" controls="true" loop="true" muted="true" preload="auto"></video>
             </div>
             <div class="info-container">
                 <div class="properties">
@@ -102,13 +105,25 @@ Vue.component('media-editor', {
                         v-model:value="newImageInfo[item]"
                         :placeholder="itemArr.placeholder"
                         ></textarea>
+
+                        <button
+                        v-else-if="itemArr.type === 'toggle'"
+                        :name="item"
+                        class="property"
+                        :class="[item,(newImageInfo[item]? 'positive-1' : 'negative-1')]"
+                        @click.prevent="newImageInfo[item] = !newImageInfo[item]"
+                        v-text="newImageInfo[item]? 'Yes' : 'No'"
+                        ></button>
                     </label>
                 </div>
+                `+`
                 <div class="properties">
                     <label v-if="type==='local'" for="size" v-text="'Size'"></label>
                     <div v-if="type==='local'" name="size"" class="size property"  v-text="getImageSize"></div>
                     <label for="dimensions" v-text="'Dimensions (W x H)'"></label>
                     <div name="dimensions" class="dimensions property"  v-text="w + ' x ' + h"></div>
+                    <label v-if="mediaType !== 'img'" for="duration" v-text="'Duration (s)'"></label>
+                    <div v-if="mediaType !== 'img'" name="duration" class="duration property"  v-text="this.duration + ' seconds'"></div>
                     <label for="address" v-text="'Address'"></label>
                     <div name="address" class="address property" v-text="getImageAddress"></div>
                 </div>
@@ -145,7 +160,7 @@ Vue.component('media-editor', {
 
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'updateImage');
+            data.append('action', (this.mediaType === 'img' ? 'updateImage' : 'updateVideo'));
             let address;
             if(this.type === 'local'){
                 address =  (this.url === '')? this.url : this.url+'/';
@@ -237,7 +252,7 @@ Vue.component('media-editor', {
 
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'getImageGalleries');
+            data.append('action', (this.mediaType === 'img' ? 'getGalleriesOfImage' : 'getGalleriesOfVideo'));
             let address;
             if(this.type === 'local'){
                 address =  (this.url === '')? this.url : this.url+'/';
@@ -303,10 +318,21 @@ Vue.component('media-editor', {
             this.edited = this.imageChanged;
         },
         updateImageDimensions: function(request){
+            if(this.initiated)
+                return;
+            let media = this.$el.querySelector('.image-container > *');
             if(request.from === this.identifier){
-                this.w = request.w;
-                this.h = request.h;
+                if(this.mediaType === 'img'){
+                    this.w = media.innerWidth;
+                    this.h = media.innerHeight;
+                }
+                else{
+                    this.w = media.videoWidth;
+                    this.h = media.videoHeight;
+                    this.duration = media.duration;
+                }
             }
+            this.initiated = true;
         },
         //Handles responses
         imageUpdateResponse: function(request){
@@ -340,7 +366,7 @@ Vue.component('media-editor', {
         imageURL: function(){
             let result;
             if(this.type === 'local'){
-                result = this.sourceURL() + 'img/';
+                result = this.sourceURL() + this.mediaType+'/';
                 result += (this.url === '')? this.url : this.url+'/';
                 result += this.target;
             }
@@ -348,7 +374,7 @@ Vue.component('media-editor', {
                 if(!this.image.dataType)
                     result = this.image.identifier;
                 else
-                    result = document.rootURI+'api/media?action=getDBMedia&address='+this.image.identifier+'&lastChanged='+this.image.lastChanged;
+                    result = document.rootURI+'api/media?action=getDBMedia&address='+this.image.identifier+'&resourceType='+this.mediaType+'&lastChanged='+this.image.lastChanged;
             }
             return result;
         },
@@ -438,24 +464,70 @@ Vue.component('media-editor', {
                 type:'textarea'
             });
         }
+        //Dpending on whether we are uploading a video or image
+        if(this.mediaType === 'img'){
+            Vue.set(this.expectedMeta,'alt', {
+                text:'Alt',
+                placeholder:'Image ALT',
+                type:'input'
+            });
+            Vue.set(this.newImageInfo,'alt', '');
+        }
+        else{
+            Vue.set(this.expectedMeta,'autoplay', {
+                text:'Autoplay?',
+                type:'toggle'
+            });
+            Vue.set(this.newImageInfo,'autoplay', false);
+            Vue.set(this.expectedMeta,'loop', {
+                text:'Loop?',
+                type:'toggle'
+            });
+            Vue.set(this.newImageInfo,'loop', true);
+            Vue.set(this.expectedMeta,'mute', {
+                text:'Start Muted?',
+                type:'toggle'
+            });
+            Vue.set(this.newImageInfo,'mute', true);
+            Vue.set(this.expectedMeta,'controls', {
+                text:'Show Controls?',
+                type:'toggle'
+            });
+            Vue.set(this.newImageInfo,'controls', false);
+            Vue.set(this.expectedMeta,'poster', {
+                text:'Poster (URL)',
+                placeholder:'Placeholder image URL (absolute!)',
+                type:'input'
+            });
+            Vue.set(this.newImageInfo,'poster', '');
+        }
     },
     mounted: function(){
         if(this.verbose)
             console.log('Editor ',this.identifier,' mounted');
         this.resetImage();
-        var image = this.$el.querySelector('.image-container > img');
+        var image = this.$el.querySelector('.image-container > *');
         var identifier = this.identifier;
         var verbose = this.verbose;
-        image.onload = function(){
-            const request = {
-                from:identifier,
-                w:this.naturalWidth,
-                h:this.naturalHeight
+
+        if(this.mediaType === 'img')
+            image.onload = function(){
+                const request = {
+                    from:identifier
+                };
+                if(verbose)
+                    console.log('Emitting updateImageDimensions', request);
+                eventHub.$emit('updateImageDimensions', request);
             };
-            if(verbose)
-                console.log('Emitting updateImageDimensions', request);
-            eventHub.$emit('updateImageDimensions', request);
-        };
+        else
+            image.oncanplay = function(){
+                const request = {
+                    from:identifier
+                };
+                if(verbose)
+                    console.log('Emitting updateImageDimensions', request);
+                eventHub.$emit('updateImageDimensions', request);
+            };
     },
     updated: function(){
         if(this.verbose)
@@ -464,7 +536,6 @@ Vue.component('media-editor', {
     watch: {
         newImageInfo:{
             handler: function(val, oldVal){
-
                 this.edited = this.imageChanged;
                 /*
                  TODO Fix this

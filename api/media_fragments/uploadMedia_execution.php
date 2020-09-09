@@ -28,7 +28,7 @@ if($inputs['type'] !== 'link')
             'verbose'=>$test,
             'overwrite'=>$inputs['overwrite'] && !$test,
             'imageQualityPercentage'=>$inputs['imageQualityPercentage'],
-            'resourceTargetPath'=>$resourceSettings->getSetting('imagePathLocal').$inputs['address'],
+            'resourceTargetPath'=>$resourceSettings->getSetting(($inputs['category'] === 'img' ? 'imagePathLocal' : 'videoPathLocal')).$inputs['address'],
             'maxFileSize' => $siteSettings->getSetting('maxUploadSize'),
         ]);
 
@@ -48,12 +48,12 @@ foreach($result as $uploadName => $res){
         $fakeFile = false;
         if( ($res === 2) && $inputs['overwrite'] && $test){
             $fakeFile = true;
-            $res = $resourceSettings->getSetting('imagePathLocal').$inputs['address'].$uploadName.'_TEST.test';
+            $res = $resourceSettings->getSetting($inputs['category'] === 'img' ? 'imagePathLocal' : 'videoPathLocal').$inputs['address'].$uploadName.'_TEST.test';
             $result[$uploadName] = $res;
         }
 
         //The DB name wont have the image path in it
-        $DBName = substr($res,strlen($resourceSettings->getSetting('imagePathLocal')));
+        $DBName = substr($res,strlen($resourceSettings->getSetting($inputs['category'] === 'img' ? 'imagePathLocal' : 'videoPathLocal')));
     }
     //The following happens if the type is db
     elseif($inputs['type'] === 'db'){
@@ -77,7 +77,11 @@ foreach($result as $uploadName => $res){
             $deleteLocalFiles[$uploadName] = $rootFolder.$res;
 
         //Meta information
-        $expected = ['name','alt','caption','size'];
+        $expected = ['name','caption','size'];
+        if($inputs['category'] === 'img')
+            array_push($expected,'alt');
+        else
+            array_push($expected,'autoplay','loop','mute','controls','poster','preload');
         foreach($languages as $lang){
             array_push($expected,$lang.'_name');
             array_push($expected,$lang.'_caption');
@@ -119,7 +123,7 @@ $updateDB = [];
 if($mediaToUpdate != [])
     $updateDB =  $FrontEndResourceHandler->setResources(
         $mediaToUpdate,
-        'img',
+        $inputs['category'],
         ['test'=>$test]
     );
 else
@@ -154,12 +158,20 @@ foreach($updateDB as $DBName => $resultCode){
 
 //Update the gallery if requested
 if($mediaToAddToGallery != []){
-    $updateDB =  $FrontEndResourceHandler->addImagesToGallery(
+    $updateDB = (
+    $inputs['category'] === 'img'?
+        $FrontEndResourceHandler->addImagesToGallery(
         $mediaToAddToGallery,
         $inputs['gallery'],
         ['test'=>$test,]
+        )
+        :
+        $FrontEndResourceHandler->addVideosToVideoGallery(
+            $mediaToAddToGallery,
+            $inputs['gallery'],
+            ['test'=>$test,]
+        )
     );
-
     foreach($updateDB as $DBName => $resultCode){
         if($resultCode === 0 || $test){
             //If this is a test, always delete

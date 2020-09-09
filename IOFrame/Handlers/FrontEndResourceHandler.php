@@ -82,6 +82,9 @@ namespace IOFrame\Handlers{
          *                        ],
          *      ...
          *      ]
+         *
+         * @throws \Exception If provided type is not supported.
+         *
          *      *important note - identifier names are by default relative addresses from the relevant
          *      setting root.
          *      For example, if the file is a JS file address is <$serverRoot>/front/ioframe/js/test folder/test.js,
@@ -113,8 +116,12 @@ namespace IOFrame\Handlers{
                     $rootFolder = $this->resourceSettings->getSetting('jsPathLocal');
                 elseif($type === 'css')
                     $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
-                else
+                elseif($type === 'img')
                     $rootFolder = $this->resourceSettings->getSetting('imagePathLocal');
+                elseif($type === 'vid')
+                    $rootFolder = $this->resourceSettings->getSetting('videoPathLocal');
+                else
+                    throw new \Exception('Invalid front-end resource type!');
             }
             $rootFolderOrigin = $rootFolder;
             $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
@@ -163,7 +170,6 @@ namespace IOFrame\Handlers{
             $existing = [];
             //In case we need to minify all resources under one name, this is it.
             $resourcesToMinify = [];
-
             foreach($resources as $address=>$resource){
                 //The address '@' is reserved for meta information, in case of a full search
                 if($address === '@'){
@@ -189,8 +195,10 @@ namespace IOFrame\Handlers{
                         $fallBack['currentRootFolder'] = 'front/ioframe/js/';
                     elseif($type === 'css')
                         $fallBack['currentRootFolder'] = 'front/ioframe/css/';
-                    else
+                    elseif($type === 'img')
                         $fallBack['currentRootFolder'] = 'front/ioframe/img/';
+                    elseif($type === 'vid')
+                        $fallBack['currentRootFolder'] = 'front/ioframe/vid/';
                     $fallBack['currentRootFolderOrigin'] = $fallBack['currentRootFolder'];
                     $fallBack['currentRootFolder'] = $this->settings->getSetting('absPathToRoot').$fallBack['currentRootFolder'];
                     $fallBack['resourcePath'] = explode('/',$address);
@@ -213,7 +221,7 @@ namespace IOFrame\Handlers{
                 $newAddress = '';
 
                 //Make sure the type matches the extension in case of js/css
-                if( $isFile && ($type !== $resourceExtension)  && ($type !== 'img') ){
+                if( $isFile && ($type !== $resourceExtension)  && (in_array($type,['js','css'])) ){
                     //In case of a CSS file that's an SCSS file, compile it to CSS on the fly
                     if($type === 'css' && $resourceExtension === 'scss' && $scss){
                         $compilation = $this->compileSCSS($address,array_merge($params,['rootFolder'=>$currentRootFolderOrigin]));
@@ -440,6 +448,7 @@ namespace IOFrame\Handlers{
          *          0 - All good
          *          1 target address already exists
          *          2 source address does not exist
+         * @throws \Exception If provided type is not supported.
          */
         function moveFrontendResourceFiles(array $inputs, string $type,  array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -453,8 +462,12 @@ namespace IOFrame\Handlers{
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
             elseif($type === 'css')
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
-            else
+            elseif($type === 'img')
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('imagePathLocal');
+            elseif($type === 'vid')
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('videoPathLocal');
+            else
+                throw new \Exception('Invalid front-end resource type!');
 
             $existing = [];
 
@@ -467,7 +480,6 @@ namespace IOFrame\Handlers{
 
             $needToAdd = [];
             $needToMove = [];
-
 
             //Move the files
             foreach($inputs as $inputArray){
@@ -552,6 +564,7 @@ namespace IOFrame\Handlers{
          *         -2 - Local failure
          *         -1 - Could not connect to db
          *          0 - All good
+         * @throws \Exception If provided type is not supported.
          */
         function deleteFrontendResourceFiles(array $addresses, string $type,  array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -563,8 +576,12 @@ namespace IOFrame\Handlers{
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
             elseif($type === 'css')
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('jsPathLocal');
-            else
+            elseif($type === 'img')
                 $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('imagePathLocal');
+            elseif($type === 'vid')
+                $rootFolder = $this->settings->getSetting('absPathToRoot').$this->resourceSettings->getSetting('videoPathLocal');
+            else
+                throw new \Exception('Invalid front-end resource type!');
 
             $needToDeleteDB = [];
             $needToDelete = [];
@@ -909,6 +926,7 @@ namespace IOFrame\Handlers{
                 }
             }
 
+            $mutex->deleteMutex();
             return $results;
         }
 
@@ -1073,7 +1091,6 @@ namespace IOFrame\Handlers{
          *     -1 - creation error
          *      0 - success
          *      1 - folder already exists
-         *      2 - type is not valid
          */
         function createFolder(string $relativeAddress, string $name,  string $type,  array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -1089,8 +1106,10 @@ namespace IOFrame\Handlers{
                     $rootFolder = $this->resourceSettings->getSetting('cssPathLocal');
                 elseif($type === 'img')
                     $rootFolder = $this->resourceSettings->getSetting('imagePathLocal');
+                elseif($type === 'vid')
+                    $rootFolder = $this->resourceSettings->getSetting('videoPathLocal');
                 else
-                    return 2;
+                    throw new \Exception('Invalid front-end resource type!');
             }
             $rootFolder = $this->settings->getSetting('absPathToRoot').$rootFolder;
             if($relativeAddress !== '' && $relativeAddress[strlen($relativeAddress)-1] !== '/')
@@ -1579,6 +1598,109 @@ namespace IOFrame\Handlers{
          */
         function swapGalleryOrder(int $num1,int $num2, string $collection, array $params){
             return $this->swapFrontendResourceCollectionOrder($num1, $num2, $collection, 'img', $params);
+        }
+
+        /*---------------------------------------------- HERE BE Videos ----------------------------------------------*/
+
+        /** getFrontendResources with type 'css'
+         */
+        function getVideos(array $addresses = [], array $params = []){
+            return $this->getFrontendResources($addresses,'vid',$params);
+        }
+
+        /**  moveFrontendResourceFiles with type 'css'
+         */
+        function moveVideo(string $src, string $dest,  array $params = []){
+            return $this->moveFrontendResourceFile($src, $dest, 'vid',$params);
+        }
+
+        /**  moveFrontendResourceFiles with type 'css'
+         */
+        function moveVideos(array $inputs,  array $params = []){
+            return $this->moveFrontendResourceFiles($inputs,'vid',$params);
+        }
+
+        /**  deleteFrontendResourceFile with type 'css'
+         */
+        function deleteVideo(string $address,  array $params = []){
+            return $this->deleteVideos([$address],$params);
+        }
+
+        /**  deleteFrontendResourceFiles with type 'css'
+         */
+        function deleteVideos(array $addresses,  array $params = []){
+            return $this->deleteFrontendResourceFiles($addresses,'vid',$params);
+        }
+
+        /** Same as incrementResourceVersion
+         */
+        function incrementVideo(string $address, array $params = []){
+            return $this->incrementVideos([$address], $params);
+        }
+
+        /** Same as incrementResourcesVersions
+         */
+        function incrementVideos(array $addresses, array $params = []){
+            return $this->incrementResourcesVersions($addresses,'vid', $params);
+        }
+
+        /** Same as getFrontendResourceCollection
+         */
+        function getVideoGallery(string $name, array $params = [] ){
+            return $this->getVideoGalleries([$name], $params);
+        }
+        /** Same as getFrontendResourceCollections;
+         */
+        function getVideoGalleries(array $names, array $params = [] ){
+            return $this->getFrontendResourceCollections($names, 'vid', $params);
+        }
+
+        /** Same as setResourceCollections
+         */
+        function setVideoGallery(string $name, string $meta = null , array $params = []){
+            return $this->setFrontendResourceCollection($name,'vid',$meta,$params);
+        }
+
+        /** Same as deleteFrontendResourceCollection
+         */
+        function deleteVideoGallery(string $name, array $params = []){
+            return $this->deleteFrontendResourceCollection($name,'vid',$params);
+        }
+
+        /** Same as addResourceToCollection but always ordered
+         */
+        function addVideoToVideoGallery( string $address, string $collection, array $params = []){
+            return $this->addVideosToVideoGallery([$address], $collection, $params);
+        }
+
+        /** Same as addResourcesToCollection but always ordered
+         */
+        function addVideosToVideoGallery( array $addresses, string $collection, array $params = []){
+            return $this->addFrontendResourcesToCollection($addresses, $collection, 'vid', $params);
+        }
+
+        /** Same as removeResourceFromCollection
+         */
+        function removeVideoFromVideoGallery( string $address, string $collection, array $params = []){
+            return $this->removeVideosFromVideoGallery([$address], $collection, $params);
+        }
+
+        /** Same as removeResourcesFromCollection
+         */
+        function removeVideosFromVideoGallery( array $addresses, string $collection, array $params = []){
+            return $this->removeFrontendResourcesFromCollection($addresses, $collection, 'vid', $params);
+        }
+
+        /** Same as moveCollectionOrder
+         */
+        function moveVideoGalleryOrder(int $from, int $to, string $collection, array $params){
+            return $this->moveFrontendResourceCollectionOrder($from, $to, $collection, 'vid', $params);
+        }
+
+        /** Same as swapCollectionOrder
+         */
+        function swapVideoGalleryOrder(int $num1,int $num2, string $collection, array $params){
+            return $this->swapFrontendResourceCollectionOrder($num1, $num2, $collection, 'vid', $params);
         }
 
     }

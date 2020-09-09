@@ -63,14 +63,14 @@ switch($inputs['type']){
             array_push($requiredParams,'text');
         else
             array_push($optionalParams,'text');
-        array_push($optionalParams,'caption','name','height','width','autoplay','mute','loop','embed');
+        array_push($optionalParams,'caption','name','height','width','autoplay','mute','loop','embed','controls');
         break;
     case 'video':
         if($inputs['create'])
             array_push($requiredParams,'blockResourceAddress');
         else
             array_push($optionalParams,'blockResourceAddress');
-        array_push($optionalParams,'caption','name','height','width','autoplay','mute','loop');
+        array_push($optionalParams,'caption','name','height','width','autoplay','mute','loop','controls');
         break;
     case 'article':
         if($inputs['create'])
@@ -169,6 +169,7 @@ foreach(array_merge($optionalParams,$requiredParams) as $param){
                 }
                 break;
             case 'autoplay':
+            case 'controls':
             case 'mute':
             case 'loop':
             case 'embed':

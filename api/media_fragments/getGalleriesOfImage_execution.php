@@ -7,6 +7,6 @@ $ResourceHandler = new IOFrame\Handlers\ResourceHandler($settings,$defaultSettin
 
 $result =  $ResourceHandler->getCollectionsOfResource(
     $inputs['address'],
-    'img',
+    ($action === 'getGalleriesOfImage' ? 'img' : 'vid'),
     ['test'=>$test]
 );

@@ -456,16 +456,26 @@ if(!$local){
         );
         // ------------------ MEDIA TEST -------------------
         $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$this->defaultSettingsParams);
+        //-- Images
+        $FrontEndResourceHandler->getImages('pluginImages',['test'=>$test]);
         $FrontEndResourceHandler->setGallery('Test Gallery',json_encode(['name'=>'Awesome Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->setGallery('Another Gallery',json_encode(['name'=>'Another Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->addImagesToGallery(
-            ['docs/Euler.png','docs/installScreenshots/1.png'],
+            ['pluginImages/def_thumbnail.png','pluginImages/def_icon.png'],
             'Test Gallery',
             ['test'=>$test]
         );
         $FrontEndResourceHandler->addImagesToGallery(
-            ['docs/installScreenshots/1.png','docs/installScreenshots/2.png'],
+            ['pluginImages/testPlugin/thumbnail.png','pluginImages/testPlugin/icon.png'],
             'Another Gallery',
+            ['test'=>$test]
+        );
+        //-- Videos
+        $FrontEndResourceHandler->getVideos('examples',['test'=>$test]);
+        $FrontEndResourceHandler->setVideoGallery('Test Video Gallery',json_encode(['name'=>'Video Gallery']),['test'=>$test]);
+        $FrontEndResourceHandler->addVideosToVideoGallery(
+            ['examples/example-1.webm','examples/example-1.webm'],
+            'Test Video Gallery',
             ['test'=>$test]
         );
         // ------------------ MENU TEST -------------------

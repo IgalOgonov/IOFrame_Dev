@@ -5,8 +5,9 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result = $FrontEndResourceHandler->addImagesToGallery(
+$result = $FrontEndResourceHandler->addFrontendResourcesToCollection(
     $inputs['addresses'],
     $inputs['gallery'],
+    ($action === 'addToGallery' ? 'img':'vid'),
     ['test'=>$test]
 );

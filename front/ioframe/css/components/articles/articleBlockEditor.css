@@ -165,12 +165,22 @@
 .article-block.edit form > .selector-container.image-selector > .image-preview.changed {
     background: var(--main-color-3);
 }
-.article-block.edit form > .selector-container.image-selector > .image-preview img{
+.article-block.edit form > .selector-container.image-selector > .image-preview img,
+.article-block.edit form > .selector-container.image-selector > .image-preview video{
     max-width: 200px;
     height: auto;
     margin: auto;
     max-height: 200px;
     display: flex;
+}
+.article-block.edit form > .selector-container.image-selector .video-controls{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.article-block.edit form > .selector-container.image-selector .video-controls > button{
+    margin: 5px 10px;
+    padding: 5px 10px;
 }
 .article-block.edit form > .selector-container.image-selector .media-selector {
     background: var(--main-color-3);
@@ -253,14 +263,16 @@
     align-items: center;
 }
 
-/*image & cover*/
+/*image & cover & video*/
 /*Image*/
-.article-block.view > .image > .image-container{
+.article-block.view > .image > .image-container,
+.article-block.view > .video > .image-container{
     display: flex;
     padding: 5px 0px;
     justify-content: center;
 }
-.article-block.view > .image > .image-container > img{
+.article-block.view > .image > .image-container > img,
+.article-block.view > .video > .image-container > video{
     max-width: 100%;
 }
 /*Cover*/

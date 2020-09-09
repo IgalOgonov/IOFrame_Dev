@@ -12,7 +12,7 @@ CONST SECURITY_IP_MODIFY = 'SECURITY_IP_MODIFY';
 
 /* Validation */
 //Allowed Regex filter regex
-CONST RESOURCE_TYPE_REGEX = '';
+CONST RESOURCE_TYPE_REGEX = '[a-z]\w{1,15}';
 //IPv4 Prefix regex
 CONST IPV4_PREFIX = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){0,3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
 //A single IPv4 segment regex

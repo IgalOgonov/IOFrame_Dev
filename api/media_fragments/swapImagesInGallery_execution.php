@@ -5,9 +5,10 @@ if(!defined('FrontEndResourceHandler'))
 //Handlers
 $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$defaultSettingsParams);
 
-$result = $FrontEndResourceHandler->swapGalleryOrder(
+$result = $FrontEndResourceHandler->swapFrontendResourceCollectionOrder(
     $inputs['num1'],
     $inputs['num2'],
     $inputs['gallery'],
+    ($action === 'swapImagesInGallery' ? 'img':'vid'),
     ['test'=>$test]
 );

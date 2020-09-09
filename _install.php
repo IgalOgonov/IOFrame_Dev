@@ -1081,6 +1081,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($pageArgs,["homepage",'front/ioframe/pages/welcome']);
             array_push($pageArgs,["404",'']);
 
+            array_push($resourceArgs,["videoPathLocal",'front/ioframe/vid/']);
             array_push($resourceArgs,["imagePathLocal",'front/ioframe/img/']);
             array_push($resourceArgs,["jsPathLocal",'front/ioframe/js/']);
             array_push($resourceArgs,["cssPathLocal",'front/ioframe/css/']);

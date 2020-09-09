@@ -84,11 +84,13 @@
 }
 
 /* Image Related*/
-.media-viewer .media-object-container > .thumbnail-container > img {
+.media-viewer .media-object-container > .thumbnail-container > img,
+.media-viewer .media-object-container > .thumbnail-container > video {
     max-height: 150px;
     max-width: 150px;
 }
-.media-viewer .media-object-container.mediaFolder > .thumbnail-container > img {
+.media-viewer .media-object-container.mediaFolder > .thumbnail-container > img,
+.media-viewer .media-object-container.mediaFolder > .thumbnail-container > video {
     height: auto;
     width: auto;
 }
@@ -123,7 +125,8 @@
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
 }
-.media-viewer .media-object-container > .thumbnail-container.centerCrop > img{
+.media-viewer .media-object-container > .thumbnail-container.centerCrop > img,
+.media-viewer .media-object-container > .thumbnail-container.centerCrop > video{
     justify-self: center;
     align-self: center;
 }

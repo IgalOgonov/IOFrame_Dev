@@ -47,8 +47,22 @@
         </button>
     </div>
 
+    <div class="types">
+        <span class="title">Media Type: </span>
+        <select class="types" v-model:value="currentType" :disabled="currentMode!=='view-db' && currentMode!=='view'">
+            <option
+                v-for="(item,index) in mediaTypes"
+                :value="index"
+                :class="{selected:currentType === index}"
+                v-text="item? item : ' - '"
+                >
+            </option>
+        </select>
+    </div>
+
     <div v-if="needViewer">
         <div is="media-viewer"
+             :media-type="currentType"
              :url="view1.url"
              :target="view1.target"
              :multiple-targets="view1.deleteTargets"
@@ -62,6 +76,7 @@
 
         <h2 v-if="secondTitle!==''" v-text="secondTitle"></h2>
         <div is="media-viewer"
+             :media-type="currentType"
              :url="view2.url"
              :target="view2.target"
              :display-elements="view2.elements"
@@ -81,7 +96,7 @@
               :api-url="mediaURL"
               :extra-params="searchList.extraParams"
               :extra-classes="searchList.extraClasses"
-              api-action="getImages"
+              :api-action="(currentType === 'img' ? 'getImages' : 'getVideos')"
               :page="searchList.page"
               :limit="searchList.limit"
               :total="searchList.total"
@@ -99,6 +114,7 @@
 
     <div  v-if="currentMode==='upload'"
           is="media-uploader"
+          :media-type="currentType"
           :type="lastMode === 'view'? 'local' : 'remote'"
           :url="view1.url"
           :test="test"
@@ -107,8 +123,9 @@
         >
     </div>
 
-    <div is="media-editor"
-         v-if="currentMode==='edit'"
+    <div v-if="currentMode==='edit'"
+         is="media-editor"
+         :media-type="currentType"
          :type="lastMode === 'view'? 'local' : 'remote'"
          :url="view1.url"
          :target="lastMode==='view' ? view1.target : searchList.items[searchList.selected[0]].identifier"

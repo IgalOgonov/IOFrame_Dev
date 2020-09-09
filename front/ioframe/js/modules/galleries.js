@@ -39,12 +39,18 @@ var galleries = new Vue({
                         button:'cancel-1'
                     },
                     'add':{
-                        title:'Add Image To Gallery',
+                        title:'Add Media To Gallery',
                         button:'positive-1'
                     },
                 },
                 title:'View/Edit Gallery'
             }
+        },
+        //Types of media - Images or Videos
+        currentType:'img',
+        mediaTypes:{
+            img:'Images',
+            vid:'Videos'
         },
         //Filters to display for the search list
         filters:[
@@ -444,6 +450,9 @@ var galleries = new Vue({
         },
         mediaURL: function(){
             return document.pathToRoot + 'api/media';
+        },
+        mediaAction: function(){
+            return this.currentType === 'img' ? 'getGalleries' : 'getVideoGalleries'
         }
     },
     methods:{
@@ -611,7 +620,7 @@ var galleries = new Vue({
             if(this.currentMode === 'search'){
                 switch (currentOperation){
                     case 'delete':
-                        data.append('action','deleteGallery');
+                        data.append('action',this.currentType === 'img' ? 'deleteGallery' : 'deleteVideoGallery');
                         data.append('gallery',this.galleries[this.selected].identifier);
                         break;
                     case 'create':
@@ -623,7 +632,7 @@ var galleries = new Vue({
                             alertLog('Gallery name may contain characters, latters, and space!','warning',this.$el);
                             return;
                         }
-                        data.append('action','setGallery');
+                        data.append('action',this.currentType === 'img' ? 'setGallery' : 'setVideoGallery');
                         data.append('gallery',this.operationInput);
                         break;
                     default:
@@ -640,13 +649,13 @@ var galleries = new Vue({
                         }
 
                         if(stuffToRemove.length > 0){
-                            data.append('action','removeFromGallery');
+                            data.append('action',this.currentType === 'img' ? 'removeFromGallery' : 'removeFromVideoGallery');
                             data.append('gallery',this.galleries[this.selected].identifier);
                             data.append('addresses' , JSON.stringify(stuffToRemove) );
                         }
                         break;
                     case 'move':
-                        data.append('action','moveImageInGallery');
+                        data.append('action',this.currentType === 'img' ? 'moveImageInGallery' : 'moveVideoInVideoGallery');
                         data.append('gallery',this.galleries[this.selected].identifier);
                         data.append('from' , this.moveTargets[0]);
                         data.append('to' , this.moveTargets[1] );
@@ -665,7 +674,7 @@ var galleries = new Vue({
                             data.append('remote',true);
                         }
                         if(stuffToAdd.length > 0){
-                            data.append('action','addToGallery');
+                            data.append('action',this.currentType === 'img' ? 'addToGallery' : 'addToVideoGallery' );
                             data.append('gallery',this.galleries[this.selected].identifier);
                             data.append('addresses' , JSON.stringify(stuffToAdd) );
                         }
@@ -872,7 +881,7 @@ var galleries = new Vue({
                                 alertLog('Database connection failed!','warning',this.$el);
                                 break;
                             case 0:
-                                alertLog('Images removed from gallery!','success',this.$el);
+                                alertLog('Media removed from gallery!','success',this.$el);
                                 break;
                             default :
                                 alertLog('Operation failed with response: '+response,'error',this.$el);
@@ -950,7 +959,7 @@ var galleries = new Vue({
                                 alertLog('Database connection failed!','warning',this.$el);
                                 break;
                             case 0:
-                                alertLog('Image moved!','success',this.$el);
+                                alertLog('Media moved!','success',this.$el);
                                 //In this specific case, we only re-render the front end, not refresh the gallery.
                                 let from = this.moveTargets[0];
                                 let to = this.moveTargets[1];
@@ -958,7 +967,7 @@ var galleries = new Vue({
                                 this.galleryMembers.splice(to,0,elementToMove);
                                 break;
                             case 1:
-                                alertLog('One of the images no longer exists in the gallery!','success',this.$el);
+                                alertLog('One of the media items no longer exists in the gallery!','success',this.$el);
                                 break;
                             case2:
                                 alertLog('Gallery no longer exists!','success',this.$el);
@@ -1055,6 +1064,14 @@ var galleries = new Vue({
         resetEditorView: function(){
             this.editorView.selected = [];
             this.editorSearchList.selected = [];
+        }
+    },
+    watch:{
+        'currentType':function(newType){
+            if(this.verbose)
+                console.log('Current type changed to ',newType);
+            this.galleries = [];
+            this.searchAgain();
         }
     },
     mounted: function(){
