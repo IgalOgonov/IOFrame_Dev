@@ -296,7 +296,7 @@ Vue.component('default-headline-renderer', {
                 console.log('Extracting address from ',item);
             let trueAddress = item.address;
             if(item.local)
-                trueAddress = this.sourceURL()+'img/'+trueAddress;
+                trueAddress = document.rootURI + document.imagePathLocal+trueAddress;
             else if(item.dataType)
                 trueAddress = document.rootURI+'api/media?action=getDBMedia&address='+trueAddress+'&lastChanged='+item.updated;
             return trueAddress;

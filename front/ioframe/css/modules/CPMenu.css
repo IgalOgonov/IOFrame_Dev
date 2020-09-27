@@ -16,13 +16,14 @@
     justify-content: center;
     align-items: center;
 }
-#menu > .logo > img,
-#menu > .other-cp > img{
+#menu > .logo  img,
+#menu > .other-cp  img{
     max-height: 100px;
     max-width: calc(100% - 10px);
     margin: 10px 0px;
 }
-#menu > .logo > img:hover, #menu > .other-cp > img:hover {
+#menu > .logo  img:hover,
+#menu > .other-cp  img:hover {
     filter: brightness(102.5%);
 }
 
@@ -38,6 +39,7 @@
 #menu > a:not(.logo){
     display: flex;
     justify-content: start;
+    align-items: center;
     background: var(--main-color-2);
     padding: 5px;
     font-size: 1em;
@@ -60,10 +62,13 @@
     color: black!important;
 }
 /*Image*/
-#menu > a:not(.logo) > img {
+#menu > a:not(.logo)  img {
     height: 30px;
     width: 30px;
     margin-right: 5px;
+}
+#menu > a:not(.logo) picture {
+    height: 30px;
 }
 
 /*Toggle wrapper / button*/
@@ -118,6 +123,12 @@
     #menu.open {
         right: 0;
         min-width: 200px;
+    }
+    /*Make the items easier to tap*/
+    #menu > a:not(.logo) > * {
+        height: 40px;
+        display: flex;
+        align-items: center;
     }
     /*Toggle wrapper / button*/
     #menu{

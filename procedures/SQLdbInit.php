@@ -1401,7 +1401,7 @@ namespace IOFrame{
                                                               Last_Updated varchar(14) NOT NULL DEFAULT 0,
                                                               FOREIGN KEY (Thumbnail_Resource_Type, Thumbnail_Address)
                                                               REFERENCES ".$prefix."RESOURCES(Resource_Type, Address)
-                                                              ON DELETE CASCADE ON UPDATE CASCADE,
+                                                              ON DELETE SET NULL ON UPDATE CASCADE,
                                                               FOREIGN KEY (Creator_ID)
                                                               REFERENCES ".$prefix."USERS(ID),
                                                               INDEX (Article_Title),

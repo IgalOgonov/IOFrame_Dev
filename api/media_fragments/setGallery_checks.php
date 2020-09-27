@@ -35,8 +35,9 @@ foreach($nameArr as $nameParam){
                 echo 'Invalid gallery name!'.EOL;
             exit(INPUT_VALIDATION_FAILURE);
         }
-    }
 
+        $meta[$nameParam] = $inputs[$nameParam];
+    }
 }
 
 if($meta == [])

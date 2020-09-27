@@ -269,8 +269,13 @@ if(!$local){
         $ObjectAuthHandler->setItems(
             [
                 [
-                    'Title' => 'test'
+                    'Object_Auth_Category' => 'test_1',
+                    'Title' => 'test 1'
                 ],
+                [
+                    'Object_Auth_Category' => 'test_2',
+                    'Title' => 'test 2'
+                ]
             ],
             'categories',
             ['test'=>$test,'override'=>false]
@@ -279,15 +284,14 @@ if(!$local){
         $ObjectAuthHandler->setItems(
             [
                 [
-
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'Title' => 'test',
                     'Is_Public' => true
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_2'
                 ],
             ],
@@ -299,13 +303,13 @@ if(!$local){
             [
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Action' => 'test_1',
                     'Title' => 'test'
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Action' => 'test_2',
                 ],
             ],
@@ -317,13 +321,13 @@ if(!$local){
             [
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'Title' => 'test group'
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'Title' => 'test group 2'
                 ],
@@ -336,21 +340,21 @@ if(!$local){
             [
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => 1,
                     'Object_Auth_Action' => 'test_1'
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => 1,
                     'Object_Auth_Action' => 'test_2'
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => $secondId,
                     'Object_Auth_Action' => 'test_2'
@@ -364,14 +368,14 @@ if(!$local){
             [
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'Object_Auth_Group' => 1,
                     'Object_Auth_Action' => 'test_1'
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'Object_Auth_Group' => 2,
                     'Object_Auth_Action' => 'test_2'
@@ -385,21 +389,21 @@ if(!$local){
             [
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => 1,
                     'Object_Auth_Group' => 1
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => 1,
                     'Object_Auth_Group' => 2
                 ],
                 [
 
-                    'Object_Auth_Category' => 1,
+                    'Object_Auth_Category' => 'test_1',
                     'Object_Auth_Object' => 'test_1',
                     'ID' => $secondId,
                     'Object_Auth_Group' => 1
@@ -457,7 +461,7 @@ if(!$local){
         // ------------------ MEDIA TEST -------------------
         $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($settings,$this->defaultSettingsParams);
         //-- Images
-        $FrontEndResourceHandler->getImages('pluginImages',['test'=>$test]);
+        $FrontEndResourceHandler->getImages(['pluginImages'],['test'=>$test]);
         $FrontEndResourceHandler->setGallery('Test Gallery',json_encode(['name'=>'Awesome Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->setGallery('Another Gallery',json_encode(['name'=>'Another Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->addImagesToGallery(
@@ -471,7 +475,7 @@ if(!$local){
             ['test'=>$test]
         );
         //-- Videos
-        $FrontEndResourceHandler->getVideos('examples',['test'=>$test]);
+        $FrontEndResourceHandler->getVideos(['examples'],['test'=>$test]);
         $FrontEndResourceHandler->setVideoGallery('Test Video Gallery',json_encode(['name'=>'Video Gallery']),['test'=>$test]);
         $FrontEndResourceHandler->addVideosToVideoGallery(
             ['examples/example-1.webm','examples/example-1.webm'],
@@ -482,7 +486,7 @@ if(!$local){
 
         if(!defined('MenuHandler'))
             require __DIR__.'/../../IOFrame/Handlers/MenuHandler.php';
-        $MenuHandler = new IOFrame\Handlers\MenuHandler($settings,$defaultSettingsParams);
+        $MenuHandler = new IOFrame\Handlers\MenuHandler($settings,$this->defaultSettingsParams);
         $MenuHandler->setItems(
             [
                 [

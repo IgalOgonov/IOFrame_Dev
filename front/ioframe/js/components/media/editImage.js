@@ -323,8 +323,8 @@ Vue.component('media-editor', {
             let media = this.$el.querySelector('.image-container > *');
             if(request.from === this.identifier){
                 if(this.mediaType === 'img'){
-                    this.w = media.innerWidth;
-                    this.h = media.innerHeight;
+                    this.w = media.naturalWidth;
+                    this.h = media.naturalHeight;
                 }
                 else{
                     this.w = media.videoWidth;
@@ -366,7 +366,7 @@ Vue.component('media-editor', {
         imageURL: function(){
             let result;
             if(this.type === 'local'){
-                result = this.sourceURL() + this.mediaType+'/';
+                result = document.rootURI + document[(this.type=== 'img'?'imagePathLocal':'videoPathLocal')];
                 result += (this.url === '')? this.url : this.url+'/';
                 result += this.target;
             }

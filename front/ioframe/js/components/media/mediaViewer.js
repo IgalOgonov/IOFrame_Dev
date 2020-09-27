@@ -102,6 +102,11 @@ Vue.component('media-viewer', {
             type: Boolean,
             default: true
         },
+        //Different Source URL
+        urlSource: {
+            type: String,
+            default: 'ioframe'
+        },
     },
     data: function(){
         return {
@@ -120,10 +125,10 @@ Vue.component('media-viewer', {
     template: '\
          <div class="media-viewer">\
             <div class="media-url-container" v-if="allowSearching">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/home-icon.svg\',\'img\')" @click.prevent="goToRoot">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/up-arrow-icon.svg\',\'img\')" @click.prevent="folderUp">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/refresh-icon.svg\',\'img\')" @click.prevent="changeURLRequest(url)">\
-                <img class="media-url-icon" :src="absoluteMediaURL(\'icons/search-folder-icon.svg\',\'img\')" @click.prevent="toggleEditing">\
+                <img class="media-url-icon" :src="absoluteIOFrameImage(\'icons/home-icon.svg\')" @click.prevent="goToRoot">\
+                <img class="media-url-icon" :src="absoluteIOFrameImage(\'icons/up-arrow-icon.svg\')" @click.prevent="folderUp">\
+                <img class="media-url-icon" :src="absoluteIOFrameImage(\'icons/refresh-icon.svg\')" @click.prevent="changeURLRequest(url)">\
+                <img class="media-url-icon" :src="absoluteIOFrameImage(\'icons/search-folder-icon.svg\')" @click.prevent="toggleEditing">\
                 <input class="media-url" type="text" :value="url" placeholder="Media Folder" :disabled="!editing">\
                 <button v-if="editing" class="media-url-change" @click.prevent="changeURL">Go</button>\
             </div>\
@@ -142,7 +147,7 @@ Vue.component('media-viewer', {
                     <div class="thumbnail-container">\
                         <img \
                             v-if="item.folder" \
-                            :src="absoluteMediaURL(\'icons/folder.png\',\'img\')"\
+                            :src="absoluteIOFrameImage(\'icons/folder.png\')"\
                             :draggable="draggable"\
                             ondragstart="eventHub.$emit(\'dragStart\',event)"\
                             ondragenter="eventHub.$emit(\'dragEnter\',event)"\
@@ -318,8 +323,11 @@ Vue.component('media-viewer', {
             eventHub.$emit('changeURLRequest', request);
             this.imagesCropped = false;
         },
+        absoluteIOFrameImage:function(relativeURL){
+            return this.sourceURL('ioframe')+'img/'+relativeURL;
+        },
         absoluteMediaURL:function(relativeURL , type = this.mediaType){
-            return this.sourceURL()+type+'/'+relativeURL;
+            return document.rootURI + document[(type=== 'img'?'imagePathLocal':'videoPathLocal')]+relativeURL;
         },
         createDisplayName:function(relativeURL){
             return relativeURL.split('/').pop();

@@ -5,7 +5,8 @@ $dirToRoot = IOFrame\Util\htmlDirDist($_SERVER['REQUEST_URI'],$settings->getSett
 $currentPage = substr($_SERVER['PHP_SELF'],strlen($settings->getSetting('pathToRoot')));
 $currentPageURI = substr($_SERVER['REQUEST_URI'],strlen($settings->getSetting('pathToRoot')));
 $rootURI = $settings->getSetting('pathToRoot');
-require_once 'definitions.php';
+if(!defined($IOFrameCSSRoot) || !defined($IOFrameJSRoot))
+    require_once 'definitions.php';
 
 /* -- Initiate resource handler and get core JS files and the CSS file--*/
 if(!isset($FrontEndResourceHandler))
@@ -51,6 +52,8 @@ else
     document.currentPageURI = encodeURI('<?php echo $currentPageURI;?>');
     //Current page URI
     document.imagePathLocal = encodeURI('<?php echo $resourceSettings->getSetting('imagePathLocal');?>');
+    //Current page URI
+    document.videoPathLocal = encodeURI('<?php echo $resourceSettings->getSetting('videoPathLocal');?>');
     //Current page URI
     document.jsPathLocal = encodeURI('<?php echo $resourceSettings->getSetting('jsPathLocal');?>');
     //Current page URI

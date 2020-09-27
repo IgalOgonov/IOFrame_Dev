@@ -29,6 +29,11 @@ var CPMenu = new Vue({
         ],
         open:false
     },
+    methods: {
+        extractImageAddress: function(item, ioframe = false){
+            return ioframe ? (this.sourceURL() + 'img/' + item.icon): (document.rootURI + document.imagePathLocal+item.icon);
+        },
+    },
     created:function(){
 
         /*Global config check - can be hardcoded or dynamically aquired from the DB*/
@@ -61,7 +66,7 @@ var CPMenu = new Vue({
         if(this.configObject.cp.logo === undefined)
             this.configObject.cp.logo = {};
         if(this.configObject.cp.logo.imgURL === undefined)
-            this.configObject.cp.logo.imgURL = this.sourceURL()+'img/icons/logo.png';
+            this.configObject.cp.logo.icon = 'icons/logo.png';
         if(this.configObject.cp.logo.url === undefined)
             this.configObject.cp.logo.url = document.rootURI;
         this.logo = this.configObject.cp.logo;

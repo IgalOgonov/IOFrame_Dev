@@ -1716,7 +1716,7 @@ Vue.component('article-block-editor', {
                 return this.sourceURL()+'img/icons/image-generic.svg';
             let trueAddress = item.address;
             if(item.local)
-                trueAddress = this.sourceURL()+(this.currentBlock.type !== 'video' ? 'img' : 'vid')+'/'+trueAddress;
+                trueAddress = document.rootURI + document[(this.currentBlock.type !== 'video'?'imagePathLocal':'videoPathLocal')]+trueAddress;
             else if(item.dataType)
                 trueAddress = document.rootURI+'api/media?action=getDBMedia&address='+trueAddress+'&lastChanged='+item.updated+'&resourceType='+(this.currentBlock.type !== 'video' ? 'img' : 'vid');
             return trueAddress;

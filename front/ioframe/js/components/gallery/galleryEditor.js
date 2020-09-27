@@ -195,14 +195,21 @@ Vue.component('gallery-editor', {
             }
 
             //Data to be sent
+            let debug = {};
             var data = new FormData();
             data.append('action', this.galleryType === 'img' ? 'setGallery' : 'setVideoGallery');
             data.append('gallery', this.gallery.identifier);
             data.append('update', true);
             for(let i in this.galleryNames){
-                if(this.galleryNames[i]['original'] !== this.galleryNames[i]['current'])
+                if(this.galleryNames[i]['original'] !== this.galleryNames[i]['current']){
                     data.append(i, this.galleryNames[i]['current']);
+                    debug[i] = this.galleryNames[i]['current'];
+                }
             }
+
+            if(this.verbose)
+                console.log('Sending gallery data ',debug);
+
             if(this.test)
                 data.append('req', 'test');
 
