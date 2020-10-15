@@ -19,7 +19,7 @@
  *      filters - array of filters, an associative array, of the form:
  *                  [
  *                      'titleLike' => <string, limited regex to match title against>,
- *                      'languageIs' => <string, articles with specific language will be matched - DEFAULTS to null>,
+ *                      'languageIs' => <string, articles with specific language will be matched - DEFAULTS to '' (which is the default language)>,
  *                      'addressIn' => <string[], array of specific addresses the title must match>,
  *                      'addressLike' => <string, limited regex to match address against>,
  *                      'createdBefore' => <int, date before the items were created>,
@@ -443,9 +443,13 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'articles_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ArticleHandler.php';
+
+if(!checkApiEnabled('articles',$apiSettings))
+    exit(API_DISABLED);
 
 if($test)
     echo 'Testing mode!'.EOL;

@@ -4,7 +4,7 @@ if(eventHub === undefined)
 Vue.component('articles-editor', {
     mixins: [sourceURL,eventHubManager,IOFrameCommons],
     props: {
-        //Default auth - whether you are an admin (9999), owner (2), permitted to see (1), or public user (0)
+        //Default auth - whether you are an admin (0), owner (2), permitted to see (1), or public user (10000)
         defaultAuth:{
             type: Number,
             default: 10000
@@ -21,7 +21,7 @@ Vue.component('articles-editor', {
         },
         //Item identifier
         itemIdentifier: {
-            type: Number,
+            type: [Number, String],
             default: null
         },
         //Allows pre-loading an existing item without the API
@@ -83,7 +83,9 @@ Vue.component('articles-editor', {
             },
             currentMode:this.mode,
             //article id
-            articleId:this.itemIdentifier,
+            articleId:typeof this.itemIdentifier === 'number' ? this.itemIdentifier : -1,
+            //article address
+            articleAddress:typeof this.itemIdentifier === 'number' ? '' : this.itemIdentifier,
             //article
             article:{
             },
@@ -283,11 +285,6 @@ Vue.component('articles-editor', {
                         }
                         return list;
                     }(),
-                    onUpdate: {
-                        validate: function(item){
-                            return item>=0 && item<4;
-                        },
-                    },
                     //Generally here to set a default for creation
                     parseOnGet: function(item){
                         if(item === null)
@@ -423,7 +420,7 @@ Vue.component('articles-editor', {
 
         if(Object.keys(this.existingItem).length)
             this.setArticleInfo(this.item);
-        else if(this.currentMode !== 'create' && this.itemIdentifier > 0)
+        else if(this.currentMode !== 'create' && (this.articleId > 0 || this.articleAddress !== ''))
             this.getArticleInfo();
         else{
             this.initiating = true;
@@ -861,6 +858,8 @@ Vue.component('articles-editor', {
             for(let i in article){
                 Vue.set(this.article,i,JSON.parse(JSON.stringify(article[i])));
             }
+            Vue.set(this,'articleId',JSON.parse(JSON.stringify(article['articleId'])));
+            Vue.set(this,'articleAddress',JSON.parse(JSON.stringify(article['articleAddress'])));
 
             Vue.set(this.articleThumbnail,'original',article['thumbnail']);
             Vue.set(this.articleThumbnail,'current',article['thumbnail']);
@@ -886,7 +885,10 @@ Vue.component('articles-editor', {
             this.initiating = true;
             var data = new FormData();
             data.append('action', 'getArticle');
-            data.append('id', this.articleId);
+            if(this.articleId>0)
+                data.append('id', this.articleId);
+            else
+                data.append('articleAddress', this.articleAddress);
             if(this.defaultAuth < 10000)
             data.append('authAtMost', this.defaultAuth);
 
@@ -966,6 +968,7 @@ Vue.component('articles-editor', {
 
             if(this.articleThumbnail.changed){
                 data.append('thumbnailAddress',  this.articleThumbnail.current.address);
+                sendParams['thumbnailAddress'] = this.articleThumbnail.current.address;
             }
 
             if(this.verbose)

@@ -170,8 +170,12 @@ if(!defined('coreInit'))
 require __DIR__.'/../IOFrame/Handlers/ContactHandler.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'contacts_fragments/definitions.php';
+
+if(!checkApiEnabled('contacts',$apiSettings))
+    exit(API_DISABLED);
 
 if($test)
     echo 'Testing mode!'.EOL;

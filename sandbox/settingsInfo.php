@@ -12,5 +12,8 @@ $pageSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/pa
 $pageSettings->printAll();
 $mailSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/mailSettings/',$defaultSettingsParams);
 $mailSettings->printAll();
+$apiSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/apiSettings/',$defaultSettingsParams);
+$apiSettings->printAll();
 $metaSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/metaSettings/',$defaultSettingsParams);
 $metaSettings->printAll();
+

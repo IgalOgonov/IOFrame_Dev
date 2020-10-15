@@ -29,6 +29,15 @@ body {
     position: initial;
 }
 
+html[dir="rtl"] body,
+html[dir="rtl"] select,
+html[dir="rtl"] form,
+html[dir="rtl"] label,
+html[dir="rtl"] input,
+html[dir="rtl"] button {
+    text-align: right;
+}
+
 a {
     text-decoration: none;
     color: var(--secondary-color-5) !important;

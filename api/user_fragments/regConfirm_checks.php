@@ -14,3 +14,8 @@ if($inputs['code']!='' && (preg_match_all('/[a-z]|[A-Z]|[0-9]/',$inputs['code'])
     exit(INPUT_VALIDATION_FAILURE);
 }
 
+if($inputs['mail']!==null && !filter_var($inputs['mail'],FILTER_VALIDATE_EMAIL) ){
+    if($test)
+        echo 'Illegal mail!.';
+    exit(INPUT_VALIDATION_FAILURE);
+}

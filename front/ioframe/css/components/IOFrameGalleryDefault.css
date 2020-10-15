@@ -3,6 +3,7 @@
 .ioframe-gallery{
     flex: 2.5;
     margin: 10px;
+    position: relative;
 }
 /** Caption **/
 .ioframe-gallery figcaption{
@@ -20,25 +21,27 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
-    background-color: var(--secondary-color-1);
-    transition: all 0s, background-color 0.5s ease-in-out;
-}
-.ioframe-gallery .gallery-preview:hover{
-    background-color: var(--secondary-color-2);
+    transition: all 0s;
 }
 .ioframe-gallery .preview-container {
-    transition: all 0s, opacity 0.5s ease-in-out;
+    transition: all 0s, opacity 0.5s ease-in-out,background-color 0.5s ease-in-out;
     position: absolute;
     opacity: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     max-width: 800px;
+    width: max-content;
+    padding: 10px;
+    background-color: var(--secondary-color-1);
+}
+.ioframe-gallery:hover .preview-container{
+    background-color: var(--secondary-color-2);
 }
 .ioframe-gallery .preview-container.selected {
     opacity: 1;
     height: auto;
+    min-width: 50px;
 }
 .ioframe-gallery .preview-container img{
     max-width: 100%;
@@ -67,11 +70,13 @@
     z-index: 2;
     background-color: var(--shadow-dark-2);
 }
-.ioframe-gallery .slider button:first-of-type > div{
+html:not([dir="rtl"]) .ioframe-gallery .slider button:first-of-type > div,
+html[dir="rtl"] .ioframe-gallery .slider button:not(:first-of-type) > div{
     clip-path: polygon(30% 50%, 100% 100%, 100% 0%);
     margin-right: 10px;
 }
-.ioframe-gallery .slider button:not(:first-of-type) > div{
+html:not([dir="rtl"]) .ioframe-gallery .slider button:not(:first-of-type) > div,
+html[dir="rtl"] .ioframe-gallery .slider button:first-of-type > div{
     clip-path: polygon(0 0, 0% 100%, 70% 50%);
     margin-left: 10px;
 }
@@ -86,10 +91,16 @@
     height: 0;
 }
 .ioframe-gallery .slider.on-top button{
-    top: -359px; /*(100+38-39/2) + (500-39/2)/2*/
+    position: absolute;
+    top: calc(50% - 25px);
 }
-.ioframe-gallery .slider.on-top.no-gallery button{
-    top: -240px; /*(500-39/2)/2*/
+html:not([dir="rtl"]) .ioframe-gallery .slider.on-top button.prev,
+html[dir="rtl"] .ioframe-gallery .slider.on-top button.next{
+    left: 0;
+}
+html:not([dir="rtl"]) .ioframe-gallery .slider.on-top button.next,
+html[dir="rtl"] .ioframe-gallery .slider.on-top button.prev{
+    right: 0;
 }
 
 .ioframe-gallery .gallery-container {
@@ -120,6 +131,7 @@
 .ioframe-gallery .gallery-container .image-container img{
     width: 200px;
     height: 100px;
+    min-height: 100%;
 }
 
 /***Responsiveness***/
@@ -127,12 +139,6 @@
     /** Gallery **/
     .ioframe-gallery .gallery-preview{
         height: 400px;
-    }
-    .ioframe-gallery .slider.on-top button{
-        top: -284px; /*(75+38-39/2) + (400-39/2)/2*/
-    }
-    .ioframe-gallery .slider.on-top.no-gallery button{
-        top: -190px; /*(400-39/2)/2*/
     }
     .ioframe-gallery .preview-container img{
         max-width: 700px;
@@ -153,12 +159,6 @@
     .ioframe-gallery .gallery-preview{
         height: 350px;
     }
-    .ioframe-gallery .slider.on-top button{
-        top: -259px; /*(75+38-39/2) + (350-39/2)/2*/
-    }
-    .ioframe-gallery .slider.on-top.no-gallery button{
-        top: -165px; /*(350-39/2)/2*/
-    }
     .ioframe-gallery .preview-container img{
         max-width: 600px;
         max-height: 300px;
@@ -170,12 +170,6 @@
     /* Gallery */
     .ioframe-gallery .gallery-preview{
         height: 250px;
-    }
-    .ioframe-gallery .slider.on-top button{
-        top: -209px; /*(75+38-39/2) + (250-39/2)/2*/
-    }
-    .ioframe-gallery .slider.on-top.no-gallery button{
-        top: -115px; /*(250-39/2)/2*/
     }
     .ioframe-gallery .preview-container img{
         max-width: 400px;

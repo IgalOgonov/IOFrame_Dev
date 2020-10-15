@@ -498,9 +498,13 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'media_fragments/definitions.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
+
+if(!checkApiEnabled('media',$apiSettings))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
@@ -524,7 +528,6 @@ $inputs = [];
 $standardPaginationInputs = ['limit','offset','createdAfter','createdBefore','changedAfter','changedBefore','includeRegex','excludeRegex'];
 
 //TODO For everything that has checks before auth, add rate-limiting.
-
 switch($action){
 
     /******* Media Related *******/
@@ -559,6 +562,7 @@ switch($action){
 
     /******* Image Related *******/
 
+    case 'getVideos':
     case 'getImages':
         $arrExpected =["address","includeLocal","getDB","dataType"];
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
@@ -574,11 +578,14 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'updateVideo':
     case 'updateImage':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected =["address","name","caption","alt","deleteEmpty"];
+        $arrExpected = $action === 'updateImage' ?
+            ["address","name","caption","alt","deleteEmpty"] :
+            ["address","name","alt","caption","autoplay","loop","mute","controls","poster","preload","deleteEmpty"];
         foreach($languages as $lang){
             array_push($arrExpected,$lang.'_name');
             array_push($arrExpected,$lang.'_caption');
@@ -594,6 +601,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'moveVideo':
     case 'moveImage':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -609,6 +617,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'deleteVideos':
     case 'deleteImages':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -628,6 +637,7 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'incrementVideos':
     case 'incrementImages':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -643,6 +653,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'getGalleriesOfVideo':
     case 'getGalleriesOfImage':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -661,6 +672,7 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'getVideoGalleries':
     case 'getGalleries':
         $arrExpected =["limit","includeLocal"];
         $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
@@ -677,6 +689,7 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'getVideoGallery':
     case 'getGallery':
         $arrExpected =["gallery"];
 
@@ -692,6 +705,7 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'setVideoGallery':
     case 'setGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -710,6 +724,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'deleteVideoGallery':
     case 'deleteGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -725,6 +740,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'addToVideoGallery':
     case 'addToGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -743,6 +759,7 @@ switch($action){
                 '0' : $result;
         break;
 
+    case 'removeFromVideoGallery':
     case 'removeFromGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -758,6 +775,7 @@ switch($action){
             '0' : $result;
         break;
 
+    case 'moveVideoInVideoGallery':
     case 'moveImageInGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
@@ -773,239 +791,8 @@ switch($action){
             '0' : $result;
         break;
 
-    case 'swapImagesInGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["num1","num2","gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/swapImagesInGallery_checks.php';
-        require 'media_fragments/swapImagesInGallery_auth.php';
-        require 'media_fragments/swapImagesInGallery_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    /******* Video related *******/
-
-
-    case 'getVideos':
-        $arrExpected =["address","includeLocal","getDB","dataType"];
-        $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
-        require 'setExpectedInputs.php';
-        require 'media_fragments/getImages_checks.php';
-        require 'media_fragments/getImages_auth.php';
-        require 'media_fragments/getImages_execution.php';
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'updateVideo':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["address","name","alt","caption","autoplay","loop","mute","controls","poster","preload","deleteEmpty"];
-        foreach($languages as $lang){
-            array_push($arrExpected,$lang.'_name');
-            array_push($arrExpected,$lang.'_caption');
-        }
-
-        require 'setExpectedInputs.php';
-        // This one is too specific to
-        require 'media_fragments/updateImage_checks.php';
-        require 'media_fragments/updateImage_auth.php';
-        require 'media_fragments/updateImage_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'moveVideo':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["oldAddress","newAddress","copy","remote"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/moveImage_checks.php';
-        require 'media_fragments/moveImage_auth.php';
-        require 'media_fragments/moveImage_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'deleteVideos':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["addresses","remote"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/deleteImages_checks.php';
-        require 'media_fragments/deleteImages_auth.php';
-        require 'media_fragments/deleteImages_execution.php';
-
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'incrementVideos':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["addresses","remote"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/incrementImages_auth.php';
-        require 'media_fragments/incrementImages_checks.php';
-        require 'media_fragments/incrementImages_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'getGalleriesOfVideo':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["address"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/getGalleriesOfImage_checks.php';
-        require 'media_fragments/getGalleriesOfImage_auth.php';
-        require 'media_fragments/getGalleriesOfImage_execution.php';
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'getVideoGalleries':
-        $arrExpected =["limit","includeLocal"];
-        $arrExpected = array_merge($arrExpected,$standardPaginationInputs);
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/getGalleries_auth.php';
-        require 'media_fragments/getGalleries_checks.php';
-        require 'media_fragments/getGalleries_execution.php';
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'getVideoGallery':
-        $arrExpected =["gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/getGallery_checks.php';
-        require 'media_fragments/getGallery_auth.php';
-        require 'media_fragments/getGallery_execution.php';
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'setVideoGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["name","gallery","overwrite","update"];
-        foreach($languages as $lang){
-            array_push($arrExpected,$lang.'_name');
-        }
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/setGallery_checks.php';
-        require 'media_fragments/setGallery_auth.php';
-        require 'media_fragments/setGallery_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'deleteVideoGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/deleteGallery_checks.php';
-        require 'media_fragments/deleteGallery_auth.php';
-        require 'media_fragments/deleteGallery_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'addToVideoGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["remote","addresses","gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/addToGallery_checks.php';
-        require 'media_fragments/addToGallery_auth.php';
-        require 'media_fragments/addToGallery_execution.php';
-
-        if(is_array($result))
-            echo json_encode($result,JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_FORCE_OBJECT);
-        else
-            echo ($result === 0)?
-                '0' : $result;
-        break;
-
-    case 'removeFromVideoGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["addresses","gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/removeFromGallery_checks.php';
-        require 'media_fragments/removeFromGallery_auth.php';
-        require 'media_fragments/removeFromGallery_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
-    case 'moveVideoInVideoGallery':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
-
-        $arrExpected =["from","to","gallery"];
-
-        require 'setExpectedInputs.php';
-        require 'media_fragments/moveImageInGallery_checks.php';
-        require 'media_fragments/moveImageInGallery_auth.php';
-        require 'media_fragments/moveImageInGallery_execution.php';
-
-        echo ($result === 0)?
-            '0' : $result;
-        break;
-
     case 'swapVideosInVideoGallery':
+    case 'swapImagesInGallery':
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 

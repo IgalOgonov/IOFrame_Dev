@@ -496,7 +496,7 @@ var media = new Vue({
                     }
 
                     if(deletionTargets.length>0){
-                        data.append('action', this.currentMode === 'img' ? 'deleteImages' : 'deleteVideos');
+                        data.append('action', this.currentType === 'img' ? 'deleteImages' : 'deleteVideos');
                         data.append('addresses', JSON.stringify(deletionTargets));
                     }
                     data.append('remote', this.currentMode === 'view-db');

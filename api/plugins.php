@@ -174,8 +174,12 @@ require __DIR__ . '/../IOFrame/Util/validator.php';
 //If it's a test call..
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'plugins_fragments/definitions.php';
+
+if(!checkApiEnabled('plugins',$apiSettings))
+    exit(API_DISABLED);
 
 
 if($test){

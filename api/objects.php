@@ -189,7 +189,11 @@ require __DIR__ . '/../IOFrame/Handlers/ObjectHandler.php';
 //Fix any values that are strings due to softly typed language bullshit
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
+
+if(!checkApiEnabled('objects',$apiSettings))
+    exit(API_DISABLED);
 
 //Session Info
 $sesInfo = isset($_SESSION['details'])? json_decode($_SESSION['details'],true) : null;

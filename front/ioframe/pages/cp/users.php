@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <?php
-
 require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definitions.php';
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';

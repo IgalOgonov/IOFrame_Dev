@@ -345,8 +345,12 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'security_fragments/definitions.php';
+
+if(!checkApiEnabled('security',$apiSettings))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');

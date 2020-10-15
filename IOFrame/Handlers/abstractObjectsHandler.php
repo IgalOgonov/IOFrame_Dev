@@ -90,7 +90,7 @@ namespace IOFrame{
          *                                          'jsonObject' => bool, default false - if set and true, will treat the field
          *                                                         as a JSON
          *                                          'autoIncrement' => bool, if set, indicates that this column auto-increments (doesn't need to be set on creation)
-         *                                          'considerNull' => mixed, if true, this value will be considered "NULL" (since we cannot pass an actual NULL value sometimes, like through the API)
+         *                                          'considerNull' => mixed, if passed, this value will be considered "NULL" (since we cannot pass an actual NULL value sometimes, like through the API)
          *                                      ]
          *                      'moveColumns' => array of objects, where each object is of the form:
          *                                      <column name> => [
@@ -104,6 +104,7 @@ namespace IOFrame{
          *                                          'filter' => string, one of the filters from the abstract class abstractDBWithCache:
          *                                                      '>','<','=', '!=', 'IN', 'RLIKE' and 'NOT RLIKE'
          *                                          'default' => if set, will be the default value for this filter
+         *                                          'considerNull' => mixed, if passed, this value will be considered "NULL" (since we cannot pass an actual NULL value sometimes, like through the API)
          *                                          'alwaysSend' => if set to true, will always send the filter. Has to have 'default'
          *                                      ],
          *                      'extraToGet' => object of objects, extra meta-data to get when getting multiple items,
@@ -461,7 +462,6 @@ namespace IOFrame{
             $groupByFirstNKeys = isset($typeArray['groupByFirstNKeys']) ? $typeArray['groupByFirstNKeys'] : 0;
             $orderColumns = array_merge($typeArray['orderColumns'],$this->commonOrderColumns);
 
-
             if(!count($orderColumns)){
                 $orderInputType = gettype($orderBy);
                 switch($orderInputType){
@@ -499,12 +499,20 @@ namespace IOFrame{
 
             foreach($validFilters as $filterParam => $filterArray){
                 if(isset($params[$filterParam])){
-                    if(gettype($params[$filterParam]) === 'array'){
+                    if(isset($filterArray['considerNull']) && ($params[$filterParam] === $filterArray['considerNull']) ){
+                        $params[$filterParam] = null;
+                    }
+                    elseif(gettype($params[$filterParam]) === 'array'){
                         foreach($params[$filterParam] as $key => $value){
                             $params[$filterParam][$key] = [$value,'STRING'];
                         }
                     }
-                    $cond = [$filterArray['column'],$params[$filterParam],$filterArray['filter']];
+                    //Edge case
+                    if($filterArray['filter'] === '=' && $params[$filterParam] === null){
+                        $cond = [$filterArray['column'],'ISNULL'];
+                    }
+                    else
+                        $cond = [$filterArray['column'],$params[$filterParam],$filterArray['filter']];
                     array_push($extraCacheConditions,$cond);
                     array_push($extraDBConditions,$cond);
                 }

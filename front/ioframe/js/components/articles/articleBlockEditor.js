@@ -1139,7 +1139,7 @@ Vue.component('article-block-editor', {
         this.$forceUpdate();
     },
     mounted:function(){
-        if(this.currentMode === 'view' && this.currentBlock.type === 'markdown')
+        if(this.currentMode === 'view' && this.currentBlock.type === 'markdown' && (window.hljs !==undefined))
             this.$el.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
@@ -1153,11 +1153,12 @@ Vue.component('article-block-editor', {
                 case 'markdown':
                     let context = this;
                     //TODO fix dirty hack later
-                    setTimeout(function(){
-                        context.$el.querySelectorAll('pre code').forEach((block) => {
-                            hljs.highlightBlock(block);
-                        })
-                    },500);
+                    if(window.hljs !==undefined)
+                        setTimeout(function(){
+                            context.$el.querySelectorAll('pre code').forEach((block) => {
+                                hljs.highlightBlock(block);
+                            })
+                        },500);
                     break;
                 case 'cover':
                 case 'image':
@@ -1749,11 +1750,12 @@ Vue.component('article-block-editor', {
             //TODO Find a better solution
             if(this.currentMode === 'view' && this.currentBlock.type === 'markdown'){
                 let context = this;
-                setTimeout(function(){
-                    context.$el.querySelectorAll('pre code').forEach((block) => {
-                        hljs.highlightBlock(block);
-                    })
-                },500);
+                if(window.hljs !==undefined)
+                    setTimeout(function(){
+                        context.$el.querySelectorAll('pre code').forEach((block) => {
+                            hljs.highlightBlock(block);
+                        })
+                    },500);
             }
         },
         //Sets main item

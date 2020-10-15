@@ -153,18 +153,25 @@ if(!is_dir('localFiles/metaSettings')){
     fclose(fopen('localFiles/metaSettings/settings','w'));
 }
 
+if(!is_dir('localFiles/apiSettings')){
+    if(!mkdir('localFiles/apiSettings'))
+        die('Cannot create settings directory for some reason - most likely insufficient user privileges, or it already exists');
+    fclose(fopen('localFiles/apiSettings/settings','w'));
+}
+
 $userSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/userSettings/');
 $pageSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/pageSettings/');
 $mailSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/mailSettings/');
 $siteSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/siteSettings/');
 $resourceSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/resourceSettings/');
 $metaSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/metaSettings/');
+$apiSettings = new IOFrame\Handlers\SettingsHandler($baseUrl.'/localFiles/apiSettings/');
 
 //--------------------
 if(!file_exists('localFiles/_installSes') && isset($_SERVER['REMOTE_ADDR'])){
     $myFile = fopen('localFiles/_installSes', 'w+');
     fwrite($myFile,$_SERVER['REMOTE_ADDR']);
-    install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,0,$baseUrl);
+    install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,$apiSettings,0,$baseUrl);
 }
 else{
     $myFile = fopen('localFiles/_installSes', 'r+');
@@ -179,7 +186,7 @@ else{
         $installStage = 0;
         if(isset($_REQUEST['stage']))
             $installStage = $_REQUEST['stage'];
-        install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,$installStage,$baseUrl);
+        install($userSettings,$pageSettings,$mailSettings,$localSettings,$siteSettings,$sqlSettings,$redisSettings,$resourceSettings,$metaSettings,$apiSettings,$installStage,$baseUrl);
     }
 }
 
@@ -189,6 +196,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                  IOFrame\Handlers\SettingsHandler $sqlSettings, IOFrame\Handlers\SettingsHandler $redisSettings,
                  IOFrame\Handlers\SettingsHandler $resourceSettings,
                  IOFrame\Handlers\SettingsHandler $metaSettings,
+                 IOFrame\Handlers\SettingsHandler $apiSettings,
                  $stage='0',$baseUrl){
     //Echo the return button
     if($stage!=0)
@@ -245,6 +253,15 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <input type="text" name="privateKey" value="'.$privKey.'"><br>
                      <small>MUST BE 64 digits long, numbers or latters a-f, don\'t change it if you do not know what this is</small><br>
                      <small style="font-weight:700">It is PARAMOUNT you write this down in a secure place. If you do not, you risk losing ALL your encrypted data in the future.</small><br><br>
+                     
+                    <h4>Captcha:</h4>
+                    <small style="font-weight:700">This is where you may fill out <a href="https://www.hcaptcha.com/">hcaptcha</a> credentials, if planning to use them</small><br>
+                    <span>Secret key:</span>
+                    <input type="text" name="captcha-secret"  placeholder="secret, used when querying /siteverify api" value=""><br>
+                     <small style="font-weight:700">This is your SECRET, not SITE key</small><br>
+                    <span>Site key:</span>
+                    <input type="text" name="captcha-sitekey" placeholder="site key, generally passed to the client side" value=""><br>
+                     <small style="font-weight:700">This is not your SECRET key</small><br><br>
 
                     <span>SSL Protection:</span>
                     <input type="checkbox" name="sslOn" value="1" checked><br>
@@ -317,6 +334,22 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'Setting privateKey set to '.$_REQUEST['privateKey'].EOL;
                 else{
                     echo 'Failed to set setting privateKey to '.$_REQUEST['privateKey'].EOL.EOL;
+                }
+            }
+
+            if(!empty($_REQUEST['captcha-secret'])){
+                if($siteSettings->setSetting('captcha_secret_key',$_REQUEST['captcha-secret'],['createNew'=>true]))
+                    echo 'Setting captcha_secret_key set to '.$_REQUEST['captcha-secret'].EOL;
+                else{
+                    echo 'Failed to set setting captcha_secret_key to '.$_REQUEST['captcha-secret'].EOL.EOL;
+                }
+            }
+
+            if(!empty($_REQUEST['captcha-sitekey'])){
+                if($siteSettings->setSetting('captcha_site_key',$_REQUEST['captcha-sitekey'],['createNew'=>true]))
+                    echo 'Setting captcha_site_key set to '.$_REQUEST['captcha-sitekey'].EOL;
+                else{
+                    echo 'Failed to set setting captcha_site_key to '.$_REQUEST['captcha-sitekey'].EOL.EOL;
                 }
             }
 
@@ -1033,6 +1066,10 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
 
             ];
 
+            $apiArgs = [
+
+            ];
+
             $metaArgs = [
 
             ];
@@ -1055,6 +1092,8 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($siteArgs,["tokenTTL",3600]);
             array_push($siteArgs,["CPMenu",json_encode([],JSON_FORCE_OBJECT)]);
             array_push($siteArgs,["languages",'']);
+            array_push($siteArgs,["captcha_site_key",'']);
+            array_push($siteArgs,["captcha_secret_key",'']);
 
             array_push($userArgs,["pwdResetExpires",72]);
             array_push($userArgs,["mailConfirmExpires",72]);
@@ -1090,6 +1129,22 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($resourceArgs,["imageQualityPercentage",100]);
             array_push($resourceArgs,["allowDBMediaGet",1]);
 
+            array_push($apiArgs,["articles",1]);
+            array_push($apiArgs,["auth",1]);
+            array_push($apiArgs,["contacts",1]);
+            array_push($apiArgs,["mail",1]);
+            array_push($apiArgs,["media",1]);
+            array_push($apiArgs,["menu",1]);
+            array_push($apiArgs,["object-auth",1]);
+            array_push($apiArgs,["objects",1]);
+            array_push($apiArgs,["orders",0]);
+            array_push($apiArgs,["plugins",1]);
+            array_push($apiArgs,["security",1]);
+            array_push($apiArgs,["session",1]);
+            array_push($apiArgs,["settings",1]);
+            array_push($apiArgs,["tokens",1]);
+            array_push($apiArgs,["trees",0]);
+            array_push($apiArgs,["users",1]);
 
             array_push($metaArgs,['localSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Local Node Settings'])]);
             array_push($metaArgs,['redisSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Redis Settings'])]);
@@ -1099,6 +1154,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($metaArgs,['resourceSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Resource Settings'])]);
             array_push($metaArgs,['siteSettings',json_encode(['local'=>0,'db'=>1,'title'=>'General Site Settings'])]);
             array_push($metaArgs,['userSettings',json_encode(['local'=>0,'db'=>1,'title'=>'Users Settings'])]);
+            array_push($metaArgs,['apiSettings',json_encode(['local'=>0,'db'=>1,'title'=>'API Settings'])]);
 
 
             $res = true;
@@ -1146,6 +1202,15 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'Resource setting '.$val[0].' set to '.$val[1].EOL;
                 else{
                     echo 'Failed to set resource setting '.$val[0].' to '.$val[1].EOL;
+                    $res = false;
+                }
+            }
+
+            foreach($apiArgs as $key=>$val){
+                if($apiSettings->setSetting($val[0],$val[1],['createNew'=>true]))
+                    echo 'Resource setting '.$val[0].' set to '.$val[1].EOL;
+                else{
+                    echo 'Failed to set api setting '.$val[0].' to '.$val[1].EOL;
                     $res = false;
                 }
             }

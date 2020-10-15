@@ -366,7 +366,7 @@ Vue.component('media-editor', {
         imageURL: function(){
             let result;
             if(this.type === 'local'){
-                result = document.rootURI + document[(this.type=== 'img'?'imagePathLocal':'videoPathLocal')];
+                result = document.rootURI + document[(this.mediaType=== 'img'?'imagePathLocal':'videoPathLocal')];
                 result += (this.url === '')? this.url : this.url+'/';
                 result += this.target;
             }

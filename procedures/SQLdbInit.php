@@ -1459,10 +1459,10 @@ namespace IOFrame{
                                                               ON DELETE CASCADE,
                                                               FOREIGN KEY (Resource_Type, Resource_Address)
                                                               REFERENCES ".$prefix."RESOURCES(Resource_Type, Address)
-                                                              ON UPDATE CASCADE,
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
                                                               FOREIGN KEY (Resource_Type, Collection_Name)
                                                               REFERENCES ".$prefix."RESOURCE_COLLECTIONS(Resource_Type, Collection_Name)
-                                                              ON UPDATE CASCADE,
+                                                              ON DELETE CASCADE ON UPDATE CASCADE,
                                                               INDEX (Block_ID),
                                                               INDEX (Created),
                                                               INDEX (Last_Updated)

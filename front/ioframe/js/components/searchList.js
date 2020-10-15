@@ -45,6 +45,20 @@ Vue.component('search-list', {
             type: String,
             default: 'goToPage'
         },
+        //Allows to control the default text in multilingual systems
+        text:{
+            type: Object,
+            default: function(){
+                return {
+                    search:'Search',
+                    pagination:{
+                        total:'Total Pages:',
+                        goTo:'Go To Page',
+                        go:'Go'
+                    }
+                };
+            }
+        },
         //Constant extra parameters to include in the search
         extraParams: {
             type: Object,
@@ -235,7 +249,7 @@ Vue.component('search-list', {
          <div class="search-list">\
             <div class="filter-container" v-if="filters.length>0">\
                 <div v-html="filterList" class="filters"></div>\
-                <button @click.prevent.prevent="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="\'Search\'" ></div></button>\
+                <button @click.prevent.prevent="search"><img :src="sourceURL()+\'img/icons/search-icon.svg\'"><div v-text="text.search" ></div></button>\
             </div>\
             \
             <div class="pagination" v-if="pagesArray.length > 1">\
@@ -253,14 +267,14 @@ Vue.component('search-list', {
                     <button  v-if="pagesArray.length - (page+1) > 5" @click.prevent="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
                 </span>\
                 <span class="total-pages"> \
-                    <span v-text="\'Total Pages:\'"></span> \
+                    <span v-text="text.pagination.total"></span> \
                     <span v-text="pagesArray.length"></span>\
                 </span>\
                 \
                 <span class="go-to-page"> \
-                    <span v-text="\'Go To Page:\'"></span>\
+                    <span v-text="text.pagination.goTo"></span>\
                     <input type="number" v-model:value="pageToGoTo" :min="1" :max="pagesArray.length"> \
-                    <button @click.prevent="goToPage(\'goto\')" class="go-to"> Go </button>\
+                    <button @click.prevent="goToPage(\'goto\')" class="go-to" v-text="text.pagination.go"> </button>\
                 </span>\
             </div>\
             \
@@ -287,14 +301,14 @@ Vue.component('search-list', {
                     <button  v-if="pagesArray.length - (page+1) > 5" @click.prevent="goToPage(pagesArray.length-1)"  v-text="\'>>\'"> </button>\
                 </span>\
                 <span class="total-pages"> \
-                    <span v-text="\'Total Pages:\'"></span> \
+                    <span v-text="text.pagination.total"></span> \
                     <span v-text="pagesArray.length"></span>\
                 </span>\
                 \
                 <span class="go-to-page"> \
-                    <span v-text="\'Go To Page:\'"></span>\
+                    <span v-text="text.pagination.goTo"></span>\
                     <input type="number" v-model:value="pageToGoTo" :min="1" :max="pagesArray.length"> \
-                    <button @click.prevent="goToPage(\'goto\')" class="go-to"> Go </button>\
+                    <button @click.prevent="goToPage(\'goto\')" class="go-to" v-text="text.pagination.go"> </button>\
                 </span>\
             </div>\
          </div>\
@@ -768,7 +782,7 @@ Vue.component('search-list', {
 
                 var value;
 
-                if(columns[k].id.indexOf('.') != -1){
+                if((columns[k].id.indexOf('.') != -1 && !columns[k].custom)){
                     let identifiers = columns[k].id.split('.');
                     value = item;
                     for(let tempIdentifier in identifiers){

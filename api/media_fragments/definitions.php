@@ -58,7 +58,7 @@ CONST IMAGE_CAPTION_MAX_LENGTH = 1024;
 //RMaximum length for gallery name
 CONST GALLERY_NAME_MAX_LENGTH = 128;
 //Various extensions
-CONST ALLOWED_EXTENSIONS_IMAGES = ['jpg','jpeg','png','gif','bmp','svg'];
+CONST ALLOWED_EXTENSIONS_IMAGES = ['jpg','jpeg','png','gif','bmp','svg','webp'];
 CONST ALLOWED_EXTENSIONS_AUDIO = ['ogg','mp3','wav','webm'];
 CONST ALLOWED_EXTENSIONS_VIDEO = ['mp4','webm','ogg'];
 CONST ALLOWED_EXTENSIONS = ['jpg','jpeg','png','gif','bmp','svg','ogg','mp3','wav','mp4','webm'];

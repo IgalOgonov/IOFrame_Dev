@@ -141,8 +141,12 @@ require __DIR__ . '/../IOFrame/Util/validator.php';
 //If it's a test call..
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'tree_fragments/definitions.php';
 require 'CSRF.php';
+
+if(!checkApiEnabled('trees',$apiSettings))
+    exit(API_DISABLED);
 
 if($test){
     echo 'Testing mode!'.EOL;

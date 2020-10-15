@@ -368,7 +368,10 @@ namespace IOFrame\Handlers{
          *                          async' - bool, default true - If true, will try to send the mail asynchronously
          *
          * @returns int description in main function
-         *              -2 if user does not exist.
+         *              -3 activation code creation failed.
+         *              -2 if user does not exist OR already active.
+         *              -1 mail failed to send.
+         *              0 all good.
          */
         function accountActivation(string $uMail, int $uId = null, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
@@ -379,7 +382,7 @@ namespace IOFrame\Handlers{
             //Find user ID if it was not provided
             if($uId === null){
                 $uId = $this->SQLHandler->selectFromTable(
-                    $this->SQLHandler->getSQLPrefix().'USERS',['Email',$uMail,'='],['ID'],['test'=>$test,'verbose'=>$verbose]
+                    $this->SQLHandler->getSQLPrefix().'USERS',[['Email',$uMail,'='],['Active',0,'='],'AND'],['ID'],['test'=>$test,'verbose'=>$verbose]
                 );
                 if($test)
                     $uId = 1;
@@ -407,8 +410,7 @@ namespace IOFrame\Handlers{
             $templateNum = $this->userSettings->getSetting('regConfirmTemplate');
             $siteName = $this->siteSettings->getSetting('siteName');
             $title = $this->userSettings->getSetting('regConfirmTitle');
-            $this->sendConfirmationMail($uMail,$uId,$confirmCode,$templateNum,$title,$async,['test'=>$test,'verbose'=>$verbose]);
-            return 0;
+            return $this->sendConfirmationMail($uMail,$uId,$confirmCode,$templateNum,$title,$async,['test'=>$test,'verbose'=>$verbose]) === 0? 0 : -1;
         }
 
         /**Confirms user registration

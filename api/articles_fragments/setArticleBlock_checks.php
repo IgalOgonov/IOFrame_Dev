@@ -135,17 +135,18 @@ foreach(array_merge($optionalParams,$requiredParams) as $param){
                 break;
             //No breaks!
             case 'subtitle':
-                if(!isset($regex))
-                    $regex = SUBTITLE_REGEX;
             case 'caption':
-                if(!isset($regex))
-                    $regex = CAPTION_REGEX;
             case 'alt':
-                if(!isset($regex))
-                    $regex = IMAGE_ALT_REGEX;
             case 'name':
-                if(!isset($regex))
+                if($param === 'subtitle')
+                    $regex = SUBTITLE_REGEX;
+                elseif($param === 'caption')
+                    $regex = CAPTION_REGEX;
+                elseif($param === 'alt')
+                    $regex = IMAGE_ALT_REGEX;
+                elseif($param === 'name')
                     $regex = IMAGE_NAME_REGEX;
+
                 if(!preg_match('/'.$regex.'/',$inputs[$param])){
                     if($test)
                         echo $param.' must match '.$regex.EOL;

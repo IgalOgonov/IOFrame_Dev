@@ -119,8 +119,8 @@
  *        newPassword: new password
  *        Returns integer code:
  *                 0 - All good
-*                  1 - User ID does not exist
-*                  2 - Time to change expired!
+ *                  1 - User ID does not exist
+ *                  2 - Time to change expired!
  *
  *        Examples: action=changePassword&newPassword=Test012345
  *_________________________________________________
@@ -128,6 +128,12 @@
  *      - Sends a user a registration email, or confirms an existing registration code and activates user.
  *        --- TO REQUEST A RESET CODE ---
  *        mail: Email of the account
+ *        Returns integer code:
+ *                -3 activation code creation failed.
+ *                -2 user does not exist.
+ *                -1 mail failed to send.
+ *                 0 all good.
+ *                 1 Email activation not required on this system
  *        --- TO APPLY A RESET CODE ---
  *        id: ID of relevant user
  *        code: Confirmation code
@@ -152,7 +158,7 @@
  *_________________________________________________
  * changeMail [CSRF protected]
  *      - Similar to changePassword, but for the user mail.
- *        newPassword: new password
+ *        newMail: new password
  *        Returns integer code:
  *                 0 - All good
 *                  1 - User ID does not exist
@@ -178,9 +184,13 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'user_fragments/definitions.php';
 require 'CSRF.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
+
+if(!checkApiEnabled('users',$apiSettings))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
@@ -226,6 +236,8 @@ switch($action){
         require 'setExpectedInputs.php';
         require 'user_fragments/addUser_auth.php';
         require 'user_fragments/addUser_checks.php';
+        if($apiSettings->getSetting('captchaFile'))
+            require $apiSettings->getSetting('captchaFile');
         require 'user_fragments/addUser_execution.php';
 
         echo ($result === 0)?

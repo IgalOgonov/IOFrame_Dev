@@ -7,6 +7,9 @@
     margin: 5px 0px;
     display: flex;
 }
+html[dir="rtl"] .article-block > .controls{
+    flex-direction: row-reverse;
+}
 .article-block > .controls > button{
     padding: 7px 10px;
     border: 1px var(--main-color-5) solid;

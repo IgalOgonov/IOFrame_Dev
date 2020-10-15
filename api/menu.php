@@ -170,8 +170,12 @@ if(!defined('coreInit'))
 
 require __DIR__.'/defaultInputChecks.php';
 require __DIR__.'/defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require __DIR__.'/CSRF.php';
 require 'menu_fragments/definitions.php';
+
+if(!checkApiEnabled('menu',$apiSettings))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');

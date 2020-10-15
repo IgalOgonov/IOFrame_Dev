@@ -461,9 +461,13 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'objectAuth_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ObjectAuthHandler.php';
+
+if(!checkApiEnabled('object-auth',$apiSettings))
+    exit(API_DISABLED);
 
 if($test)
     echo 'Testing mode!'.EOL;

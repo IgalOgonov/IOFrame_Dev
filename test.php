@@ -312,6 +312,14 @@ if(!$requireOnlyTab || $requireOnlyTab === 'menuTest'){
     echo '</section>';
 }
 
+if(!$requireOnlyTab || $requireOnlyTab === 'captchaTest'){
+    echo '<h1>'.'Captcha test'.'</h1>';
+    echo '<button @click = "tabs.captchaTest = !tabs.captchaTest">Toggle Visibility</button>';
+    echo '<section :class="{open:tabs.captchaTest, closed:!tabs.captchaTest}">';
+    require 'test/verbose/captchaTest.php';
+    echo '</section>';
+}
+
 if(!$requireOnlyTab || $requireOnlyTab === 'generalSandbox'){
     echo '<h1>'.'General sandbox'.'</h1>';
     echo '<button @click = "tabs.generalSandbox = !tabs.generalSandbox">Toggle Visibility</button>';
@@ -397,6 +405,7 @@ echo '<script>
             templatesTest: false,
             objectAuthTest: false,
             articleTest: false,
+            captchaTest: false,
             menuTest: false,
             generalSandbox: false,
             SQLSandbox: false,

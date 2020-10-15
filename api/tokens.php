@@ -128,9 +128,13 @@ if(!defined('coreInit'))
 
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'tokens_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/TokenHandler.php';
+
+if(!checkApiEnabled('tokens',$apiSettings))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');

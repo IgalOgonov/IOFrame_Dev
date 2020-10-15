@@ -8,7 +8,6 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_s
 array_push($CSS, 'cp.css','popUpTooltip.css', 'modules/CPMenu.css', 'modules/loginRegister.css');
 array_push($JS, 'ezPopup.js', 'mixins/eventHubManager.js','mixins/sourceURL.js', 'modules/CPMenu.js', 'modules/loginRegister.js');
 
-
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';
 
 echo '<title>Login</title>';
@@ -63,5 +62,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_s
 $frontEndResourceTemplateManager->printResources('JS');
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'footers_end.php';
+
+echo '<script src="https://hcaptcha.com/1/api.js&render=explicit" async defer></script>';
 
 ?>

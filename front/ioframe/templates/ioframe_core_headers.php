@@ -5,7 +5,7 @@ $dirToRoot = IOFrame\Util\htmlDirDist($_SERVER['REQUEST_URI'],$settings->getSett
 $currentPage = substr($_SERVER['PHP_SELF'],strlen($settings->getSetting('pathToRoot')));
 $currentPageURI = substr($_SERVER['REQUEST_URI'],strlen($settings->getSetting('pathToRoot')));
 $rootURI = $settings->getSetting('pathToRoot');
-if(!defined($IOFrameCSSRoot) || !defined($IOFrameJSRoot))
+if(!isset($IOFrameCSSRoot) || !isset($IOFrameJSRoot))
     require_once 'definitions.php';
 
 /* -- Initiate resource handler and get core JS files and the CSS file--*/
@@ -46,6 +46,8 @@ else
     document.pathToRoot = '<?php echo $dirToRoot;?>';
     //Site Name
     document.siteName = encodeURI('<?php echo $siteSettings->getSetting('siteName');?>');
+    //Capcha Site Key
+    <?php if($siteSettings->getSetting('captcha_site_key')) echo 'document.captchaSiteKey = "'.$siteSettings->getSetting('captcha_site_key').'"';?>
     //Current page full name
     document.currentPage = encodeURI('<?php echo $currentPage;?>');
     //Current page URI

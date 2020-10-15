@@ -167,13 +167,16 @@ foreach($optionalParams as $param){
         }
     }
     elseif($param === 'articleAddress' && $inputs['create']){
-        $pattern = '/[\W\_]+/';
+        $pattern = '/[\W]+/';
         $replacement = '-';
         $address = preg_replace($pattern, $replacement, $inputs['title']);
         $address = explode('-',$address);
+        $temp = [];
         foreach($address as $index => $subAddr){
-            $address[$index] = substr($subAddr,0,24);
+            if(preg_match('/^[a-zA-Z0-9\_]+$/',$address[$index]))
+                array_push($temp,substr($subAddr,0,24));
         }
+        $address = $temp;
         $time = date('d-m-Y');
         $address = strtolower(substr(implode('-',$address),0,ADDRESS_MAX_LENGTH-strlen($time)-1));
         $address .= '-'.$time;

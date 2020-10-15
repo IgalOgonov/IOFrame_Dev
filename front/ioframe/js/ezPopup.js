@@ -21,7 +21,7 @@ class ezPopup{
     /*Use this to initiate a specific element, given its id.
     * You might specify the id of the created popup - if you do not, it will be chosen randomly (no duplicates).
     * */
-    initPopup(elemID, popupText,popupID = ''){
+    initPopup(elemID, popupText,popupID = '',activityClass=''){
         // create tooltip element.
         const ttBox = document.createElement("div");
         let targetID = Math.floor(Math.random()*10000)+1;
@@ -44,9 +44,11 @@ class ezPopup{
         if(oldElement != null)
             oldElement.parentNode.removeChild(oldElement);
         ttBox.id = targetID;
-        ttBox.style.visibility = "hidden"; // make it hidden till mouse over
         ttBox.style.position = "fixed"; // make it hidden till mouse over
         ttBox.className = this.className;
+        //Unless we are controlling visibility through a class, hide it
+        if(activityClass === '')
+            ttBox.style.visibility = "hidden"; // make it hidden till mouse over
 
         // insert into DOM
         document.body.appendChild(ttBox);
@@ -63,17 +65,30 @@ class ezPopup{
 
             // add bubble content. Can include image or link
             ttBox.innerHTML = popupText;
+
+            //If activity class is specified, add that class
+            if(activityClass !== '')
+                ttBox.classList.add([activityClass]);
             // make bubble VISIBLE
-            ttBox.style.visibility = "visible";
+            else
+                ttBox.style.visibility = "visible";
         });
 
-        const ttTurnOff = ((evt) => { ttBox.style.visibility = "hidden"; });
+        const ttTurnOff = ((evt) => {
+            if(activityClass !== '')
+                ttBox.classList.remove([activityClass]);
+            // make bubble VISIBLE
+            else
+                ttBox.style.visibility = "hidden";
+        });
 
         const hoverEle = document .getElementById(elemID);
         // assign handler
         hoverEle.addEventListener("mouseover", ttTurnOn , false);
         hoverEle.addEventListener("mouseout", ttTurnOff , false);
-        document.getElementById(elemID).addEventListener("click", ttTurnOff , false);
+        let element = document.getElementById(elemID);
+        if(element)
+            element.addEventListener("click", ttTurnOff , false);
     }
 
 };

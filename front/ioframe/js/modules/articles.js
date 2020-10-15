@@ -136,6 +136,10 @@ var articles = new Vue({
                                     {
                                         value:'',
                                         title:'Default'
+                                    },
+                                    {
+                                        value:'@',
+                                        title:'All'
                                     }
                                 ];
                                 for(let i in document.languages){

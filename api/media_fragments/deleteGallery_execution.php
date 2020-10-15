@@ -7,6 +7,6 @@ $FrontEndResourceHandler = new IOFrame\Handlers\FrontEndResourceHandler($setting
 
 $result = $FrontEndResourceHandler->deleteFrontendResourceCollection(
     $inputs['gallery'],
-    ($action === 'setGallery' ? 'img':'vid'),
+    ($action === 'deleteGallery' ? 'img':'vid'),
     [ 'test'=>$test]
 );

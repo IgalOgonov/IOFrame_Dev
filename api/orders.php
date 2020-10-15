@@ -220,14 +220,16 @@ if(!defined('coreInit'))
 /* Remember - this API must be enabled in site settings.
  * It probably shouldn't be, for anything but testing, as it's meant to be extended.
  * */
-if($siteSettings->getSetting('ordersAPI') != true)
-    die('API disabled as per site settings!');
 
 require __DIR__.'/../IOFrame/Handlers/PurchaseOrderHandler.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
+require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'orders_fragments/definitions.php';
+
+if(!checkApiEnabled('orders',$apiSettings))
+    exit(API_DISABLED);
 
 
 

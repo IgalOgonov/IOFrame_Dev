@@ -2,39 +2,41 @@
 * elements that are dependant on it.
 * */
 const dynamicElements = {
-    data:{
-        //The state of the elements that change when you scroll near them
-        dynamicElementState:{
-            //Meta information
-            '@':{
-                //Common query to select all relevant elements inside this module/component. The more precise, the better the performance.
-                query:'',
-                //Is usually appended with ".dynamic-element"
-                querySuffix:'.dynamic-element',
-                //Throttle time in milliseconds
-                throttle: 250,
-                //Throttle timer name - supports multiple modules without problems
-                timerName: makeid(20,'')+(this.identifier? this.identifier+'-':'')+'throttle-timer'
-            },
-            /* Objects of the form:
-             * identifier - element identifier - needs to be unique! {
-             *   //element specific state, depends on activation/deactivation
-             *   state:{
-             *      //Array of extra classes the element should have at this point in time - modified by activate/deactivate
-             *      classes: []
-             *   },
-             *   //The condition for the element activation/deactivation. -1 - "unchanged", 0 - "deactivate", 1 - "activate"
-             *   condition: function(element,context,identifier){
-             *      return -1;
-             *   }
-             *   //what to do once the element is activated - important to use Vue.set for reactivity!
-             *   activate: function(element,context,identifier){
-             *   }
-             *   //what to do once the element is deactivated - important to use Vue.set for reactivity!
-             *   deactivate: function(element,context,identifier){
-             *   }
-             * }
-             * */
+    data: function(){
+        return {
+            //The state of the elements that change when you scroll near them
+            dynamicElementState:{
+                //Meta information
+                '@':{
+                    //Common query to select all relevant elements inside this module/component. The more precise, the better the performance.
+                    query:'',
+                    //Is usually appended with ".dynamic-element"
+                    querySuffix:'.dynamic-element',
+                    //Throttle time in milliseconds
+                    throttle: 250,
+                    //Throttle timer name - supports multiple modules without problems
+                    timerName: makeid(20,'')+(this.identifier? this.identifier+'-':'')+'throttle-timer'
+                },
+                /* Objects of the form:
+                 * identifier - element identifier - needs to be unique! {
+                 *   //element specific state, depends on activation/deactivation
+                 *   state:{
+                 *      //Array of extra classes the element should have at this point in time - modified by activate/deactivate
+                 *      classes: []
+                 *   },
+                 *   //The condition for the element activation/deactivation. -1 - "unchanged", 0 - "deactivate", 1 - "activate"
+                 *   condition: function(element,context,identifier){
+                 *      return -1;
+                 *   }
+                 *   //what to do once the element is activated - important to use Vue.set for reactivity!
+                 *   activate: function(element,context,identifier){
+                 *   }
+                 *   //what to do once the element is deactivated - important to use Vue.set for reactivity!
+                 *   deactivate: function(element,context,identifier){
+                 *   }
+                 * }
+                 * */
+            }
         }
     },
     created: function(){
@@ -93,8 +95,10 @@ const dynamicElements = {
         checkDynamicElements: function(){
             let state = this.dynamicElementState;
             let meta = state['@'];
-            let possibleElements = this.$el.querySelectorAll(meta.query+meta.querySuffix+(this.identifier !== undefined ? ".app-identifier-"+this.identifier : ''));
+            let possibleElements = this.$el.parentElement.querySelectorAll(meta.query+meta.querySuffix+(this.identifier !== undefined ? ".app-identifier-"+this.identifier : ''));
             for(let i in possibleElements){
+                if(!possibleElements.hasOwnProperty(i))
+                    continue;
                 let element = possibleElements[i];
                 if(this.identifier && !element.classList.contains("app-identifier-"+this.identifier))
                     continue;

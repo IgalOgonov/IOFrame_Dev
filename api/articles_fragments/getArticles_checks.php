@@ -48,11 +48,11 @@ if($inputs['keys'] === null){
 
         $retrieveParams['orderBy'] = [];
         foreach($inputs['orderBy'] as $orderBy){
-            array_push($retrieveParams['orderBy'],$articleColumnMap[$orderBy]);
+            array_push($retrieveParams['orderBy'],$articleSetColumnMap[$orderBy]);
         }
     }
     else
-        $inputs['orderBy'] = [];
+        $retrieveParams['orderBy'] = [$articleSetColumnMap['articleId']];
 
     if($inputs['orderType'] !== null){
         if(!in_array($inputs['orderType'],[0,1])){
@@ -62,6 +62,8 @@ if($inputs['keys'] === null){
         }
         $retrieveParams['orderType'] = $inputs['orderType'];
     }
+    else
+        $retrieveParams['orderType'] = 1;
 
     //Handle the filters
     $validArray = ['titleLike','languageIs','addressIn','addressIs','createdBefore','createdAfter','changedBefore','changedAfter','authAtMost'
@@ -99,11 +101,12 @@ if($inputs['keys'] === null){
                     }
                 break;
             case 'languageIs':
-                if(!preg_match('/'.LANGUAGE_REGEX.'/',$value)){
-                    if($test)
-                        echo $potentialFilter.' must match '.LANGUAGE_REGEX.EOL;
-                    exit(INPUT_VALIDATION_FAILURE);
-                }
+                if($value !== '@')
+                    if(!preg_match('/'.LANGUAGE_REGEX.'/',$value)){
+                        if($test)
+                            echo $potentialFilter.' must match '.LANGUAGE_REGEX.EOL;
+                        exit(INPUT_VALIDATION_FAILURE);
+                    }
                 break;
 
             case 'authIn':
@@ -223,4 +226,6 @@ if(!isset($retrieveParams['authAtMost']))
 
 //Set 'languageIs' if not requested by the user
 if(!isset($retrieveParams['languageIs']))
+    $retrieveParams['languageIs'] = '@';
+elseif($retrieveParams['languageIs'] === '@')
     $retrieveParams['languageIs'] = null;

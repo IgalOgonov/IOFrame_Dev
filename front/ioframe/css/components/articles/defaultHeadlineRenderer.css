@@ -70,6 +70,7 @@
 }
 
 .default-headline-renderer > .share{
+    display: flex;
     grid-row: 5;
     grid-column-start: 1;
     grid-column-end: 3;

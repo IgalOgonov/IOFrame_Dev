@@ -30,6 +30,9 @@ foreach($routes as $index => $routeArray){
 //Get URI, and possible fix it
 $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 $uri = preg_replace('/\/\/+/','/',$uri);
+$requestStringPos = strpos($uri,'?');
+if($requestStringPos !== false)
+    $uri = substr($uri,0,$requestStringPos);
 
 //Match and set parameters/target if we got a match
 $match = $router->match($uri);
