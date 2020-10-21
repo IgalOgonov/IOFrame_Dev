@@ -139,6 +139,8 @@ namespace IOFrame\Handlers{
          *                      'IP' => String representing user IP
          *                      'fullIP' => String representing full IP - defaults to IP if not given
          *                      'isTrueIP' => Boolean, whether provided IP should be considered reliable
+         *                      'weight' => int, default 1 - how much the action is "worth" in terms of violations
+         *                      'markOnLimit' => boolean, default true - whether to blacklist the IP when action limit is reached
          *              If IP isn't provided, defaults to getting it from IPHandler
          *              If an IP is provided and isTrueIP is not, isTrueIP defaults to 'true'.
          *              If only isTrueIP is provided, it's ignored.
@@ -151,6 +153,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $weight = isset($params['weight'])? $params['weight'] : 1;
+            $markOnLimit = isset($params['markOnLimit'])? $params['markOnLimit'] : true;
 
             if(isset($params['IP'])){
                 $IP = $params['IP'];
@@ -166,17 +170,15 @@ namespace IOFrame\Handlers{
             if(!filter_var($IP,FILTER_VALIDATE_IP))
                 return false;
 
-            $query = 'SELECT '.$this->SQLHandler->getSQLPrefix().'commitEventIP(:IP,:Event_Type,:Is_Reliable,:Full_IP)';
-            $bindings = [[':IP',$IP],[':Event_Type',$eventCode],[':Is_Reliable',$isTrueIP],[':Full_IP',$fullIP]];
+            $query = 'SELECT '.$this->SQLHandler->getSQLPrefix().'commitEventIP("'.$IP.'",'.(int)$eventCode.','.(bool)$isTrueIP.',"'.$fullIP.'",'.(int)$weight.','.(bool)$markOnLimit.')';
 
             if(!$test)
                 return $this->SQLHandler->exeQueryBindParam(
                     $query,
-                    $bindings
+                    []
                 );
             if($verbose){
                 echo 'Query to send: '.$query.EOL;
-                echo 'Params: '.json_encode($bindings).EOL;
                 return true;
             }
         }
@@ -185,27 +187,31 @@ namespace IOFrame\Handlers{
          * @param int $eventCode   The code of the event
          * @param int $id           The user ID
          * @param array $params
+         *                      'weight' => int, default 1 - how much the action is "worth" in terms of violations
+         *                      'susOnLimit' => boolean, default true - whether to mark user as suspicious when action limit is reached
+         *                      'banOnLimit' => boolean, default false - whether to ban user when action limit is reached
          * @returns bool
          */
         function commitEventUser($eventCode, $id, array $params = []){
-
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            $weight = isset($params['weight'])? $params['weight'] : 1;
+            $susOnLimit = isset($params['susOnLimit'])? $params['susOnLimit'] : true;
+            $banOnLimit = isset($params['banOnLimit'])? $params['banOnLimit'] : false;
 
-            $query = 'SELECT '.$this->SQLHandler->getSQLPrefix().'commitEventUser(:ID,:Event_Type)';
-            $bindings = [[':ID',$id],[':Event_Type',$eventCode]];
-            if($verbose){
-                echo 'Query to send: '.$query.EOL;
-                echo 'Params: '.json_encode($bindings).EOL;
-            }
+            $query = 'SELECT '.$this->SQLHandler->getSQLPrefix().'commitEventUser('.(int)$id.','.(int)$eventCode.','.(int)$weight.','.(int)$susOnLimit.','.(int)$banOnLimit.')';
+
             if(!$test)
                 return $this->SQLHandler->exeQueryBindParam(
                     $query,
-                    $bindings
+                    [],
+                    ['returnError'=>$verbose]
                 );
-            else
+            if($verbose){
+                echo 'Query to send: '.$query.EOL;
                 return true;
+            }
         }
 
 
@@ -228,8 +234,6 @@ namespace IOFrame\Handlers{
                 $params['verbose'] : $test ? true : false;
             $includeMeta = isset($params['includeMeta'])? $params['includeMeta'] : true;
 
-
-            $results = [];
             $res = $this->SQLHandler->selectFromTable(
                 $this->SQLHandler->getSQLPrefix().$this->rulebookTableName,
                 [],

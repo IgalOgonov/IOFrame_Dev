@@ -295,6 +295,10 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <input type="radio" name="usernameChoice" value="2">Force random username <br>
                     <small>Focuses on the default user API. Forces the user to explicitly choose a username, OR allows
                             to leave it blank, OR forces it to be blank (both latter choices spawn a random username).</small><br>
+                            
+                    <span>Allow Testing APIs:</span>
+                    <input type="checkbox" name="allowTesting" value="0" checked><br>
+                    <small>If this is checked, API testing will be allowed with no restrictions. DONT CHECK IN PRODUCTION (live sites)!!!</small><br>
 
                     <span>Registration Mail Confirmation:</span>
                     <input type="checkbox" name="regConfirmMail" value="1" checked><br>
@@ -398,6 +402,14 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'User setting usernameChoice set to '.$_REQUEST['usernameChoice'].EOL;
                 else{
                     echo 'Failed to set User setting usernameChoice  to '.$_REQUEST['usernameChoice'].EOL.EOL;
+                }
+            }
+
+            if(isset($_REQUEST['allowTesting'])){
+                if($apiSettings->setSetting('allowTesting',$_REQUEST['allowTesting'],['createNew'=>true]))
+                    echo 'User setting allowTesting set to '.$_REQUEST['allowTesting'].EOL;
+                else{
+                    echo 'Failed to set User setting allowTesting  to '.$_REQUEST['allowTesting'].EOL.EOL;
                 }
             }
 
@@ -635,6 +647,23 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 [0,0,9,3600,86400],
                 [0,0,10,86400,604800],
                 [0,0,11,31557600,31557600],
+
+                [0,1,0,0,86400],
+                [0,1,1,0,0],
+                [0,1,2,60,0],
+                [0,1,3,3600,0],
+                [0,1,4,86400,2678400],
+                [0,1,5,86400,0],
+                [0,1,10,31557600,31557600],
+
+                [0,2,0,0,86400],
+                [0,2,1,0,0],
+                [0,2,5,3600,2678400],
+                [0,2,6,3600,3600],
+                [0,2,7,86400,86400],
+                [0,2,8,2678400,2678400],
+                [0,2,9,31557600,31557600],
+
                 [1,0,0,0,17280],
                 [1,0,1,0,0],
                 [1,0,5,0,86400],
@@ -642,6 +671,16 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 [1,0,10,0,2678400],
                 [1,0,11,0,0],
                 [1,0,100,2678400,31557600],
+
+                [1,1,0,60,3600],
+                [1,1,2,600,21600],
+                [1,1,4,3600,86400],
+                [1,1,5,86400,2678400],
+
+                [1,2,0,60,3600],
+                [1,2,2,600,21600],
+                [1,2,5,1900,86400],
+                [1,2,10,3600,2678400]
             ];
 
             $res = $SQLHandler->insertIntoTable($SQLHandler->getSQLPrefix().'EVENTS_RULEBOOK',$columns,$assignments,['test'=>false]);
@@ -751,10 +790,45 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                         ])
                     ],
                     [
+                        'category'=>0,
+                        'type'=>1,
+                        'meta'=>json_encode([
+                            'name'=>'IP Request Reset Mail Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>0,
+                        'type'=>2,
+                        'meta'=>json_encode([
+                            'name'=>'IP Forbidden Action Repeat Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>0,
+                        'type'=>3,
+                        'meta'=>json_encode([
+                            'name'=>'IP Registration Limit'
+                        ])
+                    ],
+                    [
                         'category'=>1,
                         'type'=>0,
                         'meta'=>json_encode([
                             'name'=>'User Incorrect Login Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>1,
+                        'type'=>1,
+                        'meta'=>json_encode([
+                            'name'=>'User Registration Confirmation Mail Limit'
+                        ])
+                    ],
+                    [
+                        'category'=>1,
+                        'type'=>2,
+                        'meta'=>json_encode([
+                            'name'=>'User Reset Mail Limit'
                         ])
                     ],
                     [
@@ -1145,6 +1219,8 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($apiArgs,["tokens",1]);
             array_push($apiArgs,["trees",0]);
             array_push($apiArgs,["users",1]);
+            array_push($apiArgs,["allowTesting",0]);
+            array_push($apiArgs,["captchaFile",'validateCaptcha.php']);
 
             array_push($metaArgs,['localSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Local Node Settings'])]);
             array_push($metaArgs,['redisSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Redis Settings'])]);

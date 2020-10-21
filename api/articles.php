@@ -441,9 +441,9 @@
 if(!defined('coreInit'))
     require __DIR__ . '/../main/coreInit.php';
 
+require 'apiSettingsChecks.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'articles_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ArticleHandler.php';

@@ -175,7 +175,6 @@ Vue.component('user-login', {
                                         }
                                         //Means this is something else...
                                         if(!loginSuccess){
-                                            context.resp = 'Illegal response: '+response;
                                             respType='danger';
                                         }
                                 }

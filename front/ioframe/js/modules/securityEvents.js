@@ -75,15 +75,15 @@ var securityEvents = new Vue({
             //Whether we are currently loading
             initiated: false,
             verbose:false,
-            test:true
+            test:false
         }
     },
     created:function(){
         this.registerHub(eventHub);
         this.registerEvent('requestSelection', this.selectElement);
         this.registerEvent('searchResults', this.parseSearchResults);
-        this.registerEvent('goToPage', this.goToPage); //TODO Add relevant events
-        this.registerEvent('renameEventType', this.handleRename); //TODO Add relevant events
+        this.registerEvent('goToPage', this.goToPage);
+        this.registerEvent('renameEventType', this.handleRename);
         this.registerEvent('searchAgain', this.searchAgain);
         this.registerEvent('returnToMainApp', this.returnToMainApp);
 

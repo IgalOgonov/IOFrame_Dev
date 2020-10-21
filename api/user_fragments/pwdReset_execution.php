@@ -11,9 +11,8 @@ if(!isset($UserHandler))
 
 //Attempts to send a mail to the user requiring password reset.
 if(isset($inputs['mail'])){
-    $result = $UserHandler->pwdResetSend($inputs['mail'],['test'=>$test]);
+    $result = $UserHandler->pwdResetSend($inputs['mail'],['async' => false,'test'=>$test]);
 }
-
 //Checks if the info provided by the user was correct, if so authorizes the Session to reset the password for a few minutes.
 else if($inputs['id'] !== null and $inputs['code'] !== null ){
 
@@ -49,7 +48,6 @@ else if($inputs['id'] !== null and $inputs['code'] !== null ){
             echo 'Changing header location to http://'.$_SERVER['SERVER_NAME'].'/'.$settings->getSetting('pathToRoot').$pageSettings->getSetting('pwdReset').'?res='.$result.EOL;
     }
 }
-
 else{
     if($test)
         echo 'Wrong user input.';

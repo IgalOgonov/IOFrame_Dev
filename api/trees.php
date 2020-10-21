@@ -139,9 +139,9 @@ require __DIR__ . '/../IOFrame/Handlers/TreeHandler.php';
 require __DIR__ . '/../IOFrame/Util/validator.php';
 
 //If it's a test call..
+require 'apiSettingsChecks.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'apiSettingsChecks.php';
 require 'tree_fragments/definitions.php';
 require 'CSRF.php';
 

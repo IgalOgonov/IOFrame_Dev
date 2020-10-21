@@ -9,12 +9,12 @@ if(!isset($IPHandler))
         array_merge($defaultSettingsParams, ['siteSettings'=>$siteSettings])
     );
 
-echo '10.213.234.10 blacklisted? '.$IPHandler->checkIP(['ip'=>'10.213.234.10','checkRange'=>true,'blacklisted'=>true,'test'=>true]).EOL;
-echo '10.213.234.10 whitelisted? '.$IPHandler->checkIP(['ip'=>'10.213.234.10','checkRange'=>true,'blacklisted'=>false,'test'=>true]).EOL;
-echo '10.10.21.50 blacklisted? '.$IPHandler->checkIP(['ip'=>'10.10.21.50','checkRange'=>true,'blacklisted'=>true,'test'=>true]).EOL;
-echo '10.10.21.50 whitelisted? '.$IPHandler->checkIP(['ip'=>'10.10.21.50','checkRange'=>true,'blacklisted'=>false,'test'=>true]).EOL;
-echo '10.213.234.0 whitelisted? '.$IPHandler->checkIP(['ip'=>'10.213.234.0','checkRange'=>true,'blacklisted'=>false,'test'=>true]).EOL;
-echo '10.0.0.0 whitelisted? '.$IPHandler->checkIP(['ip'=>'10.0.0.0','checkRange'=>true,'blacklisted'=>false,'test'=>true]).EOL;
+echo '10.213.234.10 blacklisted? '.($IPHandler->checkIP(['ip'=>'10.213.234.10','checkRange'=>true,'blacklisted'=>true,'test'=>true])?'Yes':'No').EOL;
+echo '10.213.234.10 whitelisted? '.($IPHandler->checkIP(['ip'=>'10.213.234.10','checkRange'=>true,'blacklisted'=>false,'test'=>true])?'Yes':'No').EOL;
+echo '10.10.21.50 blacklisted? '.($IPHandler->checkIP(['ip'=>'10.10.21.50','checkRange'=>true,'blacklisted'=>true,'test'=>true])?'Yes':'No').EOL;
+echo '10.10.21.50 whitelisted? '.($IPHandler->checkIP(['ip'=>'10.10.21.50','checkRange'=>true,'blacklisted'=>false,'test'=>true])?'Yes':'No').EOL;
+echo '10.213.234.0 whitelisted? '.($IPHandler->checkIP(['ip'=>'10.213.234.0','checkRange'=>true,'blacklisted'=>false,'test'=>true])?'Yes':'No').EOL;
+echo '10.0.0.0 whitelisted? '.($IPHandler->checkIP(['ip'=>'10.0.0.0','checkRange'=>true,'blacklisted'=>false,'test'=>true])?'Yes':'No').EOL;
 
 echo EOL.'Getting all IPs without conditions'.EOL;
 var_dump(

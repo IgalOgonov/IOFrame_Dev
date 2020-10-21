@@ -172,7 +172,8 @@ namespace IOFrame\Handlers{
                         ],
                         'languageIs' => [
                             'column' => 'Article_Language',
-                            'filter' => '='
+                            'filter' => '=',
+                            'considerNull' => '@'
                         ],
                         'addressLike' => [
                             'column' => 'Article_Address',

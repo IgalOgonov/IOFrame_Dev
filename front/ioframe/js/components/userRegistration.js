@@ -64,6 +64,18 @@ Vue.component('user-registration', {
                         invalid: 'Captcha does not appear to be valid!',
                         alreadyValidated: 'Captcha has already been validated! Captcha reset, validate again.',
                     },
+                    rateLimit:{
+                        second: 'second',
+                        seconds: 'seconds',
+                        minute: 'minute',
+                        minutes: 'minutes',
+                        hour: 'hour',
+                        hours: 'hours',
+                        day: 'day',
+                        days: 'days',
+                        tryAgain: 'You cannot do this right now! Try again in',
+                        connector: ' and '
+                    },
                     registrationButton: 'Register'
                 };
             }
@@ -252,6 +264,30 @@ Vue.component('user-registration', {
                                 respType='warning';
                                 break;
                             default:
+                                /*Special Case*/
+                                if(response.startsWith('RATE_LIMIT_REACHED')){
+                                    let secondsLeft = response.split('@')[1];
+                                    let timeArray = [];
+                                    if(secondsLeft > 86400){
+                                        const days = Math.floor(secondsLeft/86400);
+                                        timeArray.push(days+' '+(days>1?context.text.rateLimit.days : context.text.rateLimit.day));
+                                        secondsLeft = secondsLeft%86400;
+                                    }
+                                    if(secondsLeft > 3600){
+                                        const hours = Math.floor(secondsLeft/3600);
+                                        timeArray.push(hours+' '+(hours>1?context.text.rateLimit.hours : context.text.rateLimit.hour));
+                                        secondsLeft = secondsLeft%3600;
+                                    }
+                                    if(secondsLeft > 60){
+                                        const minutes = Math.floor(secondsLeft/60);
+                                        timeArray.push(minutes+' '+(minutes>1?context.text.rateLimit.minutes : context.text.rateLimit.minute));
+                                        secondsLeft = secondsLeft%60;
+                                    }
+                                    if(secondsLeft > 0){
+                                        timeArray.push(secondsLeft+' '+(secondsLeft>1?context.text.rateLimit.seconds : context.text.rateLimit.second));
+                                    }
+                                    response = context.text.rateLimit.tryAgain+' '+timeArray.join(context.text.rateLimit.connector);
+                                }
                                 respType='warning';
                         }
 

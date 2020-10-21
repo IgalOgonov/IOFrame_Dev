@@ -1,4 +1,56 @@
 <?php
+/*Limit*/
+CONST USERS_API_LIMITS =[
+    'addUser' => [
+        'rate' => [
+            'limit'=>60,
+            'category'=>0,
+            'action'=>3
+        ],
+    ],
+    'logUser' => [
+        'rate' => [
+            'limit'=>2,
+            'category'=>0,
+            'action'=>0
+        ],
+        'markOnLimit'=>true,
+        'susOnLimit'=>true,
+        'banOnLimit'=>false,
+        'ipAction'=>0,
+        'userAction'=>0
+    ],
+    'pwdReset' => [
+        'rate' => [
+            'limit'=>2,
+            'category'=>1,
+            'action'=>2
+        ],
+        'susOnLimit'=>false,
+        'banOnLimit'=>false,
+        'userAction'=>2
+    ],
+    'mailReset' => [
+        'rate' => [
+            'limit'=>2,
+            'category'=>1,
+            'action'=>2
+        ],
+        'susOnLimit'=>false,
+        'banOnLimit'=>false,
+        'userAction'=>2
+    ],
+    'regConfirm' => [
+        'rate' => [
+            'limit'=>2,
+            'category'=>1,
+            'action'=>1
+        ],
+        'susOnLimit'=>false,
+        'banOnLimit'=>false,
+        'userAction'=>1
+    ],
+];
 
 /* AUTH */
 CONST GET_USERS_AUTH = 'GET_USERS_AUTH';

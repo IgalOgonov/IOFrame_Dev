@@ -312,6 +312,14 @@ if(!$requireOnlyTab || $requireOnlyTab === 'menuTest'){
     echo '</section>';
 }
 
+if(!$requireOnlyTab || $requireOnlyTab === 'rateLimitTest'){
+    echo '<h1>'.'Menu test'.'</h1>';
+    echo '<button @click = "tabs.rateLimitTest = !tabs.rateLimitTest">Toggle Visibility</button>';
+    echo '<section :class="{open:tabs.rateLimitTest, closed:!tabs.rateLimitTest}">';
+    require 'test/verbose/rateLimitTest.php';
+    echo '</section>';
+}
+
 if(!$requireOnlyTab || $requireOnlyTab === 'captchaTest'){
     echo '<h1>'.'Captcha test'.'</h1>';
     echo '<button @click = "tabs.captchaTest = !tabs.captchaTest">Toggle Visibility</button>';
@@ -407,6 +415,7 @@ echo '<script>
             articleTest: false,
             captchaTest: false,
             menuTest: false,
+            rateLimitTest: false,
             generalSandbox: false,
             SQLSandbox: false,
             cryptoSandbox: false,

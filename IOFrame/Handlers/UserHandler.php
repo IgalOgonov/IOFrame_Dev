@@ -465,6 +465,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['async'])?
+                $async = $params['async'] : $async = true;
 
             $hex_secure = false;
             $confirmCode = '';
@@ -520,7 +522,7 @@ namespace IOFrame\Handlers{
                     $confirmCode,
                     $this->userSettings->getSetting('pwdResetTemplate'),
                     $this->userSettings->getSetting('pwdResetTitle'),
-                    true,
+                    $async,
                     ['test'=>$test,'verbose'=>$verbose]
                 );
             }
@@ -561,6 +563,8 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])?
                 $params['verbose'] : $test ? true : false;
+            isset($params['async'])?
+                $async = $params['async'] : $async = true;
 
             $hex_secure = false;
             $confirmCode = '';
@@ -616,7 +620,7 @@ namespace IOFrame\Handlers{
                     $confirmCode,
                     $this->userSettings->getSetting('emailChangeTemplate'),
                     $this->userSettings->getSetting('emailChangeTitle'),
-                    true,
+                    $async,
                     ['test'=>$test,'verbose'=>$verbose]
                 );
             if($verbose)

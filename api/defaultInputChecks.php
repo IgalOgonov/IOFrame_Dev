@@ -1,8 +1,8 @@
 <?php
 
 //This always indicates test mode
-(isset($_REQUEST['req']) && $_REQUEST['req'] == 'test')?
-    $test = true : $test = false;
+$test = ( isset($_REQUEST['req']) && $_REQUEST['req'] == 'test' ) &&
+    ( $siteSettings->getSetting('allowTesting') || $auth->isAuthorized(0) || !empty($_SESSION['allowTesting']) );
 
 //Fix any values that are strings due to softly typed language bullshit
 foreach($_REQUEST as $key=>$value){

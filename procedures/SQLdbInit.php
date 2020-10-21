@@ -477,6 +477,7 @@ namespace IOFrame{
              * Sequence_Count     - Number of events in this sequence. Any additional event before "Sequence_Expires"
              *                      Increases this count (and probably prolongs Sequence_Expires)
              * Sequence_Expires   - The time when current event aggregation sequence expires, and a new one may begin.
+             * Sequence_Limited_Until - The time until which the current sequence should be considered limited (action shouldn't be allowed to be repeated)
              * Meta               - At the moment, used to store the full IP array as a CSV.
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."IP_EVENTS (
@@ -485,6 +486,7 @@ namespace IOFrame{
                                                               Sequence_Expires varchar(14) NOT NULL,
                                                               Sequence_Start_Time varchar(14) NOT NULL,
                                                               Sequence_Count BIGINT UNSIGNED NOT NULL,
+                                                              Sequence_Limited_Until varchar(14) DEFAULT NULL,
                                                               Meta varchar(10000) DEFAULT NULL,
                                                               PRIMARY KEY (IP,Event_Type,Sequence_Start_Time),
                                                               UNIQUE INDEX (IP,Event_Type,Sequence_Expires)
@@ -509,6 +511,7 @@ namespace IOFrame{
              * Sequence_Count     - Number of events in this sequence. Any additional event before "Sequence_Expires"
              *                      Increases this count (and probably prolongs Sequence_Expires)
              * Sequence_Expires   - The time when current event aggregation sequence expires, and a new one may begin.
+             * Sequence_Limited_Until - The time until which the current sequence should be considered limited (action shouldn't be allowed to be repeated)
              */
             $makeTB = $conn->prepare("CREATE TABLE IF NOT EXISTS ".$prefix."USER_EVENTS (
                                                               ID int NOT NULL,
@@ -516,6 +519,7 @@ namespace IOFrame{
                                                               Sequence_Expires varchar(14) NOT NULL,
                                                               Sequence_Start_Time varchar(14) NOT NULL,
                                                               Sequence_Count BIGINT UNSIGNED NOT NULL,
+                                                              Sequence_Limited_Until varchar(14) DEFAULT NULL,
                                                               PRIMARY KEY (ID,Event_Type,Sequence_Start_Time),
                                                               UNIQUE INDEX (ID,Event_Type,Sequence_Expires),
                                                               FOREIGN KEY (ID)
@@ -1482,6 +1486,7 @@ namespace IOFrame{
              * The very few DB functions in the framework.
              * While it violates my intention to keep all logic on the Application layer, and away from the DB, any other
              * solution would either create security vulnerabilities or carry an extreme performance penalty.
+             * TODO properly handle Add_Weight that isn't one, as not to skip various TTL/Blacklist stages
              */
 
             /** Create function commitEventIP
@@ -1499,10 +1504,12 @@ namespace IOFrame{
              */
             $dropFunc = $conn->prepare("DROP FUNCTION IF EXISTS ".$prefix."commitEventIP");
             $makeFunc = $conn->prepare("CREATE FUNCTION ".$prefix."commitEventIP (
-            IP varchar(45),
+            IP VARCHAR(45),
             Event_Type BIGINT(20) UNSIGNED,
             Is_Reliable BOOLEAN,
-            Full_IP VARCHAR(10000)
+            Full_IP VARCHAR(10000),
+            Add_Weight INT(10) UNSIGNED,
+            Blacklist_On_Limit BOOLEAN
             )
             RETURNS INT(20)
             BEGIN
@@ -1533,7 +1540,7 @@ namespace IOFrame{
                     BEGIN
                         UPDATE ".$prefix."IP_EVENTS SET
                                 Sequence_Expires = Sequence_Expires + Add_TTL,
-                                Sequence_Count = eventCount + 1,
+                                Sequence_Count = eventCount + Add_Weight,
                                 Meta = Full_IP
                                 WHERE
                                    ".$prefix."IP_EVENTS.IP = IP AND
@@ -1555,20 +1562,28 @@ namespace IOFrame{
                         Event_Type,
                         UNIX_TIMESTAMP()+Add_TTL,
                         UNIX_TIMESTAMP(),
-                        1,
+                        Add_Weight,
                         Full_IP
                     )
-                     ON DUPLICATE KEY UPDATE Sequence_Count = Sequence_Count+1;
+                     ON DUPLICATE KEY UPDATE Sequence_Count = Sequence_Count+Add_Weight;
                     END;
                 END IF;
 
                 #We might need to blacklist the IP
                 IF Blacklist_For > 0 THEN
-                    INSERT INTO ".$prefix."IP_LIST (IP_Type,Is_Reliable,IP,Expires) VALUES (0,Is_Reliable,IP,UNIX_TIMESTAMP()+Blacklist_For)
-                    ON DUPLICATE KEY UPDATE Expires = GREATEST(Expires,UNIX_TIMESTAMP()+Blacklist_For);
+                    IF Blacklist_On_Limit THEN 
+                        INSERT INTO ".$prefix."IP_LIST (IP_Type,Is_Reliable,IP,Expires) VALUES (0,Is_Reliable,IP,UNIX_TIMESTAMP()+Blacklist_For)
+                        ON DUPLICATE KEY UPDATE Expires = GREATEST(Expires,UNIX_TIMESTAMP()+Blacklist_For);
+                    END IF;
+                    UPDATE ".$prefix."IP_EVENTS SET
+                            Sequence_Limited_Until = IF(ISNULL(Sequence_Limited_Until),UNIX_TIMESTAMP()+Blacklist_For,GREATEST(Sequence_Limited_Until,UNIX_TIMESTAMP()+Blacklist_For))
+                            WHERE
+                               ".$prefix."IP_EVENTS.IP = IP AND
+                               ".$prefix."IP_EVENTS.Event_Type = Event_Type AND
+                               ".$prefix."IP_EVENTS.Sequence_Expires > UNIX_TIMESTAMP();
                 END IF;
 
-                RETURN eventCount+1;
+                RETURN eventCount+Add_Weight;
             END");
             try{
                 $dropFunc->execute();
@@ -1593,7 +1608,13 @@ namespace IOFrame{
              *      The number of events in the current active sequence (at least 1)
              */
             $dropFunc = $conn->prepare("DROP FUNCTION IF EXISTS ".$prefix."commitEventUser");
-            $makeFunc = $conn->prepare("CREATE FUNCTION ".$prefix."commitEventUser (ID int(11), Event_Type BIGINT(20) UNSIGNED)
+            $makeFunc = $conn->prepare("CREATE FUNCTION ".$prefix."commitEventUser (
+                ID int(11),
+                Event_Type BIGINT(20) UNSIGNED,
+                Add_Weight INT(10) UNSIGNED,
+                Suspicious_On_Limit BOOLEAN,
+                Ban_On_Limit BOOLEAN
+             )
             RETURNS INT(20)
             BEGIN
                 DECLARE eventCount INT;
@@ -1614,7 +1635,7 @@ namespace IOFrame{
                 END IF;
 
                 #Either way we need to know how much TTL/Blacklist to add
-                SELECT ".$prefix."EVENTS_RULEBOOK.Add_TTL,".$prefix."EVENTS_RULEBOOK.Blacklist_For INTO Add_TTL,Blacklist_For FROM ".$prefix."ACTIONS_RULEBOOK WHERE
+                SELECT ".$prefix."EVENTS_RULEBOOK.Add_TTL,".$prefix."EVENTS_RULEBOOK.Blacklist_For INTO Add_TTL,Blacklist_For FROM ".$prefix."EVENTS_RULEBOOK WHERE
                                         Event_Category = 1 AND
                                         ".$prefix."EVENTS_RULEBOOK.Event_Type = Event_Type AND
                                         Sequence_Number<=eventCount ORDER BY Sequence_Number DESC LIMIT 1;
@@ -1623,7 +1644,7 @@ namespace IOFrame{
                     BEGIN
                         UPDATE ".$prefix."USER_EVENTS SET
                                 Sequence_Expires = Sequence_Expires + Add_TTL,
-                                Sequence_Count = eventCount + 1
+                                Sequence_Count = eventCount + Add_Weight
                                 WHERE
                                     ".$prefix."USER_EVENTS.ID = ID AND
                                     ".$prefix."USER_EVENTS.Event_Type = Event_Type AND
@@ -1644,20 +1665,34 @@ namespace IOFrame{
                         Event_Type,
                         UNIX_TIMESTAMP()+Add_TTL,
                         UNIX_TIMESTAMP(),
-                        1
+                        Add_Weight
                     );
                     END;
                 END IF;
 
-                #We might need to blacklist the IP
+                #We might need to blacklist the USER
                 IF Blacklist_For > 0 THEN
-                    UPDATE ".$prefix."USERS_EXTRA SET
-                            Suspicious_Until = GREATEST(Suspicious_Until,UNIX_TIMESTAMP()+Blacklist_For)
+                    IF Suspicious_On_Limit THEN 
+                        UPDATE ".$prefix."USERS_EXTRA SET
+                                Suspicious_Until = IF(ISNULL(Suspicious_Until),UNIX_TIMESTAMP()+Blacklist_For,GREATEST(Suspicious_Until,UNIX_TIMESTAMP()+Blacklist_For))
+                                WHERE
+                                    ".$prefix."USERS_EXTRA.ID = ID;
+                    END IF;
+                    IF Ban_On_Limit THEN 
+                        UPDATE ".$prefix."USERS_EXTRA SET
+                                Banned_Until = IF(ISNULL(Banned_Until),UNIX_TIMESTAMP()+Blacklist_For,GREATEST(Banned_Until,UNIX_TIMESTAMP()+Blacklist_For))
+                                WHERE
+                                    ".$prefix."USERS_EXTRA.ID = ID;
+                    END IF;
+                    UPDATE ".$prefix."USER_EVENTS SET
+                            Sequence_Limited_Until = IF(ISNULL(Sequence_Limited_Until),UNIX_TIMESTAMP()+Blacklist_For,GREATEST(Sequence_Limited_Until,UNIX_TIMESTAMP()+Blacklist_For))
                             WHERE
-                                ".$prefix."USERS_EXTRA.ID = ID;
+                                ".$prefix."USER_EVENTS.ID = ID AND 
+                                ".$prefix."USER_EVENTS.Event_Type = Event_Type AND 
+                                ".$prefix."USER_EVENTS.Sequence_Expires > UNIX_TIMESTAMP();
                 END IF;
 
-                RETURN eventCount+1;
+                RETURN eventCount+Add_Weight;
             END");
 
             try{

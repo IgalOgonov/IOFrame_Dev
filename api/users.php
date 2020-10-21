@@ -61,7 +61,7 @@
  *
  *       Examples: action=updateUser&id=2&username=Test&email=test@test.com&active=0&created=1586370650&bannedDate=1586370650&suspiciousDate=1586370650
  *_________________________________________________
- * addUser
+ * addUser [Rate Limited per IP]
  *      - Adds (registers) a user
  *        m: requested mail
  *        p: requested password
@@ -74,7 +74,7 @@
  *
  *        Examples: action=addUser&u=test1&m=test@example.com&p=A5432524gf54
  *_________________________________________________
- * logUser [CSRF protected] [Timing protected]
+ * logUser [CSRF protected] [Timing protected] [Incorrect Logins Rate Limited]
  *      - Logs in or out
  *        log: login type ('out','temp' or other) - default 'out'
  *        m: user mail  - required on any login
@@ -93,7 +93,7 @@
  *                  action=logUser&log=out
  *                  action=logUser&log=temp&m=test@example.com&sesKey=8836ac46fbdfa61a2a125991f987079d86903169a9e109557326fec1c71ff5ef&userID=abc6379af765afafa1bad51b084bad48&sesKey=A5432524gf54
  *_________________________________________________
- * pwdReset [Timing protected]
+ * pwdReset [Timing protected] [Rate Limited per mail]
  *      - Sends the user a password reset email, or confirms an existing reset code and user session as eligible
  *        to reset the password for a few minutes (time depends on settings)
  *        id: ID of relevant user, used for reset confirmation
@@ -124,13 +124,13 @@
  *
  *        Examples: action=changePassword&newPassword=Test012345
  *_________________________________________________
- * regConfirm
+ * regConfirm [Rate Limited] [Rate Limited per mail]
  *      - Sends a user a registration email, or confirms an existing registration code and activates user.
  *        --- TO REQUEST A RESET CODE ---
  *        mail: Email of the account
  *        Returns integer code:
  *                -3 activation code creation failed.
- *                -2 user does not exist.
+ *                -2 user does not exist or already active.
  *                -1 mail failed to send.
  *                 0 all good.
  *                 1 Email activation not required on this system
@@ -148,7 +148,7 @@
  *        Examples: action=regConfirm&id=4&code=GtIOsxkfbA92iGp0MsSt70GkfSDTFcUZlyd0I2MJMflz1h6kmI
  *                  action=regConfirm&mail=example@example.com
  *_________________________________________________
- * mailReset [Timing protected]
+ * mailReset [Timing protected]  [Rate Limited per mail]
  *      - Sends a reset mail similar to pwdReset, but for the user mail
  *        All codes and inputs similar to pwdReset.
  *
@@ -182,9 +182,9 @@
 if(!defined('coreInit'))
     require __DIR__ . '/../main/coreInit.php';
 
+require 'apiSettingsChecks.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'apiSettingsChecks.php';
 require 'user_fragments/definitions.php';
 require 'CSRF.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
@@ -195,7 +195,6 @@ if(!checkApiEnabled('users',$apiSettings))
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
-
 if($test)
     echo 'Testing mode!'.EOL;
 
@@ -234,10 +233,13 @@ switch($action){
         $arrExpected =["u","m","p"];
 
         require 'setExpectedInputs.php';
+        require 'user_fragments/ip_check.php';
+        $identifier = $ip;
         require 'user_fragments/addUser_auth.php';
         require 'user_fragments/addUser_checks.php';
         if($apiSettings->getSetting('captchaFile'))
             require $apiSettings->getSetting('captchaFile');
+        require 'user_fragments/limit_rate_check.php';
         require 'user_fragments/addUser_execution.php';
 
         echo ($result === 0)?
@@ -262,33 +264,30 @@ switch($action){
         $arrExpected =["userID","m","p","sesKey"];
 
         require 'setExpectedInputs.php';
+        if($inputs['log']!='out'){
+            require 'user_fragments/ip_check.php';
+        }
         require 'user_fragments/logUser_pre_checks_auth.php';
         require 'user_fragments/logUser_checks.php';
+        if($inputs['log']!='out'){
+            if( ($inputs['log']==='temp') && ($inputs['userID']!== null) )
+                $userId = $inputs['userID'];
+            elseif($inputs['m']){
+                $userId = $SQLHandler->selectFromTable($SQLHandler->getSQLPrefix().'USERS',['Email',$inputs['m'],'='],['ID'],[]);
+                if(count($userId)>0)
+                    $userId = $userId[0]['ID'];
+                else
+                    $userId = null;
+            }
+            $identifier = !empty($userId)? $userId : null;
+        }
+        require 'user_fragments/limit_rate_check.php';
         require 'user_fragments/logUser_post_checks_auth.php';
         require 'user_fragments/logUser_execution.php';
 
         if($result === 1){
-            if(!defined('SecurityHandler'))
-                require __DIR__ . '/../IOFrame/Handlers/SecurityHandler.php';
-            if(!isset($SecurityHandler))
-                $SecurityHandler = new IOFrame\Handlers\SecurityHandler(
-                    $settings,
-                    $defaultSettingsParams
-                );
-            //Mark the IP as one who committed an incorrect login attempt
-            $SecurityHandler->commitEventIP(0,[]);
-            //Mark the user who had a bad login attempt into
-            if($inputs['userID']!== null)
-                $id = $inputs['userID'];
-            else{
-                $id = $SQLHandler->selectFromTable($SQLHandler->getSQLPrefix().'USERS',['Email',$inputs['m'],'='],['ID'],[]);
-                if(count($id)>0)
-                    $id = $id[0]['ID'];
-                else
-                    $id = null;
-            }
-            if($id)
-                $SecurityHandler->commitEventUser(0,$id);
+            $shouldCommitActions = true;
+            require 'user_fragments/limit_success_check.php';
         }
 
         //This procedure can only return after N seconds exactly
@@ -306,13 +305,19 @@ switch($action){
         $arrExpected =["id","code","mail","async"];
 
         require 'setExpectedInputs.php';
+        require 'user_fragments/ip_check.php';
         require 'user_fragments/reset_checks.php';
+        if(isset($inputs['mail'])){
+            $identifier = $inputs['mail'];
+            require 'user_fragments/reset_mail_limit_rate_check.php';
+        }
         require 'user_fragments/pwdReset_execution.php';
+        require 'user_fragments/reset_mail_limit_success.php';
 
 
         //This procedure can only return after N seconds exactly
         $timingManager->waitUntilIntervalElapsed(1);
-
+        $pageSettings = new \IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/pageSettings/',$defaultSettingsParams);
         if($inputs['mail'] !== null || $inputs['async'] !== null || !$pageSettings->getSetting('pwdReset'))
             echo ($result === 0)?
                 '0' : $result;
@@ -340,7 +345,12 @@ switch($action){
 
         require 'setExpectedInputs.php';
         require 'user_fragments/regConfirm_checks.php';
+        if(isset($inputs['mail'])){
+            $identifier = $inputs['mail'];
+            require 'user_fragments/reset_mail_limit_rate_check.php';
+        }
         require 'user_fragments/regConfirm_execution.php';
+        require 'user_fragments/reset_mail_limit_success.php';
 
         echo ($result === 0)?
             '0' : $result;
@@ -351,12 +361,19 @@ switch($action){
         $arrExpected =["id","code","mail","async"];
 
         require 'setExpectedInputs.php';
+        require 'user_fragments/ip_check.php';
         require 'user_fragments/reset_checks.php';
+        if(isset($inputs['mail'])){
+            $identifier = $inputs['mail'];
+            require 'user_fragments/reset_mail_limit_rate_check.php';
+        }
         require 'user_fragments/mailReset_execution.php';
+        require 'user_fragments/reset_mail_limit_success.php';
 
         //This procedure can only return after N seconds exactly
         $timingManager->waitUntilIntervalElapsed(1);
 
+        $pageSettings = new \IOFrame\Handlers\SettingsHandler($rootFolder.'/localFiles/pageSettings/',$defaultSettingsParams);
         if($inputs['mail'] !== null || $inputs['async'] !== null || !$pageSettings->getSetting('mailReset'))
             echo ($result === 0)?
                 '0' : $result;

@@ -172,9 +172,9 @@ if(!defined('coreInit'))
 require __DIR__ . '/../IOFrame/Util/validator.php';
 
 //If it's a test call..
+require 'apiSettingsChecks.php';
 require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
-require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'plugins_fragments/definitions.php';
 
