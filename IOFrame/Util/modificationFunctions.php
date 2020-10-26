@@ -25,9 +25,7 @@ namespace IOFrame\Util{
     function replaceInFile($url,$strRemove,$strRep, array $params = []){
 
         $test = isset($params['test'])? $params['test'] : false;
-        $verbose = isset($params['verbose'])?
-            $params['verbose'] : $test ?
-                true : false;
+        $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
         $delay = isset($params['delay'])? $params['delay'] : 0.1;
 
         //Default forbidden and required file regex

@@ -130,8 +130,7 @@ namespace IOFrame\Handlers{
         protected function lockOrders(array $orderIDs, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $hex_secure = false;
             $lock = '';
@@ -186,8 +185,7 @@ namespace IOFrame\Handlers{
          function unlockOrders(array $orderIDs, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $key = $test = isset($params['key'])? $params['key'] : null;
 
@@ -298,8 +296,7 @@ namespace IOFrame\Handlers{
          * */
         function getOrders(array $orderIDs = [],$params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $extraDBFilters = isset($params['extraDBFilters'])? $params['extraDBFilters'] : [];
             $extraCacheFilters = isset($params['extraCacheFilters'])? $params['extraCacheFilters'] : [];
@@ -485,8 +482,7 @@ namespace IOFrame\Handlers{
          function setOrders(array $inputs, $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
              $createNew = isset($params['createNew'])? $params['createNew'] : false;
 
             $identifiers = [];
@@ -749,8 +745,7 @@ namespace IOFrame\Handlers{
          */
          function archiveOrders(array $orderIDs = [], $params = []){
              $test = isset($params['test'])? $params['test'] : false;
-             $verbose = isset($params['verbose'])?
-                 $params['verbose'] : $test ? true : false;
+             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
              $deleteArchived = isset($params['deleteArchived'])? $params['deleteArchived'] : true;
              $repeatToLimit = isset($params['repeatToLimit'])? $params['repeatToLimit'] : true;
              $timeout = isset($params['timeout'])? $params['timeout'] : 20;
@@ -903,8 +898,7 @@ namespace IOFrame\Handlers{
          */
         private function getOrdersUsers(int $mainID, bool $mainUser, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $extraDBFilters = isset($params['extraDBFilters'])? $params['extraDBFilters'] : [];
             $extraCacheFilters = (!$mainUser && isset($params['extraCacheFilters']))? $params['extraCacheFilters'] : [];
@@ -1073,8 +1067,7 @@ namespace IOFrame\Handlers{
          */
         protected function setUsersOrders(int $mainID, array $targetInputs, bool $mainUser, bool $create, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $secondaryIDs = [];
             $inputsMap = [];
@@ -1257,8 +1250,7 @@ namespace IOFrame\Handlers{
          */
         protected function removeUsersOrders(int $mainID, array $targetIDs, bool $mainUser, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $conds = ($mainUser)?

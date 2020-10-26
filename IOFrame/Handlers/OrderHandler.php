@@ -179,8 +179,7 @@ namespace IOFrame\Handlers{
          * */
         protected function getLocalOrder(array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             if(isset($params['createNew']))
                 $createNew = $params['createNew'];
             else
@@ -236,8 +235,7 @@ namespace IOFrame\Handlers{
          */
         protected function updateLocalOrder(string $newOrder, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['createNew']))
                 $createNew = $params['createNew'];
@@ -293,8 +291,7 @@ namespace IOFrame\Handlers{
         protected function getGlobalOrder(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['cacheTTL']))
                 $cacheTTL = $params['cacheTTL'];
@@ -358,8 +355,7 @@ namespace IOFrame\Handlers{
          */
         protected function updateGlobalOrder(string $newOrder, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['rowExists']))
                 $rowExists = $params['rowExists'];
@@ -434,8 +430,7 @@ namespace IOFrame\Handlers{
          */
         protected function createGlobalOrder(string $newOrder, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(isset($params['useCache']))
                 $useCache = $params['useCache'];
@@ -498,8 +493,7 @@ namespace IOFrame\Handlers{
 
             //Set defaults
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['local']))
                 $local = $params['local'];
@@ -573,8 +567,7 @@ namespace IOFrame\Handlers{
         */
         function pushToOrderMultiple(array $names, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(isset($params['index']))
                 $index = $params['index'];
@@ -764,8 +757,7 @@ namespace IOFrame\Handlers{
          * */
         function removeFromOrderMultiple(array $targets, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['local']))
                 $local = $params['local'];
@@ -967,8 +959,7 @@ namespace IOFrame\Handlers{
          * */
         function moveOrder(int $from, int $to, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
 
             if(isset($params['local']))
@@ -1096,8 +1087,7 @@ namespace IOFrame\Handlers{
          * */
         function swapOrder(int $num1,int $num2, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
 
             if(isset($params['local']))

@@ -112,8 +112,7 @@ namespace IOFrame\Handlers{
         function updateUserInfoFromDB(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($this->details['ID'])){
                 if($verbose)
@@ -207,8 +206,7 @@ namespace IOFrame\Handlers{
             $userLastChanged = $this->lastUpdatedUser;
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['userID']))
                 $userID = $params['userID'];
@@ -510,8 +508,7 @@ namespace IOFrame\Handlers{
         function getFromCache(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $res = null;
 
@@ -586,8 +583,7 @@ namespace IOFrame\Handlers{
         function updateCache(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!$this->useCache){
                 if($verbose)
@@ -719,8 +715,7 @@ namespace IOFrame\Handlers{
         function modifyUserRank($identifier, int $newRank, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
 
@@ -771,8 +766,7 @@ namespace IOFrame\Handlers{
         function getUsers(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $userTable = $prefix.'USERS_AUTH';
@@ -1187,8 +1181,7 @@ namespace IOFrame\Handlers{
         function setActions(array $actions, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $actionsTable = $prefix.'ACTIONS_AUTH';
@@ -1235,8 +1228,7 @@ namespace IOFrame\Handlers{
         function deleteActions(array $actions, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $actionsTable = $prefix.'ACTIONS_AUTH';
@@ -1299,8 +1291,7 @@ namespace IOFrame\Handlers{
         function getGroups(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['safeStr']))
                 $safeStr = $params['safeStr'];
@@ -1630,8 +1621,7 @@ namespace IOFrame\Handlers{
          */
         function setGroups(array $groups, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $groupsTable = $prefix.'GROUPS_AUTH';
@@ -1676,8 +1666,7 @@ namespace IOFrame\Handlers{
          */
         function deleteGroups(array $groups, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
             $userTable = $prefix.'USERS_AUTH';
@@ -1759,8 +1748,7 @@ namespace IOFrame\Handlers{
         protected function modifyAuth($identifier, array $targets, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['targetType']) ||
                 ($params['targetType'] != 'userGroups' && $params['targetType'] != 'userActions' && $params['targetType'] != 'groupActions' )

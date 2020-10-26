@@ -76,8 +76,7 @@ namespace IOFrame\Handlers{
          */
         function checkAction(int $category, $identifier, int $action,int $sec,array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Notice those statements MODIFY $params, not just extract data from them.
             $params['maxWait'] = isset($params['maxWait']) ? $params['maxWait'] : 1;
             $params['randomDelay'] = isset($params['randomDelay']) ? $params['randomDelay'] : 1000;
@@ -107,8 +106,7 @@ namespace IOFrame\Handlers{
          */
         function checkActionEventLimit(int $category, $identifier, int $action, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $checkExpiry = isset($params['checkExpiry'])? $params['checkExpiry'] : false;
             $columnToCheck = $checkExpiry ? 'Sequence_Expires' : 'Sequence_Limited_Until';
 
@@ -182,8 +180,7 @@ namespace IOFrame\Handlers{
          */
         function clearActionEventLimit(int $category, $identifier, int $action, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $removeBlacklisted = isset($params['removeBlacklisted'])? $params['removeBlacklisted'] : false;
             $removeBanned = isset($params['removeBanned'])? $params['removeBanned'] : false;
             $removeSuspicious = isset($params['removeSuspicious'])? $params['removeSuspicious'] : false;

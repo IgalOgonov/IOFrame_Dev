@@ -285,8 +285,7 @@ namespace IOFrame{
                 throw new \Exception('Invalid object type!');
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $fatherDetails = isset($typeArray['fatherDetails']) ? $typeArray['fatherDetails'] : [];
 
             $updateColumn = !empty($fatherDetails['updateColumn'])? $fatherDetails['updateColumn'] : 'Last_Updated';
@@ -441,8 +440,7 @@ namespace IOFrame{
             $validFilters = array_merge($typeArray['columnFilters'],$this->commonFilters);
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $getAllSubItems =  isset($params['getAllSubItems']) ? $params['getAllSubItems'] : false;
             if($getAllSubItems){
                 $params['limit'] = null;
@@ -795,8 +793,7 @@ namespace IOFrame{
                 throw new \Exception('Invalid object type!');
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $update = isset($params['update'])? $params['update'] : false;
             $override = $update? true : (isset($params['override'])? $params['override'] : true);
             $autoIncrement = isset($typeArray['autoIncrement']) && $typeArray['autoIncrement'];
@@ -1144,8 +1141,7 @@ namespace IOFrame{
             $validFilters = array_merge($typeArray['columnFilters'],$this->commonFilters);
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $useCache = isset($typeArray['useCache']) ? $typeArray['useCache'] : !empty($typeArray['cacheName']);
             $keyColumns = isset($typeArray['extraKeyColumns']) ? array_merge($typeArray['keyColumns'],$typeArray['extraKeyColumns']) : $typeArray['keyColumns'];
             $childCache = isset($typeArray['childCache']) ? $typeArray['childCache'] : [];
@@ -1269,8 +1265,7 @@ namespace IOFrame{
                 throw new \Exception('Invalid object type!');
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $useCache = isset($typeArray['useCache']) ? $typeArray['useCache'] : !empty($typeArray['cacheName']);
             $keyColumns = isset($typeArray['extraKeyColumns']) ? array_merge($typeArray['keyColumns'],$typeArray['extraKeyColumns']) : $typeArray['keyColumns'];
             $childCache = isset($typeArray['childCache']) ? $typeArray['childCache'] : [];

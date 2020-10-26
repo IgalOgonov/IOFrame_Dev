@@ -207,8 +207,7 @@ namespace IOFrame\Handlers{
          */
         function makeRedisMutex($key, $value = null, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             $sec = isset($params['sec']) ? $params['sec'] : 2;
             $maxWait = isset($params['maxWait']) ? $params['maxWait'] : 4;
@@ -280,8 +279,7 @@ namespace IOFrame\Handlers{
          */
         function releaseRedisMutex($key, $value = null, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if($this->RedisHandler === null || !$this->RedisHandler->isInit)
                 return -1;

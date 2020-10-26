@@ -104,8 +104,7 @@ namespace IOFrame\Handlers{
          * */
         function createSecToken(string $mail, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $duration = isset($params['duration'])? $params['duration'] : 1;
             $length = isset($params['length'])? $params['length'] : 30;
             $override = isset($params['override'])? $params['override'] : 1;
@@ -475,8 +474,7 @@ namespace IOFrame\Handlers{
          */
         function getTemplates(array $templates = [], array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
             $createdBefore = isset($params['createdBefore'])? $params['createdBefore'] : null;
             $changedAfter = isset($params['changedAfter'])? $params['changedAfter'] : null;
@@ -630,8 +628,7 @@ namespace IOFrame\Handlers{
          */
         function setTemplates(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $update = isset($params['update'])? $params['update'] : false;
             $override = isset($params['override'])? $params['override'] : true;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
@@ -797,8 +794,7 @@ namespace IOFrame\Handlers{
          */
         function  deleteTemplates(array $templates, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $checkExisting = isset($params['checkExisting'])? $params['checkExisting'] : true;
 
             $results = [];

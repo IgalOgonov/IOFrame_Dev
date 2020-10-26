@@ -156,8 +156,7 @@ namespace IOFrame\Handlers{
          */
         function getResources(array $addresses = [], string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $extraDBFilters = isset($params['extraDBFilters'])? $params['extraDBFilters'] : [];
             $extraCacheFilters = isset($params['extraCacheFilters'])? $params['extraCacheFilters'] : [];
             $createdAfter = isset($params['createdAfter'])? $params['createdAfter'] : null;
@@ -355,8 +354,7 @@ namespace IOFrame\Handlers{
          */
         function setResources(array $inputs, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $override = isset($params['override'])? $params['override'] : false;
             $update = isset($params['update'])? $params['update'] : false;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
@@ -567,8 +565,7 @@ namespace IOFrame\Handlers{
          */
         function renameResource( string $address, string $newAddress, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $copy = isset($params['copy'])? $params['copy'] : false;
             $existingAddresses =
                 isset($params['existingAddresses'])? $params['existingAddresses']
@@ -675,8 +672,7 @@ namespace IOFrame\Handlers{
          */
         function  deleteResources(array $addresses, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $checkExisting = isset($params['checkExisting'])? $params['checkExisting'] : true;
 
             $results = [];
@@ -774,8 +770,7 @@ namespace IOFrame\Handlers{
          */
         function incrementResourcesVersions(array $addresses, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $dbAddresses =[];
             $cacheAddresses = [];
@@ -833,8 +828,7 @@ namespace IOFrame\Handlers{
          */
         function getCollectionsOfResource(string $address , string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $res = $this->SQLHandler->selectFromTable(
                 $this->SQLHandler->getSQLPrefix().'RESOURCE_COLLECTIONS_MEMBERS',
@@ -910,8 +904,7 @@ namespace IOFrame\Handlers{
         function getResourceCollections(array $names = [], string $type, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $getMembers = isset($params['getMembers'])? $params['getMembers'] : false;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
 
@@ -1202,8 +1195,7 @@ namespace IOFrame\Handlers{
         function setResourceCollections(array $inputs, string $type, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $update = isset($params['update'])? $params['update'] : false;
             //If we are updating, then by default we allow overwriting
             if(!$update)
@@ -1350,8 +1342,7 @@ namespace IOFrame\Handlers{
         function deleteResourceCollections(array $names, string $type, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $dbNames = [];
 
@@ -1432,8 +1423,7 @@ namespace IOFrame\Handlers{
          */
         function addResourcesToCollection( array $addresses, string $collection, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $pushToOrder = isset($params['pushToOrder'])? $params['pushToOrder'] : false;
 
             if(isset($params['existingAddresses']))
@@ -1592,8 +1582,7 @@ namespace IOFrame\Handlers{
          */
         function removeResourcesFromCollection( array $addresses, string $collection, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $removeFromOrder = isset($params['removeFromOrder'])? $params['removeFromOrder'] : false;
 
             if(isset($params['existingCollection']))
@@ -1717,8 +1706,7 @@ namespace IOFrame\Handlers{
          */
         function moveCollectionOrder(int $from, int $to, string $collection, string $type, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['existingCollection']))
                 $existingCollection = $params['existingCollection'];
@@ -1809,8 +1797,7 @@ namespace IOFrame\Handlers{
          */
         function swapCollectionOrder(int $num1,int $num2, string $collection, string $type, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['existingCollection']))
                 $existingCollection = $params['existingCollection'];
@@ -1899,8 +1886,7 @@ namespace IOFrame\Handlers{
          */
         function addAllToCollectionOrder(string $collection, string $type, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['existingCollection']))
                 $existingCollection = $params['existingCollection'];
@@ -1991,8 +1977,7 @@ namespace IOFrame\Handlers{
          */
         function removeAllFromCollectionOrder(string $collection, string $type, array $params){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['existingCollection']))
                 $existingCollection = $params['existingCollection'];

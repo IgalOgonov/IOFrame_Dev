@@ -602,8 +602,7 @@ namespace IOFrame\Handlers{
         function hideArticles(array $articleIDs, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(count($articleIDs) < 1)
                 return false;

@@ -120,8 +120,7 @@ namespace IOFrame{
         ){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $type = isset($params['type'])? $params['type'] : '';
 
@@ -448,8 +447,7 @@ namespace IOFrame{
          */
         function deleteCacheKeys(array $keys, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(count($keys) === 0)
                 return false;

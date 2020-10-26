@@ -5,6 +5,7 @@
     font-size: 1.25em;
     margin-right: 5px;
     position: relative;
+    z-index: 9999;
     transition: 0.5s linear;
     max-width: 200px;
     box-shadow: 1px 0px 5px 0px var(--main-color-4);

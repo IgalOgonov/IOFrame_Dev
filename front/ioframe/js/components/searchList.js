@@ -282,7 +282,7 @@ Vue.component('search-list', {
                 <div class="search-titles" v-html="renderTitles"></div>\
                 <div v-for="(item,index) in items"\
                 v-html="renderItem(index)"\
-                @click.prevent="requestSelection(index)"\
+                @click="requestSelection(index)"\
                 :class="calculateItemClasses(index)"></div>\
             </div>\
             \

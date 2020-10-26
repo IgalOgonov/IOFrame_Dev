@@ -405,8 +405,7 @@ namespace IOFrame\Handlers{
         function getInfo(array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             isset($params['name'])?
                 $name = $params['name'] : $name = '';
@@ -601,8 +600,7 @@ namespace IOFrame\Handlers{
             //Set defaults
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['override']))
                 $override = $params['override'];
@@ -783,8 +781,7 @@ namespace IOFrame\Handlers{
 
             //Set defaults
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['override']))
                 $override = $params['override'];
@@ -984,8 +981,7 @@ namespace IOFrame\Handlers{
 
             //Set defaults
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $iterationLimit = isset($params['iterationLimit'])? $params['iterationLimit'] : -1;
 
             if(isset($params['local']))
@@ -1145,8 +1141,7 @@ namespace IOFrame\Handlers{
          * */
         function pushToOrder(string $name, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['verify']))
                 $verify = $params['verify'];
@@ -1186,8 +1181,7 @@ namespace IOFrame\Handlers{
          * */
         function removeFromOrder(string $target, string $type, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(isset($params['verify']))
                 $verify = $params['verify'];
@@ -1238,8 +1232,7 @@ namespace IOFrame\Handlers{
          * */
         function moveOrder(int $from, int $to, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(isset($params['verify']))
                 $verify = $params['verify'];
@@ -1317,8 +1310,7 @@ namespace IOFrame\Handlers{
          * */
         function swapOrder(int $num1,int $num2, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(isset($params['verify']))
                 $verify = $params['verify'];
@@ -1399,8 +1391,7 @@ namespace IOFrame\Handlers{
          * */
         function validateOptions(string $target, string $url, string $name, array $options, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $params['isFile'] = false;
             //-------Time to validate options
             if(!$this->validatePluginFile($url,$target,$params)){
@@ -1470,8 +1461,7 @@ namespace IOFrame\Handlers{
          * */
         function validatePluginFile($target, string $type,array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['isFile'])?
                 $isFile = $params['isFile'] : $isFile = false;
             $res = false;
@@ -1712,8 +1702,7 @@ namespace IOFrame\Handlers{
          * */
         function ensurePublicImage(string $pName ,array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $pUrl = $this->settings->getSetting('absPathToRoot').PLUGIN_FOLDER_PATH.PLUGIN_FOLDER_NAME.$pName;   //Plugin folder
             $imgUrl = $this->settings->getSetting('absPathToRoot').PLUGIN_IMAGE_FOLDER.$pName;   //shared image folder
             $supportedFormats = ['png','jpg','bmp','gif'];                            //Supported image extentions
@@ -1858,8 +1847,7 @@ namespace IOFrame\Handlers{
          * */
         function validateDependencies(string $name,$params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['dependencyArray'])?
                 $dependencyArray = $params['dependencyArray'] : $dependencyArray = [];
             //Validate dependency array
@@ -1915,8 +1903,7 @@ namespace IOFrame\Handlers{
          * */
         function populateDependencies(string $name, array $dependencies, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $url = $this->settings->getSetting('absPathToRoot').'localFiles/pluginDependencyMap/';
             if(!is_dir($url))
                 if(!mkdir($url))
@@ -1968,8 +1955,7 @@ namespace IOFrame\Handlers{
          * */
         function checkDependencies(string $name, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['validate'])?
                 $validate = $params['validate'] : $validate = true;
             $url = $this->settings->getSetting('absPathToRoot').'localFiles/pluginDependencyMap/';

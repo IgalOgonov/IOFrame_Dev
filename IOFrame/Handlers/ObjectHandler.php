@@ -121,8 +121,7 @@ namespace IOFrame\Handlers{
             //set default params
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['safeStr']))
                 $safeStr = true;
@@ -374,8 +373,7 @@ namespace IOFrame\Handlers{
             //set default params
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['safeStr']))
                 $safeStr = true;
@@ -738,8 +736,7 @@ namespace IOFrame\Handlers{
             //set default params
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['safeStr']))
                 $safeStr = true;
@@ -843,8 +840,7 @@ namespace IOFrame\Handlers{
          */
         function deleteObjects(array $inputs, $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $tableName = $this->SQLHandler->getSQLPrefix().$this->tableName.'_CACHE';
             //You must be logged in to use this handler, as it checks the caller's rank and ID.
             if(!IOFrame\Util\assertLogin())
@@ -952,8 +948,7 @@ namespace IOFrame\Handlers{
             //set default params
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['updated']))
                 $updated = 0;
@@ -1237,8 +1232,7 @@ namespace IOFrame\Handlers{
         protected function checkObAddGroupAuth($groupInfo, $sesInfo, bool $toAdd, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             //Maybe it's allowed to add objects to this group
             if($toAdd){
@@ -1268,8 +1262,7 @@ namespace IOFrame\Handlers{
         protected function getObjectsFromCacheOrDB($targets, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(!isset($params['type'])){
                 if($verbose)
@@ -1402,8 +1395,7 @@ namespace IOFrame\Handlers{
          * */
         function createGroups(array $groups, array $sesInfo, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['cacheTTL']))
                 $cacheTTL = $params['cacheTTL'];
@@ -1478,8 +1470,7 @@ namespace IOFrame\Handlers{
          * */
         function updateGroups(array $groups, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(isset($params['cacheTTL']))
                 $cacheTTL = $params['cacheTTL'];
@@ -1580,8 +1571,7 @@ namespace IOFrame\Handlers{
 
         function checkGroupsUpdated(array $groups, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             if(count($groups) == 0)
                 return [];
@@ -1660,8 +1650,7 @@ namespace IOFrame\Handlers{
                 $cacheTTL = $this->cacheTTL;
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             //Array of the type <pageName> => <objectID> for all objects that need to be assigned
             $assignMaps = [];
@@ -1906,8 +1895,7 @@ namespace IOFrame\Handlers{
          * */
         function getObjectMap(string $map, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['time'])?
                 $time = $params['time'] : $time = 0;
             $pageArr = $this->retrieveObjectMap($map, $params);
@@ -1942,8 +1930,7 @@ namespace IOFrame\Handlers{
          * */
         function getObjectMaps(array $pageArray, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $res = array();
             $pagesToGet = [];
             foreach($pageArray as $pageName=>$time){

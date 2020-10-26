@@ -66,8 +66,7 @@ namespace IOFrame\Handlers{
          */
         function regUser(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             //Hash the password
             $pass = $inputs["p"];
@@ -128,8 +127,7 @@ namespace IOFrame\Handlers{
          */
         private function reg_checkExistingUserOrMail(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             try{
                 $checkRes=$this->SQLHandler->selectFromTable($this->SQLHandler->getSQLPrefix().'USERS',[['Email', $inputs["m"],'='],['Username', $inputs["u"],'='],'OR'],
                     [],['noValidate'=>true,'test'=>$test,'verbose'=>$verbose]);
@@ -164,8 +162,7 @@ namespace IOFrame\Handlers{
          */
         private function reg_makeUserCore(array $inputs, string $hash, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $query = "INSERT INTO ".$this->SQLHandler->getSQLPrefix().
                 "USERS(Username, Password, Email, Active, Auth_Rank, SessionID)
              VALUES (:Username, :Password, :Email,:Active, :Auth_Rank,:SessionID)";
@@ -218,8 +215,7 @@ namespace IOFrame\Handlers{
          */
         private function reg_makeUserAuth(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $query = "INSERT INTO ".$this->SQLHandler->getSQLPrefix()."USERS_AUTH(ID) SELECT ID FROM ".$this->SQLHandler->getSQLPrefix()."USERS WHERE Username=:Username";
             //Add extra data
             if(!$test)
@@ -243,8 +239,7 @@ namespace IOFrame\Handlers{
          */
         private function reg_makeUserExtra(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Need to fetch the ID of the user we just created in order to add meta-data
 
             //Get the ID of the user we just created
@@ -297,8 +292,7 @@ namespace IOFrame\Handlers{
          */
         function changePassword(int $userID,string $plaintextPassword, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $hash = password_hash($plaintextPassword, PASSWORD_DEFAULT);
             $userInfo = $this->SQLHandler->selectFromTable(
                 $this->SQLHandler->getSQLPrefix().'USERS',['ID',$userID,'='],['ID'],['test'=>$test,'verbose'=>$verbose]
@@ -327,8 +321,7 @@ namespace IOFrame\Handlers{
          */
         function changeMail(int $userID,string $newEmail, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $tname = $this->SQLHandler->getSQLPrefix().'USERS';
             $userInfo = $this->SQLHandler->selectFromTable($tname,
                 [
@@ -375,8 +368,7 @@ namespace IOFrame\Handlers{
          */
         function accountActivation(string $uMail, int $uId = null, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['async'])?
                 $async = $params['async'] : $async = true;
             //Find user ID if it was not provided
@@ -426,8 +418,7 @@ namespace IOFrame\Handlers{
 
         function confirmRegistration(int $id, string $code, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $res = $this->confirmCode($id,$code,'ACCOUNT_ACTIVATION',['test'=>$test,'verbose'=>$verbose]);
 
@@ -463,8 +454,7 @@ namespace IOFrame\Handlers{
          */
         function pwdResetSend(string $uMail, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['async'])?
                 $async = $params['async'] : $async = true;
 
@@ -543,8 +533,7 @@ namespace IOFrame\Handlers{
          */
         function pwdResetConfirm(int $id, string $code, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $res = $this->confirmCode($id,$code,'PASSWORD_RESET',['test'=>$test,'verbose'=>$verbose]);
             return $res;
         }
@@ -561,8 +550,7 @@ namespace IOFrame\Handlers{
          */
         function mailChangeSend(string $uMail, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['async'])?
                 $async = $params['async'] : $async = true;
 
@@ -640,8 +628,7 @@ namespace IOFrame\Handlers{
          */
         function mailChangeConfirm(int $id, string $code, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $res = $this->confirmCode($id,$code,'MAIL_CHANGE',['test'=>$test,'verbose'=>$verbose]);
             return $res;
         }
@@ -728,8 +715,7 @@ namespace IOFrame\Handlers{
             string $uMail, int $uId, string $confirmCode, int $templateNum, string $title, bool $async, array $params = [])
         {
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             if(!defined('MailHandler'))
                 require 'MailHandler.php';
 
@@ -777,8 +763,7 @@ namespace IOFrame\Handlers{
          */
         function banUser(int $minutes, $identifier, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Sanitation
             if($minutes = 0 || $minutes > 1000000000)
                 $minutes = 1000000000;
@@ -822,8 +807,7 @@ namespace IOFrame\Handlers{
          */
         function logOut($params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
             if(!isset($params['oldSesID']))
                 $oldSesID = '';
@@ -934,8 +918,7 @@ namespace IOFrame\Handlers{
          */
         function logIn(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $log = $inputs["log"];
             if($this->userSettings->getSetting('rememberMe') < 1)
                 unset($inputs["userID"]);
@@ -1119,8 +1102,7 @@ namespace IOFrame\Handlers{
          */
         private function login_updateSessionCore(array $checkRes,array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             isset($params['override'])?
                 $override = $params['override'] : $override = false;
             //Update current session - this is how the rest of the app knows the user is logged in
@@ -1163,8 +1145,7 @@ namespace IOFrame\Handlers{
          */
         private function login_updateHistory(array $checkRes,array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
 
             $query = 'INSERT INTO '.$this->SQLHandler->getSQLPrefix().'LOGIN_HISTORY(Username, IP, Country, Login_Time)
@@ -1204,8 +1185,7 @@ namespace IOFrame\Handlers{
          */
         function checkUserLogin($identifier, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $prefix = $this->SQLHandler->getSQLPrefix();
 
@@ -1346,8 +1326,7 @@ namespace IOFrame\Handlers{
          */
         function getUsers(array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $idAtLeast = isset($params['idAtLeast'])? $params['idAtLeast'] : 0;
             $idAtMost = isset($params['idAtMost'])? $params['idAtMost'] : null;
             $rankAtLeast = isset($params['rankAtLeast'])? $params['rankAtLeast'] : 0;
@@ -1509,8 +1488,7 @@ namespace IOFrame\Handlers{
          */
         function updateUser($identifier, array $inputs, string $identifierType = 'ID', array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Inputs
             $username = isset($inputs['username'])? $inputs['username'] : null;
             $email = isset($inputs['email'])? $inputs['email'] : null;

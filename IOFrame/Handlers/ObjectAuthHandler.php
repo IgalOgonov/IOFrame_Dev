@@ -676,8 +676,7 @@ namespace IOFrame\Handlers{
         function userHasActions(string $category, int $id, string $object, array $actions, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $actionSeparator = isset($params['actionSeparator'])? $params['actionSeparator'] : 'AND';
 
             $existingActions = [];
@@ -797,8 +796,7 @@ namespace IOFrame\Handlers{
         function userObjects(string $category, int $id, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
 
             $objects = isset($params['objects'])? $params['objects'] : [];
             $requiredActions = isset($params['requiredActions'])? $params['requiredActions'] : [];
@@ -925,8 +923,7 @@ namespace IOFrame\Handlers{
         function groupObjects(string $category, int $id, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $objects = isset($params['objects'])? $params['objects'] : [];
             $requiredActions = isset($params['requiredActions'])? $params['requiredActions'] : [];
 
@@ -1020,8 +1017,7 @@ namespace IOFrame\Handlers{
         function groupUsers(string $category, int $groupID, array $params){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $users = isset($params['users'])? $params['users'] : [];
             $prefix = $this->SQLHandler->getSQLPrefix();
 

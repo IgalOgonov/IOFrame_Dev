@@ -85,8 +85,7 @@ namespace IOFrame\Handlers{
         function handleUploadedFile(array $uploadNames, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $safeMode = isset($params['safeMode'])? $params['safeMode'] : false;
 
             //Set maximum file size.
@@ -197,6 +196,12 @@ namespace IOFrame\Handlers{
                         $img = imagecreatefrompng( $uploaded_tmp );
                         imagesavealpha($img, TRUE);
                         imagepng( $img, $temp_file, 9*(1-$imageQualityPercentage/100));
+                    }
+                    elseif( $uploaded_type == 'image/webp') {
+                        if($verbose)
+                            echo 'Writing WebP image to temp directory'.EOL;
+                        $img = imagecreatefromwebp( $uploaded_tmp);;
+                        imagewebp($img, $temp_file, $imageQualityPercentage);
                     }
                     //Anything bellow this cannot be safely uploaded (at least for now)
                     elseif($safeMode){

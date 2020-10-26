@@ -134,8 +134,7 @@ namespace IOFrame{
             $test = isset($params['test'])? $params['test'] : false;
             $prependPrefix = isset($params['prependPrefix'])? $params['prependPrefix'] : true;
             $pushKeyToColumns = isset($params['pushKeyToColumns'])? $params['pushKeyToColumns'] : true;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $fillMissingKeysWithNull = isset($params['fillMissingKeysWithNull'])? $params['fillMissingKeysWithNull'] : false;
 
             $extraConditions = isset($params['extraConditions'])? $params['extraConditions'] : [];

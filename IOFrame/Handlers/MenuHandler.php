@@ -192,8 +192,7 @@ namespace IOFrame\Handlers{
          */
         function setMenuItems(string $identifier, array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
 
             if(isset($params['existing']))
@@ -285,8 +284,7 @@ namespace IOFrame\Handlers{
          */
         function moveMenuBranch(string $identifier, string $blockIdentifier, array $sourceAddress, array $targetAddress, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
-            $verbose = isset($params['verbose'])?
-                $params['verbose'] : $test ? true : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             $override = isset($params['override'])? $params['override'] : false;
             $safeStr = isset($params['safeStr'])? $params['safeStr'] : true;
             $updateOrder = isset($params['updateOrder'])? $params['updateOrder'] : true;
