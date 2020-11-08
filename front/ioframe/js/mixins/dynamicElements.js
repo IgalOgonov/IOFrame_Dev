@@ -15,7 +15,7 @@ const dynamicElements = {
                     //Throttle time in milliseconds
                     throttle: 250,
                     //Throttle timer name - supports multiple modules without problems
-                    timerName: makeid(20,'')+(this.identifier? this.identifier+'-':'')+'throttle-timer'
+                    timerName: ''
                 },
                 /* Objects of the form:
                  * identifier - element identifier - needs to be unique! {
@@ -41,8 +41,10 @@ const dynamicElements = {
     },
     created: function(){
         for(let i in this.dynamicElementState){
-            if(i === '@')
+            if(i === '@'){
+                this.dynamicElementState[i].timerName = makeid(20,'')+(this.identifier? this.identifier+'-':'')+'throttle-timer';
                 continue;
+            }
             if(this.dynamicElementState[i].state === undefined)
                 Vue.set(this.dynamicElementState[i],'state',{});
             if(this.dynamicElementState[i].state.classes === undefined)

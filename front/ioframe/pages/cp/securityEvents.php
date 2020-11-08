@@ -8,7 +8,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_s
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
 array_push($CSS, 'cp.css', 'components/searchList.css', 'components/security/securityEventsEditor.css', 'modules/securityEvents.css', 'modules/CPMenu.css');
-array_push($JS, 'mixins/sourceURL.js', 'mixins/eventHubManager.js', 'components/searchList.js', 'components/security/securityEventsEditor.js', 'modules/CPMenu.js', 'modules/securityEvents.js');
+array_push($JS, 'mixins/sourceUrl.js', 'mixins/eventHubManager.js', 'components/searchList.js', 'components/security/securityEventsEditor.js', 'modules/CPMenu.js', 'modules/securityEvents.js');
 
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';

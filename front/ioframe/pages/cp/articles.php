@@ -11,7 +11,7 @@ array_push($CSS, 'ext/highlight.js/ioframe-highlight.css','cp.css', 'components/
     'components/mediaSelector.css','components/articles/defaultHeadlineRenderer.css','components/IOFrameGalleryDefault.css',
     'components/articles/articleBlockEditor.css','components/articles/articlesEditor.css', 'modules/articles.css',
     'modules/CPMenu.css');
-array_push($JS, 'ext/marked/marked.min.js', 'ext/highlight.js/highlight.pack.js', 'mixins/sourceURL.js','mixins/componentSize.js', 'mixins/eventHubManager.js',
+array_push($JS, 'ext/marked/marked.min.js', 'ext/highlight.js/highlight.pack.js', 'mixins/sourceUrl.js','mixins/componentSize.js', 'mixins/eventHubManager.js',
     'components/IOFrameGallery.js','components/media/mediaViewer.js','components/searchList.js','components/mediaSelector.js','components/articles/defaultHeadlineRenderer.js',
     'components/articles/articleBlockEditor.js', 'components/articles/articlesEditor.js', 'modules/CPMenu.js', 'modules/articles.js');
 

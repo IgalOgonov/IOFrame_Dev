@@ -23,7 +23,8 @@
     align-items: center;
     transition: all 0s;
 }
-.ioframe-gallery .preview-container {
+.ioframe-gallery .preview-container,
+.ioframe-gallery .full-screen-container {
     transition: all 0s, opacity 0.5s ease-in-out,background-color 0.5s ease-in-out;
     position: absolute;
     opacity: 0;
@@ -35,7 +36,8 @@
     padding: 10px;
     background-color: var(--secondary-color-1);
 }
-.ioframe-gallery:hover .preview-container{
+.ioframe-gallery:hover .preview-container,
+.ioframe-gallery:hover .full-screen-container{
     background-color: var(--secondary-color-2);
 }
 .ioframe-gallery .preview-container.selected {
@@ -132,6 +134,49 @@ html[dir="rtl"] .ioframe-gallery .slider.on-top button.prev{
     width: 200px;
     height: 100px;
     min-height: 100%;
+}
+
+/*Full screen*/
+.ioframe-gallery.has-full-screen .preview-container{
+    cursor: pointer;
+}
+.ioframe-gallery.has-full-screen .full-screen-container-wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.ioframe-gallery.full-screen .full-screen-container-wrapper .full-screen-container{
+    cursor: pointer;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 101;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    opacity: 1;
+    padding: 0;
+    margin: 0;
+    background-color: var(--secondary-color-3-8);
+}
+.ioframe-gallery.full-screen .full-screen-container-wrapper .full-screen-container > img{
+    max-width: calc(100vw - 100px);
+    max-height: calc(100vh - 100px);
+}
+.ioframe-gallery.full-screen .full-screen-container-wrapper a {
+    position: fixed;
+    bottom: 10px;
+    z-index: 101;
+    font-size: 1.5em;
+    padding: 0px 10px;
+    background: var(--secondary-color-4);
+    border: var(--secondary-color-7) 1px solid;
+    transition: 0.2s ease-in-out;
+}
+.ioframe-gallery.full-screen .full-screen-container-wrapper a:hover {
+    background: var(--secondary-color-5);
 }
 
 /***Responsiveness***/

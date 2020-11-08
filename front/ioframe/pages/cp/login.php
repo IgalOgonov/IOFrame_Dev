@@ -6,7 +6,7 @@ require $settings->getSetting('absPathToRoot').'front/ioframe/templates/definiti
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_start.php';
 
 array_push($CSS, 'cp.css','popUpTooltip.css', 'modules/CPMenu.css', 'modules/loginRegister.css');
-array_push($JS, 'ezPopup.js', 'mixins/eventHubManager.js','mixins/sourceURL.js', 'modules/CPMenu.js', 'modules/loginRegister.js');
+array_push($JS, 'ezPopup.js', 'mixins/eventHubManager.js','mixins/sourceUrl.js', 'modules/CPMenu.js', 'modules/loginRegister.js');
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';
 

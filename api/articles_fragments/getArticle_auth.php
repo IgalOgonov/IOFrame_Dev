@@ -1,9 +1,8 @@
 <?php
 
 if($requiredAuth !== REQUIRED_AUTH_NONE){
-
     //Convert keys
-    $authKeys = [['Article_ID'=>$inputs['id']]];
+    $authKeys = ($inputs['id'] !== null)? [['Article_ID'=>$inputs['id']]] : [['Article_Address'=>$inputs['articleAddress']]];
     $authCheck = checkAuth([
         'test'=>$test,
         'authRequired' => $requiredAuth,

@@ -87,7 +87,7 @@ Vue.component('user-login', {
                         if(context.rMe)
                             data.append('userID', localStorage.getItem('deviceID'));
                         //Api url
-                        let url=document.pathToRoot+"api\/users";
+                        let url=document.rootURI+"api\/users";
                         //Request itself
                         fetch(url, {
                             method: 'post',

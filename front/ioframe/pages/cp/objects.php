@@ -8,7 +8,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_s
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
 array_push($CSS, 'cp.css', 'modules/objects.css', 'modules/CPMenu.css');
-array_push($JS, 'mixins/sourceURL.js','modules/CPMenu.js', 'modules/objects.js');
+array_push($JS, 'mixins/sourceUrl.js','modules/CPMenu.js', 'modules/objects.js');
 
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';

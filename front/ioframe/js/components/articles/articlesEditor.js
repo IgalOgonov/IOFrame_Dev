@@ -899,7 +899,8 @@ Vue.component('articles-editor', {
                 {
                     'verbose': this.verbose,
                     'parseJSON':true,
-                    'identifier':this.identifier
+                    'identifier':this.identifier,
+                    ignoreCSRF:true
                 }
             );
         },

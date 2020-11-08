@@ -17,19 +17,27 @@ if(
     $img[$inputs['address']]["Data_Type"] &&
     $img[$inputs['address']]["Blob_Content"]
 ){
-
-    header('HTTP/1.0 200 Ok');
-
+    $imgHash=md5($img[$inputs['address']]["Blob_Content"]);
+    $headers = apache_request_headers();
+    if(!empty($headers['If-None-Match']) && $imgHash === $headers['If-None-Match']){
+        header('HTTP/1.1 304 Not Modified');
+        header('Cache-Control: public, max-age=241920000');
+        header('Expires: '.date("r", (time()+241920000)));
+        header('ETag: '.$imgHash);
+        die();
+    }
+    header('HTTP/1.1 200 Ok');
     header("Content-Type: " . $img[$inputs['address']]["Data_Type"]);
 
     //If a user requested a resource with a specific 'lastChanged' time, it is safe to assume he'll get a different one (thus different URL) once the image changes
     if($inputs['lastChanged'] !== null){
-        header('Cache-Control: public, max-age=241920000, immutable');
+        header('Cache-Control: public, max-age=241920000');
         //Yeah, those fucking headers aren't gonna ruin my cache control
         header('Expires: '.date("r", (time()+241920000)));
         //Yes, I am aware only "no-cache" is valid
         header('Pragma: cache');
-
+        //Set the ETag
+        header('ETag: '.$imgHash);
     }
     else{
         header('Cache-Control: no-store');

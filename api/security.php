@@ -369,8 +369,6 @@ $standardPaginationInputs = ['limit','offset'];
 switch($action){
 
     case 'getRulebookCategories':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
         $arrExpected = [];
 
         require 'setExpectedInputs.php';
@@ -384,8 +382,6 @@ switch($action){
         break;
 
     case 'getRulebookRules':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected = ["category","type"];
 
@@ -432,8 +428,6 @@ switch($action){
         break;
 
     case 'getEventsMeta':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected = ["inputs","limit","offset"];
 
@@ -482,8 +476,6 @@ switch($action){
     /*** IP Related ***/
 
     case 'getIPs':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected = ["ips","reliable","type","ignoreExpired","limit","offset"];
 
@@ -499,8 +491,6 @@ switch($action){
         break;
 
     case 'getIPRanges':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected = ["ranges","type","ignoreExpired","limit","offset"];
 

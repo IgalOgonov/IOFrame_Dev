@@ -7,7 +7,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_sta
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-array_push($JS,'mixins/sourceURL.js','modules/CPMenu.js','modules/mails.js');
+array_push($JS,'mixins/sourceUrl.js','modules/CPMenu.js','modules/mails.js');
 
 array_push($CSS,'cp.css','modules/CPMenu.css','modules/mails.css');
 

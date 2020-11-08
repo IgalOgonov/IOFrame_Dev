@@ -9,7 +9,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redire
 
 array_push($CSS, 'cp.css', 'components/searchList.css', 'components/security/securityIPsEditor.css',
     'components/security/securityIPRangesEditor.css','modules/securityIP.css', 'modules/CPMenu.css');
-array_push($JS, 'mixins/sourceURL.js', 'mixins/eventHubManager.js', 'components/searchList.js','components/security/securityIPsEditor.js',
+array_push($JS, 'mixins/sourceUrl.js', 'mixins/eventHubManager.js', 'components/searchList.js','components/security/securityIPsEditor.js',
     'components/security/securityIPRangesEditor.js','modules/CPMenu.js', 'modules/securityIP.js');
 
 

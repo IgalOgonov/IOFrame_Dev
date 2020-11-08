@@ -299,6 +299,10 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     <span>Allow Testing APIs:</span>
                     <input type="checkbox" name="allowTesting" value="0" checked><br>
                     <small>If this is checked, API testing will be allowed with no restrictions. DONT CHECK IN PRODUCTION (live sites)!!!</small><br>
+                            
+                    <span>Allow Getting Restricted Articles by Address:</span>
+                    <input type="checkbox" name="allowTesting" value="0" checked><br>
+                    <small>If this is checked, users will be able to get articles with "restricted" auth with direct links (making them hidden for those without the link, in effect)</small><br>
 
                     <span>Registration Mail Confirmation:</span>
                     <input type="checkbox" name="regConfirmMail" value="1" checked><br>
@@ -410,6 +414,14 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                     echo 'User setting allowTesting set to '.$_REQUEST['allowTesting'].EOL;
                 else{
                     echo 'Failed to set User setting allowTesting  to '.$_REQUEST['allowTesting'].EOL.EOL;
+                }
+            }
+
+            if(isset($_REQUEST['restrictedArticleByAddress'])){
+                if($apiSettings->setSetting('restrictedArticleByAddress',$_REQUEST['restrictedArticleByAddress'],['createNew'=>true]))
+                    echo 'User setting restrictedArticleByAddress set to '.$_REQUEST['restrictedArticleByAddress'].EOL;
+                else{
+                    echo 'Failed to set User setting restrictedArticleByAddress  to '.$_REQUEST['restrictedArticleByAddress'].EOL.EOL;
                 }
             }
 
@@ -1220,6 +1232,7 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($apiArgs,["trees",0]);
             array_push($apiArgs,["users",1]);
             array_push($apiArgs,["allowTesting",0]);
+            array_push($apiArgs,["restrictedArticleByAddress",0]);
             array_push($apiArgs,["captchaFile",'validateCaptcha.php']);
 
             array_push($metaArgs,['localSettings',json_encode(['local'=>1,'db'=>0,'title'=>'Local Node Settings'])]);

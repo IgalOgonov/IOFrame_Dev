@@ -42,6 +42,31 @@ Vue.component('user-registration', {
                 };
             }
         },
+        //Various agreements to be rendered
+        agreementOptions:{
+            type: Array,
+            default: function(){
+                return [
+                    /* {
+                     *  [agreeable: bool, default true - whether this allows the user to check it],
+                     *  [required: bool, default true - whether user checking this is required],
+                     *  [relativeLink: bool, default false - whether the link is relative or absolute],
+                     *  link: string, link to agreement,
+                     *  text:{
+                     *      prefix: html content before the link (via v-html),
+                     *      link: html content inside the link,
+                     *      suffix: html content after the link,
+                     *      required: html content for the message that pops up if the user does not agree to a required agreement.
+                     *  },
+                     *  [onSend:{
+                     *    sendAs: string, send this as the following parameter,
+                     *    parse: function that parses the value (true or false) and sends it under the key defined by sendAs
+                     *  }]
+                     * }
+                    * */
+                ];
+            }
+        },
         text: {
             type: Object,
             default: function(){
@@ -117,6 +142,7 @@ Vue.component('user-registration', {
                 val:'',
                 class:''
             },
+            agreements:[],
             captcha: '',
             captchaID: '',
             req: 'real',
@@ -129,6 +155,15 @@ Vue.component('user-registration', {
         eventHub.$on('registrationSuccess',this.captchaSuccess);
         eventHub.$on('registrationExpired',this.captchaExpired);
         eventHub.$on('registrationError',this.captchaError);
+        for(let i in this.agreementOptions){
+            this.agreements[i] = false;
+            if(this.agreementOptions[i].agreeable === undefined)
+                this.agreementOptions[i].agreeable = true;
+            if(this.agreementOptions[i].required === undefined)
+                this.agreementOptions[i].required = true;
+            if(this.agreementOptions[i].relativeLink)
+                this.agreementOptions[i].link = document.rootURI + this.agreementOptions[i].link;
+        };
     },
     methods:{
         reg: function(){
@@ -184,6 +219,15 @@ Vue.component('user-registration', {
                 alertLog(this.text.captcha.validation,'warning');
                 errors++;
             }
+            let agreement;
+            //Check whether any required agreement is checked
+            for(let i in this.agreementOptions){
+                agreement = this.agreementOptions[i];
+                if(agreement.required && !this.agreements[i]){
+                    alertLog(agreement.text.required,'warning');
+                    errors++;
+                }
+            };
 
             //if no errors - send data
             if(errors<1){
@@ -198,6 +242,13 @@ Vue.component('user-registration', {
                 data.append('m', this.m.val);
                 data.append('p', context.p.val);
                 data.append('req', req);
+                for(let i in this.agreementOptions){
+                    agreement = this.agreementOptions[i];
+                    if(this.agreements[i] && (agreement.onSend!==undefined) && (agreement.onSend.sendAs!==undefined)){
+                        let value = (agreement.onSend.parse!==undefined)? agreement.onSend.parse(this.agreements[i]) : this.agreements[i];
+                        data.append(agreement.onSend.sendAs, value);
+                    }
+                };
                 let url=document.pathToRoot+"api\/users";
                 //Request itself
                 fetch(url, {
@@ -354,6 +405,13 @@ Vue.component('user-registration', {
         <input :class="[p2.class]" type="password" id="p2_reg" :placeholder="text.repeatPassword" v-model="p2.val" required>
     
         <input :class="[m.class]" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required>
+        
+        <div v-for="(options, index) in agreementOptions" class="agreement" :class="{required:options.required}">
+                <input v-if="options.agreeable" type="checkbox" v-model:value="agreements[index]">
+                <span v-if="options.text.prefix" v-html="options.text.prefix"></span>
+                <a v-if="options.text.link" v-html="options.text.link" :href="options.link"></a>
+                <span v-if="options.text.suffix" v-html="options.text.suffix"></span>
+        </div>
         
         <div v-if="requireCaptcha && captchaOptions.siteKey" class="h-captcha" :data-sitekey="captchaOptions.siteKey" data-callback="captchaRegistrationSuccess" data-expired-callback="captchaRegistrationExpired" data-error-callback="captchaRegistrationError"></div>
     

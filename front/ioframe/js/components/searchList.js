@@ -221,6 +221,11 @@ Vue.component('search-list', {
         selected: {
             default: -1
         },
+        //Whether to check CSRF token on search (shouldn't be needed in 99% of the cases)
+        checkCSRFToken: {
+            type: Boolean,
+            default: false
+        },
         //Test Mode
         test: {
             type: Boolean,
@@ -602,7 +607,8 @@ Vue.component('search-list', {
                     'verbose': this.verbose,
                     'parseJSON':true,
                     'identifier':this.identifier,
-                    'urlPrefix':''
+                    'urlPrefix':'',
+                    'ignoreCSRF':!this.checkCSRFToken
                 }
             );
         },

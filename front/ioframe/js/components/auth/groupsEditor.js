@@ -154,7 +154,8 @@ Vue.component('auth-groups-editor', {
                 {
                     'verbose': this.verbose,
                     'parseJSON':true,
-                    'identifier':this.identifier
+                    'identifier':this.identifier,
+                    ignoreCSRF:true
                 }
             );
         },

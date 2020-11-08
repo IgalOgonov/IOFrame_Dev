@@ -71,6 +71,7 @@
  *      - Gets a database media file (returns the media file itself)
  *        address:  string, image address (identifier)
  *        resourceType:  string, default 'img' - resource type
+ *        lastChanged: int, used for caching purposes. If the resulting image is older than this,
  *
  *        Examples: action=getDBMedia&address=image
  *

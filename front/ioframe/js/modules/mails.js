@@ -98,7 +98,8 @@ var mails = new Vue({
 
             this.apiRequest(formData, this.apiName, 'templatesRequest', {
                 verbose: this.verbose,
-                parseJSON: true
+                parseJSON: true,
+                ignoreCSRF:true
             })
         },
         //Update template

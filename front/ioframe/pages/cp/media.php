@@ -7,7 +7,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_sta
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-array_push($JS,'mixins/sourceURL.js','mixins/eventHubManager.js','components/media/editImage.js','components/media/uploadImage.js',
+array_push($JS,'mixins/sourceUrl.js','mixins/eventHubManager.js','components/media/editImage.js','components/media/uploadImage.js',
     'components/media/mediaViewer.js','components/searchList.js','modules/CPMenu.js','modules/media.js');
 
 array_push($CSS,'animations.css','cp.css','components/searchList.css','components/media/mediaViewer.css','modules/CPMenu.css','modules/media.css');

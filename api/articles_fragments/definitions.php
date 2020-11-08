@@ -320,6 +320,48 @@ function checkAuth($params){
     $requiredKeys = [];
     //A map of input indexes
     $requiredKeyMap = [];
+
+    //Whether the keys are addresses or IDs
+    $areIds = true;
+    //Check if any of the keys are actually addresses - in which case, this function wont work for them, and we need to get them from the DB
+    foreach($keys as $index => $keyArr){
+        if(!isset($keyArr['Article_ID'])){
+            $areIds = false;
+            break;
+        }
+    }
+    if(!$areIds){
+        if(!defined('SQLHandler'))
+            require __DIR__.'/../../IOFrame/Handlers/SQLHandler.php';
+        if(!isset($SQLHandler))
+            $SQLHandler = new \IOFrame\Handlers\SQLHandler($localSettings,$defaultSettingsParams);
+        $addresses = [];
+        foreach($keys as $index => $keyArr){
+            if(isset($keyArr['Article_Address']))
+                array_push($addresses,[$keyArr['Article_Address'],'STRING']);
+        }
+        if(count($addresses) > 0){
+            array_push($addresses,'CSV');
+            $requiredIds = $SQLHandler->selectFromTable(
+                $SQLHandler->getSQLPrefix().'ARTICLES',
+                [
+                    'Article_Address',
+                    $addresses,
+                    'IN'
+                ],
+                ['Article_ID'],
+                ['test'=>$test]
+            );
+            if(gettype($requiredIds) !== 'array')
+                return false;
+            else{
+                $keys = [];
+                foreach ($requiredIds as $dbArray)
+                    array_push($keys,['Article_ID'=>$dbArray['Article_ID']]);
+            }
+        }
+    }
+
     //The "keys" array could be empty - but then, this part just wont matter
     foreach($keys as $index => $keyArr){
         array_push($requiredKeys,(string)($keyArr['Article_ID']));

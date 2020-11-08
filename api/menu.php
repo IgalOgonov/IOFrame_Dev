@@ -190,8 +190,6 @@ $inputs = [];
 switch($action){
 
     case 'getMenus':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected =["offset","limit"];
 
@@ -241,8 +239,6 @@ switch($action){
         break;
 
     case 'getMenu':
-        if(!validateThenRefreshCSRFToken($SessionHandler))
-            exit(WRONG_CSRF_TOKEN);
 
         $arrExpected =["identifier"];
 

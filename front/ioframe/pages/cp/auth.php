@@ -8,7 +8,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_s
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
 array_push($CSS, 'cp.css', 'components/searchList.css', 'components/auth/actionsEditor.css', 'components/auth/groupsEditor.css', 'components/auth/usersEditor.css', 'components/auth/editor.css', 'modules/auth.css', 'modules/CPMenu.css');
-array_push($JS, 'mixins/sourceURL.js', 'mixins/eventHubManager.js', 'components/searchList.js', 'components/auth/actionsEditor.js', 'components/auth/groupsEditor.js', 'components/auth/usersEditor.js', 'modules/CPMenu.js', 'modules/auth.js');
+array_push($JS, 'mixins/sourceUrl.js', 'mixins/eventHubManager.js', 'components/searchList.js', 'components/auth/actionsEditor.js', 'components/auth/groupsEditor.js', 'components/auth/usersEditor.js', 'modules/CPMenu.js', 'modules/auth.js');
 
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'headers_get_resources.php';

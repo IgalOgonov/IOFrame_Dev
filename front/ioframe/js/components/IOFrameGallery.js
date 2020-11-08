@@ -39,10 +39,20 @@ Vue.component('ioframe-gallery', {
             type: Boolean,
             default: true
         },
-        //TODO Whether to go into full-screen display mode when one of the images is clicked
+        //Whether to go into full-screen display mode when one of the images is clicked
         fullScreenOnClick:{
             type: Boolean,
             default: false
+        },
+        //Whether to provide a link to the image when in full screen
+        linkOnFullScreen:{
+            type: Boolean,
+            default: true
+        },
+        //What the text / image / etc should be for full screen links!
+        linkOnFullScreenContent:{
+            type: String,
+            default: 'Direct Image Link'
         },
         //If this is set, all images will link to this URL while the assets are loading.
         loadingImageUrl:{
@@ -128,6 +138,8 @@ Vue.component('ioframe-gallery', {
                 *  }
                 * */
             ],
+            //Whether we are in full screen mode
+            fullScreen: false,
             finishedMounting: false
         }
     },
@@ -323,6 +335,11 @@ Vue.component('ioframe-gallery', {
                     this.gallery[j][property] = tempGallery[j][property];
                 }
             }
+        },
+        //Toggles Full Screen
+        toggleFullScreen: function(){
+            if(this.fullScreenOnClick)
+                this.fullScreen = !this.fullScreen;
         }
     },
     computed:{
@@ -395,11 +412,11 @@ Vue.component('ioframe-gallery', {
         }
     },
     template: `
-        <div class="ioframe-gallery">
+        <div class="ioframe-gallery" :class="{'full-screen':fullScreen,'has-full-screen':fullScreenOnClick}">
 
             <div v-if="hasPreview || displayNumber<2 || !hasSlider" class="gallery-preview">
 
-                <div v-for="(item, index) in gallery" class="preview-container" :class="[{selected:selected === index}, 'preview-'+index]">
+                <div v-for="(item, index) in gallery" class="preview-container" :class="[{selected:selected === index}, 'preview-'+index]" @click="toggleFullScreen()">
                     <img v-if="loadingImageUrl" :src="loadingImageUrl" class="gallery-member-preview" :class="'gallery-member-preview-placeholder-'+index" style="display:none;">
                     <img :src="item.url" :alt="item.alt? item.alt : ''" class="gallery-member-preview" :class="'gallery-member-preview-'+index">
                 </div>
@@ -440,6 +457,13 @@ Vue.component('ioframe-gallery', {
             </div>
 
             <figcaption v-if="caption" v-text="caption"></figcaption>
+
+            <div class="full-screen-container-wrapper" v-if="fullScreen">
+                <div class="full-screen-container" @click="toggleFullScreen()">
+                    <img :src="gallery[selected].url" :alt="gallery[selected].alt? gallery[selected].alt : ''" class="full-screen-preview">
+                </div>
+                <a target="_blank" v-if="linkOnFullScreen" :href="gallery[selected].url" v-html="linkOnFullScreenContent"></a>
+            </div>
 
         </div>
     `

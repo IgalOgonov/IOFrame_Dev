@@ -718,8 +718,7 @@ namespace IOFrame\Handlers{
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             if(!defined('MailHandler'))
                 require 'MailHandler.php';
-
-            $mail = new MailHandler($this->settings,$this->defaultSettingsParams);
+            $mail = new MailHandler($this->settings,array_merge($this->defaultSettingsParams,['verbose'=>$verbose]));
             if(!$test){
                 try{
                     if($async){

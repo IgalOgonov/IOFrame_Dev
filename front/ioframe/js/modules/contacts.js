@@ -597,7 +597,8 @@ var contacts = new Vue({
                 'getContactTypes',
                 {
                     verbose: this.verbose,
-                    parseJSON: true
+                    parseJSON: true,
+                    ignoreCSRF:true
                 }
             );
         }

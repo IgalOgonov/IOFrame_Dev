@@ -7,7 +7,7 @@ require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot.'headers_sta
 
 require $settings->getSetting('absPathToRoot').$IOFrameTemplateRoot . 'cp_redirect_to_login.php';
 
-array_push($JS,'ezPopup.js','mixins/sourceURL.js','modules/CPMenu.js','modules/plugins.js','modules/pluginList.js');
+array_push($JS,'ezPopup.js','mixins/sourceUrl.js','modules/CPMenu.js','modules/plugins.js','modules/pluginList.js');
 
 array_push($CSS,'cp.css','popUpTooltip.css','modules/CPMenu.css','modules/plugins.css');
 

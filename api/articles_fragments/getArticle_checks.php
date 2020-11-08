@@ -5,6 +5,25 @@ $retrieveParams = [
 
 $requiredAuth = REQUIRED_AUTH_NONE;
 
+//Set 'authAtMost' if not requested by the user
+if($inputs['authAtMost'] !== null){
+    if(!($inputs['authAtMost'] === 0 || filter_var($inputs['authAtMost'],FILTER_VALIDATE_INT))){
+        if($test)
+            echo 'authAtMost must be a valid integer!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+
+    if($inputs['authAtMost'] === 0)
+        $requiredAuth = REQUIRED_AUTH_NONE;
+    elseif($inputs['authAtMost'] === 1)
+        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_RESTRICTED);
+    elseif($inputs['authAtMost'] == 2)
+        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_OWNER);
+    else
+        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_ADMIN);
+}
+$retrieveParams['authAtMost'] = $requiredAuth;
+
 //Handle id
 if($inputs['id'] !== null){
     if(!filter_var($inputs['id'],FILTER_VALIDATE_INT)){
@@ -28,31 +47,17 @@ else{
                                 and numbers separated by "-", each sequence no longer than 24 characters long'.EOL;
                 exit(INPUT_VALIDATION_FAILURE);
             }
-        $inputs['authAtMost'] = null;
+        //One edge case - IF we are getting article by address and its auth is restricted, it may be ok depending on settings
+        if($apiSettings->getSetting('restrictedArticleByAddress') && $requiredAuth <=REQUIRED_AUTH_RESTRICTED){
+            $requiredAuth = REQUIRED_AUTH_NONE;
+            $retrieveParams['authAtMost'] = REQUIRED_AUTH_RESTRICTED;
+        }
     }
     else{
         if($test)
             echo 'id must be set!'.EOL;
         exit(INPUT_VALIDATION_FAILURE);
     }
-}
-
-//Set 'authAtMost' if not requested by the user
-if($inputs['authAtMost'] !== null){
-    if(!($inputs['authAtMost'] === 0 || filter_var($inputs['authAtMost'],FILTER_VALIDATE_INT))){
-        if($test)
-            echo 'authAtMost must be a valid integer!'.EOL;
-        exit(INPUT_VALIDATION_FAILURE);
-    }
-
-    if($inputs['authAtMost'] === 0)
-        $requiredAuth = 0;
-    elseif($inputs['authAtMost'] === 1)
-        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_RESTRICTED);
-    elseif($inputs['authAtMost'] == 2)
-        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_OWNER);
-    else
-        $requiredAuth = max($requiredAuth,REQUIRED_AUTH_ADMIN);
 }
 
 //Set 'ignoreOrphan' if requested by the user
@@ -64,5 +69,3 @@ else
     $inputs['ignoreOrphan'] = true;
 
 $inputs['preloadGalleries'] = $inputs['preloadGalleries'] !== null ? $inputs['preloadGalleries'] : true;
-
-$retrieveParams['authAtMost'] = $requiredAuth;
