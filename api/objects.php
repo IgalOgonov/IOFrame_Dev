@@ -192,9 +192,6 @@ require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
 
-if(!checkApiEnabled('objects',$apiSettings))
-    exit(API_DISABLED);
-
 //Session Info
 $sesInfo = isset($_SESSION['details'])? json_decode($_SESSION['details'],true) : null;
 
@@ -210,6 +207,8 @@ if(!isset($_REQUEST["params"])) {
         echo 'Parameters must be set!';
     die('-1');
 }
+if(!checkApiEnabled('objects',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Parameters are always a JSON array - sometimes, even a 2D one
 if(!IOFrame\Util\isJson($_REQUEST["params"])) {

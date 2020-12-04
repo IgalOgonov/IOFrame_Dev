@@ -124,10 +124,12 @@ namespace IOFrame{
                                                               Username varchar(16) UNIQUE NOT NULL,
                                                               Password varchar(255) NOT NULL,
                                                               Email varchar(255) UNIQUE NOT NULL,
+                                                              Phone varchar(32) UNIQUE DEFAULT NULL,
                                                               Active BOOLEAN NOT NULL,
                                                               Auth_Rank int,
                                                               SessionID varchar(255),
                                                               authDetails TEXT,
+                                                              Two_Factor_Auth TEXT DEFAULT NULL,
                                                               INDEX (Username),
                                                               INDEX (Email),
                                                               INDEX (Active)

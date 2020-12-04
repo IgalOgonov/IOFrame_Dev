@@ -1,0 +1,16 @@
+.add-2fa  svg {
+    display: block;
+    width: 200px;
+    height: 200px;
+    padding: 5px;
+    background-color: var(--main-color-5-5);
+    border: 1px solid var(--main-color-8);
+}
+.add-2fa  button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: var(--main-color-4);
+}
+.add-2fa  button:hover {
+    background: var(--main-color-3);
+}

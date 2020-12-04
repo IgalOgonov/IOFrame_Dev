@@ -9,11 +9,11 @@ if(!isset($SecurityHandler))
     );
 //Limit check
 if(isset($shouldCommitActions)){
-    //Commit user action
-    if(isset($userId) && isset(USERS_API_LIMITS[$action]['userAction'])){
+    //Commit user action UNLESS this was an identifier failure
+    if(isset($userId) && isset(USERS_API_LIMITS[$action]['userAction']) && $result !== 5){
         $SecurityHandler->commitEventUser(USERS_API_LIMITS[$action]['userAction'],$userId,['test'=>$test,'susOnLimit'=>USERS_API_LIMITS[$action]['susOnLimit'],'banOnLimit'=>USERS_API_LIMITS[$action]['banOnLimit']]);
     }
-    //check IP action
+    //Commit IP action
     if(isset(USERS_API_LIMITS[$action]['ipAction'])){
         $SecurityHandler->commitEventIP(USERS_API_LIMITS[$action]['ipAction'],['test'=>$test,'markOnLimit'=>USERS_API_LIMITS[$action]['markOnLimit']]);
     }

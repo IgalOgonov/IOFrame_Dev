@@ -4,6 +4,7 @@ namespace IOFrame\Handlers{
     use Monolog\Logger;
     use Monolog\Handler\IOFrameHandler;
     use PHPMailer\PHPMailer\Exception;
+    use RobThree\Auth\TwoFactorAuth;
 
     define('UserHandler',true);
     if(!defined('abstractDBWithCache'))
@@ -314,7 +315,7 @@ namespace IOFrame\Handlers{
          * @param int $userID User ID
          * @param string $newEmail User mail
          * @param array $params
-         *
+         *                  'keepActive'=> bool, default to user setting regConfirmMail - if not true, will deactivate an account on Email change
          * @returns int 0 on success
          *              1 if userID does not exist
          *              2 Email already in use
@@ -322,6 +323,7 @@ namespace IOFrame\Handlers{
         function changeMail(int $userID,string $newEmail, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $keepActive = isset($params['keepActive'])? $params['keepActive'] : $this->userSettings->getSetting('regConfirmMail');
             $tname = $this->SQLHandler->getSQLPrefix().'USERS';
             $userInfo = $this->SQLHandler->selectFromTable($tname,
                 [
@@ -343,10 +345,12 @@ namespace IOFrame\Handlers{
 
                 $this->SQLHandler->updateTable(
                     $this->SQLHandler->getSQLPrefix().'USERS',
-                    ['Email = "'.$newEmail.'"'],
+                    ['Email = "'.$newEmail.'"'.($keepActive?'':',Active = 0')],
                     ['ID',$userID,'='],
                     ['test'=>$test,'verbose'=>$verbose]
                 );
+                if(!$keepActive)
+                    $this->accountActivation($newEmail,$userID,['test'=>$test,'verbose'=>$verbose]);
                 return 0;
             }
             else
@@ -904,20 +908,39 @@ namespace IOFrame\Handlers{
 
         /** Main login function
          * @param string[] $inputs array of inputs needed to log in.
+         *                      log: type of login, can be "in" (regular login with password) or "temp" (login using )
+         *                      userID: identifier of current device, used for temp login, or for full login using "rememberMe"
+         *                      m: user mail, always required
+         *                      p: user password on full login
+         *                      sesKey: user token  on temp login
+         *                      2FAType: 2FA Method, if the user chooses to log in via 2FA. Valid methods are:
+         *                          'mail' - send code via email, always supported on systems with mailSettings set
+         *                          'app' - works when the user has a 2FA app enabled and configured
+         *                          'sms' - send code via sms, supported on systems with smsSettings set, AND the user having a valid phone
+         *                      2FACode: The 2FA code provided by the user. Required when 2FAType is set.
          * @param array $params
-         *
+         *              'overrideAuth': bool, default false. If true, will not check password om regular login.
+         *                              Meant to be used by external authentication, like email or SMS based ones.
+         *              'ignoreSuspicious': bool, default false. Unless true, will not allow suspicious users logging in without 2FA.
          * @returns mixed
-         *
+         *     -1 Error during some stage of the login, could not complete.
          *      0 all good - without rememberMe
          *      1 username/password combination wrong
          *      2 expired auto login token
          *      3 login type not allowed
+         *      4 login would work, but 2FA is required (either user is suspicious or enabled 2FA himself)
+         *      5 login would work, but 2FA code is incorrect
+         *      6 login would work, but 2FA code expired
+         *      7 login would work, but user does not have it set up (no confirmed phone, no registered 2FA app, etc)
+         *      8 login would work, but 2FA method is not supported
          *      32-byte hex encoded session ID string - The token for your next automatic relog, if you logged automatically.
          *      JSON encoded array of the form {'iv'=><32-byte hex encoded string>,'sesID'=><32-byte hex encoded string>}
          */
         function logIn(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $overrideAuth = isset($params['overrideAuth'])? $params['overrideAuth'] : false;
+            $ignoreSuspicious = isset($params['overrideAuth'])? $params['overrideAuth'] : false;
             $log = $inputs["log"];
             if($this->userSettings->getSetting('rememberMe') < 1)
                 unset($inputs["userID"]);
@@ -937,13 +960,16 @@ namespace IOFrame\Handlers{
             );
             // Check if it found something
             if (is_array($checkRes) && count($checkRes)>0) {
+
                 //Get auth details
                 $authFullDetails = json_decode($checkRes[0]['authDetails'], true);
+                $TwoFactorAuth = $checkRes[0]['Two_Factor_Auth']? json_decode($checkRes[0]['Two_Factor_Auth'], true) : [];
+
                 //If user is trying to relog automatically to a device that doesn't exist - he wont be logged in.
                 if($log=='temp' && !isset($authFullDetails[$inputs["userID"]]))
                     $log = 'wrong';
                 //Else decode the relevant userID details
-                else if($log=='temp'){
+                elseif($log=='temp'){
                     $authDetails =  json_decode($authFullDetails[$inputs["userID"]], true);
                     $key = IOFrame\Util\stringScrumble($authDetails['nextLoginID'],$authDetails['nextLoginIV']);
                     //If auto-login for this device expired, return 2
@@ -954,12 +980,14 @@ namespace IOFrame\Handlers{
                         }
                     }
                 }
+
                 // Check if the password matches OR if temp log and user identifier is consistent with stored one.
                 // If all good, log the user in
-                if (    (
+                if (
+                    (
                         $log=='in'
                         &&
-                        password_verify($inputs["p"], $checkRes[0]['Password'])==true
+                        ($overrideAuth || password_verify($inputs["p"], $checkRes[0]['Password']))
                     )
                     ||(
                         $log=='temp'
@@ -970,6 +998,96 @@ namespace IOFrame\Handlers{
                         )
                     )
                 ){
+
+                    //If the login worked, check whether it is allowed without a 2FA
+                    if(
+                        $log=='in' &&
+                        ( ($checkRes[0]['Suspicious_Until'] > time() && !$ignoreSuspicious) || (!empty($TwoFactorAuth['require2FA']) && !$overrideAuth)) &&
+                        ( empty($inputs['2FAType']) || empty($inputs['2FACode']) )
+                    )
+                    {
+                        return 4;
+                    }
+                    //Else if 2FA type AND code were provided, validate them (if they weren't provided but were required, we would fail in the last step)
+                    elseif(!empty($inputs['2FAType']) && !empty($inputs['2FACode'])){
+                        //Either way, for this to be used, the user needs some kind of 2FA details preset
+                        if(empty($TwoFactorAuth['2FADetails']))
+                            return 7;
+                        //The following is based on the 2FA type
+                        switch ($inputs['2FAType']){
+                            case 'mail':
+                                //Check Mail settings
+                                $mailSettings = new SettingsHandler(
+                                    $this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/mailSettings',
+                                    $this->defaultSettingsParams
+                                );
+                                foreach(['mailHost','mailUsername','mailPassword','mailPort'] as $value){
+                                    if(!$mailSettings->getSetting($value))
+                                        return 8;
+                                }
+                                //Check that the code sent has not expired
+                                if(empty($TwoFactorAuth['2FADetails']['mail']['expires']) || $TwoFactorAuth['2FADetails']['mail']['expires'] < time())
+                                    return 6;
+                                //Check that the user has a valid email code sent
+                                if(empty($TwoFactorAuth['2FADetails']['mail']['code']))
+                                    return 5;
+                                //Check the code
+                                if($TwoFactorAuth['2FADetails']['mail']['code'] !== $inputs['2FACode'])
+                                    return 5;
+                                else{
+                                    $TwoFactorAuth['2FADetails']['mail']['code'] = null;
+                                    $TwoFactorAuth['2FADetails']['mail']['expires'] = null;
+                                }
+                                break;
+                            case 'app':
+                                //Check that the user has a valid 2FA secret
+                                if(empty($TwoFactorAuth['2FADetails']['secret']))
+                                    return 7;
+                                //Check the code
+                                require_once $this->settings->getSetting('absPathToRoot').'IOFrame/Handlers/ext/TwoFactorAuth/vendor/autoload.php';
+                                $tfa = new TwoFactorAuth($this->siteSettings->getSetting('siteName'));
+                                if(!$tfa->verifyCode((string)$TwoFactorAuth['2FADetails']['secret'],(string)$inputs['2FACode']))
+                                    return 5;
+                                break;
+                            case 'sms':
+                                //Check SMS settings
+                                $smsSettings = new SettingsHandler(
+                                    $this->settings->getSetting('absPathToRoot').SETTINGS_DIR_FROM_ROOT.'/smsSettings/',
+                                    $this->defaultSettingsParams
+                                );
+                                if(!$smsSettings->getSetting('provider'))
+                                    return 8;
+                                //Check that the user has a valid phone
+                                if(empty($checkRes[0]['Phone']))
+                                    return 7;
+                                //Check that the code sent has not expired
+                                if(empty($TwoFactorAuth['2FADetails']['sms']['expires']) || $TwoFactorAuth['2FADetails']['sms']['expires'] < time())
+                                    return 6;
+                                //Check that the user has a valid sms code sent
+                                if(empty($TwoFactorAuth['2FADetails']['sms']['code']))
+                                    return 5;
+                                //Check that the SMS
+                                if($TwoFactorAuth['2FADetails']['sms']['code'] !== $inputs['2FACode'])
+                                    return 5;
+                                else{
+                                    $TwoFactorAuth['2FADetails']['sms']['code'] = null;
+                                    $TwoFactorAuth['2FADetails']['sms']['expires'] = null;
+                                }
+                                break;
+                            default:
+                                return 8;
+                        }
+                        if(
+                            !$this->SQLHandler->updateTable(
+                                $this->SQLHandler->getSQLPrefix().'USERS',
+                                ['Two_Factor_Auth = \''.json_encode($TwoFactorAuth).'\''],
+                                ['Email', $inputs["m"],'='],
+                                ['test'=>$test,'verbose'=>$verbose]
+                            )
+                        )
+                            return -1;
+                    }
+
                     //-----------------------Logout any user with the current old sessionID out-------------------------
                     //Only erases their Session data on the server, not data in DB
                     $this->logOut(['oldSesID' => $checkRes[0]['SessionID'],'forgetMe' => false,'sesOnly' => true,'test'=>$test,'verbose'=>$verbose]);
@@ -1047,11 +1165,15 @@ namespace IOFrame\Handlers{
 
                         $authFullDetails = json_encode($authFullDetails);
 
+
                         //Update database with it
                         $query = 'UPDATE '.$this->SQLHandler->getSQLPrefix().'USERS SET
                         authDetails=:authFullDetails WHERE Email=:Email';
 
-                        //If it was test, test results well be echoed later, nothing left to do.
+                        /*If it was test, test results well be echoed later, nothing left to do.
+                          The reason this does not return -1 on failure is because, at worst, there wont be new relog info - still better than
+                          dropping the whole process just over that.
+                        */
                         if (!$test)
                             $this->SQLHandler->exeQueryBindParam($query,[[':authFullDetails', $authFullDetails],[':Email', $inputs["m"]]]);
                         if ($verbose)
@@ -1072,7 +1194,7 @@ namespace IOFrame\Handlers{
 
                     //---------Fetch all the extra user data and update current session-------------
                     $this->login_updateSessionCore($checkRes, ['test'=>$test,'verbose'=>$verbose]);
-                    //--------------------------Update login history------------------------------
+                    /* Update login history - This may fail, but we don't care enough to drop the whole login because of it */
                     $this->login_updateHistory($checkRes, ['test'=>$test,'verbose'=>$verbose]);
                     return $res;
                 }
@@ -1114,6 +1236,7 @@ namespace IOFrame\Handlers{
                 "ID",
                 "Username",
                 "Email",
+                "Phone",
                 "Active",
                 "Auth_Rank",
                 "Banned_Until"
@@ -1126,6 +1249,13 @@ namespace IOFrame\Handlers{
 
             foreach($args as $val){
                 $data[$val]= isset($checkRes[0][$val]) ? $checkRes[0][$val] : null;
+            }
+
+            //Edge Case - Two Factor Auth
+            if(!empty($checkRes[0]['Two_Factor_Auth']) && IOFrame\Util\is_json($checkRes[0]['Two_Factor_Auth'])){
+                $twoFactorAuth = json_decode($checkRes[0]['Two_Factor_Auth'],true);
+                $data['require2FA']= !empty($twoFactorAuth['require2FA']);
+                $data['TwoFactorAppReady'] = !empty($twoFactorAuth['2FADetails']['secret']);
             }
 
             if(!$test){
@@ -1469,10 +1599,17 @@ namespace IOFrame\Handlers{
          * @param array $inputs
          *          'username' => String, default null - new username
          *          'email' => String, default null - new Email
+         *          'phone' => String, default null - new Phone (needs to include the country prefix, including '+')
          *          'active' => Bool, default null - whether the user is active or not
          *          'created' => Int, default null - Unix timestamp, user creation date.
          *          'bannedDate' => Int, default null - Unix timestamp until which the user is banned (0 to unban the user).
          *          'suspiciousDate' => Int, default null - Unix timestamp until which the user is suspicious (0 to make the user not suspicious).
+         *          -- The following update the authDetails column --
+         *          'require2FA' => Bool, default null - whether 2 factor auth is required to log into this user.
+         *          '2FASecret' => string, default null - secret used by a 2FA app.
+         *          '2FASMSCode' => string, default null - the code needed by the user to successfully log in using sms 2FA.
+         *          'smsTTL' => int, defaults to user setting sms2FAExpires - How many SECONDS before an SMS code expires
+         *          'mailTTL' => int, defaults to user setting mail2FAExpires - How many SECONDS before an Email code expires
          *
          * @param string $identifierType - 'ID' or 'Email', sets the identifier type
          *
@@ -1491,6 +1628,7 @@ namespace IOFrame\Handlers{
             //Inputs
             $username = isset($inputs['username'])? $inputs['username'] : null;
             $email = isset($inputs['email'])? $inputs['email'] : null;
+            $phone = isset($inputs['phone'])? $inputs['phone'] : null;
             $active = isset($inputs['active'])? $inputs['active'] : null;
             $created = isset($inputs['created'])? $inputs['created'] : null;
             $bannedDate = isset($inputs['bannedDate'])? $inputs['bannedDate'] : null;
@@ -1507,16 +1645,17 @@ namespace IOFrame\Handlers{
             if($identifierType == 'ID'){
                 if(!in_array(gettype($identifier),['string','integer']) || !$identifier)
                     return 2;
-                array_push($conditions,[$usersColPrefix.'ID',$identifier,'=']);
+                $identifierCondition = [$usersColPrefix.'ID',$identifier,'='];
             }
             elseif($identifierType == 'Email'){
                 if(gettype($identifier)!='string' || !$identifier)
                     return 2;
-                array_push($conditions,[$usersColPrefix.'Email',[$identifier,'STRING'],'=']);
+                $identifierCondition = [$usersColPrefix.'Email',[$identifier,'STRING'],'='];
             }
             else{
                 return 1;
             }
+            array_push($conditions,$identifierCondition);
 
             //Assignments
             if($username !== null){
@@ -1524,6 +1663,9 @@ namespace IOFrame\Handlers{
             }
             if($email !== null){
                 array_push($assignments,$usersColPrefix.'Email = "'.$email.'"');
+            }
+            if($phone !== null){
+                array_push($assignments,$usersColPrefix.'Phone = "'.$phone.'"');
             }
             if($active !== null){
                 array_push($assignments,$usersColPrefix.'Active = "'.($active ? '1' : '0').'"');
@@ -1538,10 +1680,53 @@ namespace IOFrame\Handlers{
                 array_push($assignments,$usersExtraColPrefix.'Suspicious_Until = "'.$suspiciousDate.'"');
             }
 
+            //If we are assigning anything related to new auth, we need to get the old one
+            if(isset($inputs['require2FA']) || isset($inputs['2FASecret']) || isset($inputs['2FASMSCode'])|| isset($inputs['2FAMailCode'])){
+
+                $userInfo = $this->SQLHandler->selectFromTable(
+                    $prefix.'USERS',
+                    $identifierCondition,
+                    [],
+                    ['test'=>$test,'verbose'=>$verbose]
+                );
+
+                //DB connection error
+                if(gettype($userInfo) !== 'array')
+                    return  -1;
+                //If user does not exists, our query "succeeds" automatically
+                if(empty($userInfo[0]))
+                    return  0;
+
+                $TwoFactorAuth = $userInfo[0]['Two_Factor_Auth']? json_decode($userInfo[0]['Two_Factor_Auth'], true) : [];
+                if(!isset($TwoFactorAuth['2FADetails']))
+                    $TwoFactorAuth['2FADetails'] = [];
+
+                if(isset($inputs['require2FA']))
+                    $TwoFactorAuth['require2FA'] =  (bool)$inputs['require2FA'];
+                if(isset($inputs['2FASecret'])){
+                    $TwoFactorAuth['2FADetails']['secret'] =  $inputs['2FASecret'];
+                }
+                if(isset($inputs['2FASMSCode'])){
+                    if(empty($TwoFactorAuth['2FADetails']['sms']))
+                        $TwoFactorAuth['2FADetails']['sms'] = [];
+                    $smsTTL = isset($params['smsTTL'])? (int)$params['smsTTL'] : (int)$this->userSettings->getSetting('sms2FAExpires');
+                    $TwoFactorAuth['2FADetails']['sms']['code'] =  $inputs['2FASMSCode'];
+                    $TwoFactorAuth['2FADetails']['sms']['expires'] =  time() + $smsTTL;
+                }
+                if(isset($inputs['2FAMailCode'])){
+                    if(empty($TwoFactorAuth['2FADetails']['mail']))
+                        $TwoFactorAuth['2FADetails']['mail'] = [];
+                    $mailTTL = isset($params['mailTTL'])? (int)$params['mailTTL'] : (int)$this->userSettings->getSetting('mail2FAExpires');
+                    $TwoFactorAuth['2FADetails']['mail']['code'] =  $inputs['2FAMailCode'];
+                    $TwoFactorAuth['2FADetails']['mail']['expires'] =  time() + $mailTTL;
+                }
+
+                array_push($assignments,$usersColPrefix.'Two_Factor_Auth = \''.json_encode($TwoFactorAuth).'\'');
+            }
+
             if($assignments == []){
                 return 3;
             }
-
 
             $res = $this->SQLHandler->updateTable(
                 $tableQuery,

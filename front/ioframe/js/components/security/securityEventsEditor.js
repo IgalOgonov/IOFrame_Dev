@@ -587,7 +587,8 @@ Vue.component('security-events-editor', {
             <div class="info message-info-2">
                 <div
                  v-for="(item, key) in mainItem"
-                 v-if="!paramMap[key].ignore ">
+                 v-if="!paramMap[key].ignore "
+                 :class="key.replace('.','-')">
 
                     <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
 

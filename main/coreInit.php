@@ -30,6 +30,8 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
         require __DIR__ . '/../IOFrame/Handlers/PluginHandler.php';
     if(!defined('FrontEndResourceHandler'))
         require __DIR__ . '/../IOFrame/Handlers/FrontEndResourceHandler.php';
+    if(!defined('FileHandler'))
+        require __DIR__ . '/../IOFrame/Handlers/FileHandler.php';
 
     //--------------------The global settings parameters. They'll get updated as we go.--------------------
     $defaultSettingsParams = [];
@@ -77,14 +79,30 @@ if(!isset($skipCoreInit) || $skipCoreInit==false){
     $defaultSettingsParams['siteSettings'] = $siteSettings;
     $defaultSettingsParams['resourceSettings'] = $resourceSettings;
 
-    //-------------------Convert to SSL if needed-------------------
-    if($_SERVER['REMOTE_ADDR']!="::1" && $_SERVER['REMOTE_ADDR']!="127.0.0.1" && ($siteSettings->getSetting('sslOn') == 1) )
-        if(empty($_SERVER['HTTPS']) || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "off") ){
-            $redirect = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    //Redirections - wont happen on localhost
+    if($_SERVER['REMOTE_ADDR']!="::1" && $_SERVER['REMOTE_ADDR']!="127.0.0.1"){
+        $redirectionAddress = '';
+        $requestScheme =  empty($_SERVER['REQUEST_SCHEME'])? 'http://' : $_SERVER['REQUEST_SCHEME'].'://';
+        if(($requestScheme === 'http://') && $siteSettings->getSetting('sslOn') == 1)
+            $requestScheme = 'https://';
+
+        //-------------------Redirect somewhere else-------------------
+        if($siteSettings->getSetting('redirectTo') && ($_SERVER['HTTP_HOST'] !== $siteSettings->getSetting('redirectTo')) ){
+            $redirectionAddress = $requestScheme . $siteSettings->getSetting('redirectTo') . $_SERVER['REQUEST_URI'];
+        }
+        //-------------------Convert to SSL if needed-------------------
+        elseif(($siteSettings->getSetting('sslOn') == 1) && (empty($_SERVER['HTTPS']) || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "off")) ){
+            $redirectionAddress = $requestScheme . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        }
+
+        if($redirectionAddress){
             header('HTTP/1.1 301 Moved Permanently');
-            header('Location: ' . $redirect);
+            header('Location: ' . $redirectionAddress);
             exit();
         }
+
+        unset($redirectionAddress,$requestScheme);
+    }
 
     //-------------------Iniitialize other soft singletons-------------------
     $loggerHandler = new IOFrameHandler($settings, $SQLHandler, 'local');

@@ -1318,6 +1318,7 @@ Vue.component('menus-editor', {
             <div class="info message-info-2" v-if="itemHasInfo">
                 <div
                  v-for="(item, key) in mainItem"
+                 :class="key.replace('.','-')"
                  v-if="!paramMap[key].edit && paramMap[key].display ">
 
                     <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
@@ -1333,7 +1334,7 @@ Vue.component('menus-editor', {
                 <div
                 v-for="(item, key) in mainItem"
                 v-if="paramMap[key].edit"
-                :class="{changed:item.current !== item.original}"
+                :class="[{changed:item.current !== item.original},key.replace('.','-')]"
                 >
 
                    <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>

@@ -203,9 +203,9 @@
 
 /*Messages*/
 .message{
-    padding: 5px;
     justify-content: center;
     align-items: center;
+    padding: 5px;
     border-radius: 5px;
     font-family: 'Courier New',sans-serif;
 }

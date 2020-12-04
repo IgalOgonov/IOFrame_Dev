@@ -504,15 +504,15 @@ require 'CSRF.php';
 require 'media_fragments/definitions.php';
 require __DIR__ . '/../IOFrame/Util/timingManager.php';
 
-if(!checkApiEnabled('media',$apiSettings))
-    exit(API_DISABLED);
-
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
 
 if($test)
     echo 'Testing mode!'.EOL;
+
+if(!checkApiEnabled('media',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Available languages
 $languages = $siteSettings->getSetting('languages');

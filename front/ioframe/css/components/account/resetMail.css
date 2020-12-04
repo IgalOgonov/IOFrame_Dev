@@ -1,0 +1,11 @@
+.reset-mail .resend input{
+    padding: 2px 5px;
+}
+.reset-mail  button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: var(--main-color-4);
+}
+.reset-mail  button:hover {
+    background: var(--main-color-3);
+}

@@ -178,16 +178,11 @@ require 'defaultInputResults.php';
 require 'CSRF.php';
 require 'plugins_fragments/definitions.php';
 
-if(!checkApiEnabled('plugins',$apiSettings))
-    exit(API_DISABLED);
-
-
 if($test){
     echo 'Testing mode!'.EOL;
     foreach($_REQUEST as $key=>$value)
         echo htmlspecialchars($key.': '.$value).EOL;
 }
-
 
 //Input validation function
 function checkInput($settings,$SQLHandler,$SessionHandler,$logger ,$test = false){
@@ -492,6 +487,9 @@ function checkInput($settings,$SQLHandler,$SessionHandler,$logger ,$test = false
 
 //Check input
 checkInput($settings,$SQLHandler,$SessionHandler,$logger,$test);
+
+if(!checkApiEnabled('plugins',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Do what needs to be done
 switch($_REQUEST['action']){

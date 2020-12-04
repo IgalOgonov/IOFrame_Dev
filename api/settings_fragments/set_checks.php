@@ -30,14 +30,13 @@ if(isset($params['createNew'])){
 else
     $params['createNew'] = false;
 
-
 if(!isset($params['settingName'])){
     if($test)
         echo 'A setting must have a name!'.EOL;
     exit(INPUT_VALIDATION_FAILURE);
 }
 
-if(!\IOFrame\Util\validator::validateSQLKey($params['settingName'])){
+if(!\IOFrame\Util\validator::validateSQLKey(str_replace('-','',$params['settingName']))){
     if($test)
         echo 'A setting must have a valid name!'.EOL;
     exit(INPUT_VALIDATION_FAILURE);

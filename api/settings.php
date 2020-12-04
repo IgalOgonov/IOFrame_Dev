@@ -77,9 +77,6 @@ require 'defaultInputChecks.php';
 require 'defaultInputResults.php';
 require 'CSRF.php';
 
-if(!checkApiEnabled('settings',$apiSettings))
-    exit(API_DISABLED);
-
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 
@@ -94,6 +91,9 @@ $target = isset($_REQUEST["target"])? $_REQUEST["target"] : '';
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
+
+if(!checkApiEnabled('settings',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 if(isset($_REQUEST['params']))
     $params = json_decode($_REQUEST['params'],true);

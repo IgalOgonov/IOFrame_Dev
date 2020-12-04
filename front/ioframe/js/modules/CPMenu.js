@@ -14,6 +14,10 @@ var CPMenu = new Vue({
             url:'',
             title:''
         },
+        update:{
+            available:(document['_ioframe']? (document['_ioframe'].currentVersion !== document['_ioframe'].availableVersion) :false),
+            title:''
+        },
         menu:[
             /*
                 {
@@ -71,6 +75,17 @@ var CPMenu = new Vue({
             this.configObject.cp.logo.url = document.rootURI;
         this.logo = this.configObject.cp.logo;
 
+        //Update Title
+        if(this.configObject.cp.update === undefined)
+            this.configObject.cp.update = {};
+        if(this.configObject.cp.update.title === undefined)
+            this.configObject.cp.update.title = 'Update Available';
+        this.update.title = this.configObject.cp.update.title;
+
+        //Whether or not to only show non-admin tabs, or all system tabs
+        if(this.configObject.cp.hideAdmin === undefined)
+            this.configObject.cp.hideAdmin = !document.siteConfig.isAdmin;
+
         //Menu
         let defaultMenu = [
             {
@@ -78,7 +93,7 @@ var CPMenu = new Vue({
                 title: 'Users',
                 url: 'users',
                 icon: 'icons/CPMenu/users.svg',
-                position: 1,
+                position: 1
             },
             {
                 id: 'settings',
@@ -168,13 +183,24 @@ var CPMenu = new Vue({
                 id: 'objects',
                 title: 'Objects',
                 url: 'objects',
+                icon: 'icons/CPMenu/objects.svg',
                 position: 14,
             },
             {
                 id: 'login',
                 title: 'Login Page',
                 url: 'login',
+                icon: 'icons/CPMenu/login.svg',
                 position: -3,
+                admin:false
+            },
+            {
+                id: 'account',
+                title: 'Account Page',
+                url: 'account',
+                icon: 'icons/CPMenu/account.svg',
+                position: -3,
+                admin:false
             }
         ];
 
@@ -192,6 +218,12 @@ var CPMenu = new Vue({
 
         let newMenu = [...defaultMenu, ...this.configObject.cp.extraMenu];
 
+        for (let i in newMenu){
+            if(this.configObject.cp.hideAdmin && (newMenu[i].admin !== false)){
+                delete newMenu[i];
+            }
+        }
+        newMenu = newMenu.filter(x => x.id);
         newMenu.sort(function(a, b) {
             if(b.position == a.position)
                 return 0;
@@ -206,5 +238,40 @@ var CPMenu = new Vue({
         });
 
         this.menu = newMenu;
-    }
+    },
+    template:`
+    <nav id="menu" :class="{open:open}">
+        <div class="button-wrapper">
+            <button @click.prevent="open = !open" :class="{open:open}">  </button>
+        </div>
+        <a :href="logo.url" class="logo">
+            <picture>
+                <source :srcset="extractImageAddress(logo,true)">
+                <source :srcset="extractImageAddress(logo)">
+                <img :src="extractImageAddress(logo,true)">
+            </picture>
+        </a>
+        <a v-if="update.available && !configObject.cp.hideAdmin" class="update" href="update">
+            <span  v-text="update.title"></span>
+        </a>
+    
+        <a  v-for="item in menu" :href="item.disabled ? '#':item.url" :class="{selected:item.id === selected,disabled:item.disabled}">
+            <picture v-if="item.icon">
+                <source :srcset="extractImageAddress(item,true)">
+                <source :srcset="extractImageAddress(item)">
+                <img :src="extractImageAddress(item,true)">
+            </picture>
+            <span  v-text="item.title"></span>
+        </a>
+    
+        <a v-if="otherCP.url" :href="otherCP.url" class="other-cp">
+            <picture v-if="item.icon">
+                <source :srcset="extractImageAddress(otherCP,true)">
+                <source :srcset="extractImageAddress(otherCP)">
+                <img :src="extractImageAddress(otherCP,true)">
+            </picture>
+            <span v-else="" v-text="otherCP.title"></span>
+        </a>
+    </nav>
+    `
 });

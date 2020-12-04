@@ -31,6 +31,7 @@ $siteConfig['login'] = [
     'hasRememberMe'=>$userSettings->getSetting('rememberMe')? true: false,
 ];
 $siteConfig['register'] = [
+    'canRegister'=>(bool)$userSettings->getSetting('selfReg'),
     'canHaveUsername'=>$userSettings->getSetting('usernameChoice') < 2,
     'requiresUsername'=>$userSettings->getSetting('usernameChoice') == 0,
 ];

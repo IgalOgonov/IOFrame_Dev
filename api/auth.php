@@ -191,15 +191,15 @@ require 'defaultInputResults.php';
 require 'CSRF.php';
 require 'auth_fragments/definitions.php';
 
-if(!checkApiEnabled('auth',$apiSettings))
-    exit(API_DISABLED);
-
 if($test)
     echo 'Testing mode!'.EOL;
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
+
+if(!checkApiEnabled('auth',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 if(isset($_REQUEST['params']))
     $params = json_decode($_REQUEST['params'],true);

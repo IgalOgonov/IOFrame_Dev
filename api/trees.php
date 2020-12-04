@@ -145,9 +145,6 @@ require 'defaultInputResults.php';
 require 'tree_fragments/definitions.php';
 require 'CSRF.php';
 
-if(!checkApiEnabled('trees',$apiSettings))
-    exit(API_DISABLED);
-
 if($test){
     echo 'Testing mode!'.EOL;
     foreach($_REQUEST as $key=>$value)
@@ -157,6 +154,9 @@ if($test){
 //Make sure there is an action
 if(!isset($_REQUEST['action']))
     exit('No action specified');
+
+if(!checkApiEnabled('trees',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Recursive function to validate an assoc array.
 function validateAssocArray($assocArray){

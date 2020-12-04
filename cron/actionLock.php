@@ -3,7 +3,7 @@ if(isset($RedisHandler) && isset($settings) && isset($lockName) && isset($parame
     $lockFailed = true;
     if(!isset($LockHandler))
         $LockHandler = new IOFrame\Handlers\LockHandler($settings->getSetting('absPathToRoot').'/localFiles/temp','mutex',$defaultSettingsParams);
-    $lockResult = $LockHandler->makeRedisMutex($lockName,[
+    $lockResult = $LockHandler->makeRedisMutex($lockName,null,[
         'sec'=> round($parameters['maxRuntime']),
         'maxWait'=> $parameters['maxRuntime'],
         'tries'=> $parameters['maxRuntime'],

@@ -390,6 +390,7 @@ namespace IOFrame\Handlers{
                         $this->updateCache(['settingsArray'=>$this->settingsArrays[$name],'name'=>$name,'settingsLastUpdate'=>$updateTime,'test'=>$test]);
                     }
 
+                $this->isInit = true;
                 $res = true;
             }
 
@@ -597,12 +598,14 @@ namespace IOFrame\Handlers{
          * @param array $params of the form:
          *              'createNew' bool, default false - If false, will not allow creating new settings, only updating.
          *              'targetName' string, default null - Specific name of the setting group requested setting belongs to.
+         *              'backUp' bool, default true - whether to locally back up setting
          * @returns mixed false if couldn't check/update settings, or -1 if setting requested doesn't exist.
         */
         function setSetting(string $set, $val, array $params = []){
 
             $test = isset($params['test'])? $params['test'] : $test = false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $backUp = isset($params['backUp'])? $params['backUp'] : $backUp = true;
             isset($params['createNew'])?
                 $createNew = $params['createNew'] : $createNew = false;
             isset($params['targetName'])?
@@ -646,7 +649,7 @@ namespace IOFrame\Handlers{
                         $this->settingsURLs[$targetName],
                         'settings',
                         json_encode($newSettings),
-                        ['sec' => 2, 'backUp' => true, 'locakHandler' => $this->mutexes[$targetName]]
+                        ['sec' => 2, 'backUp' => $backUp, 'locakHandler' => $this->mutexes[$targetName]]
                     );
                 if($verbose)
                     echo 'Writing '.json_encode($newSettings).' to '.$this->settingsURLs[$targetName].' at '.time().EOL;

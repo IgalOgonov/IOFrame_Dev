@@ -7,6 +7,18 @@ Vue.component('user-login', {
             type: Boolean,
             default: true
         },
+        //Suggests 2FA even before the user tries to log in
+        suggest2FA:{
+            type: Boolean,
+            default: false
+        },
+        //2FA options. Possible ones are 'app', 'mail' and 'sms', depending on the system.
+        typesOf2FA:{
+            type: Array,
+            default: function(){
+                return ['app'];
+            }
+        },
         text: {
             type: Object,
             default: function(){
@@ -14,7 +26,34 @@ Vue.component('user-login', {
                     email:'email',
                     password: 'password',
                     rememberMe: 'Remember Me',
-                    loginButton: 'Login'
+                    loginButton: 'Login',
+                    '2FA':{
+                        'required':'Two-Factor Authentication Required',
+                        'suggested':'Two-Factor Authentication required for this account?',
+                        'suggested2FA':'Choose Method',
+                        'suggestedNo2FA':'I dont require 2FA',
+                        'select':'Please select a 2FA method',
+                        'differentMethod':'Select a different 2FA method',
+                        'methods': {
+                            app:{
+                                'text':'Authenticator App',
+                                'url':document.rootURI+'front/ioframe/img/icons/CPMenu/security.svg',
+                                'instruction':'Please enter the Authenticator code here:'
+                            },
+                            mail:{
+                                'text':'Email Code',
+                                'url':document.rootURI+'front/ioframe/img/icons/CPMenu/mails.svg',
+                                'request':'Send Code via Mail',
+                                'instruction':'Once you receive the email, enter the code here:'
+                            },
+                            sms:{
+                                'text':'SMS Code',
+                                'url':document.rootURI+'front/ioframe/img/icons/CPMenu/sms.svg',
+                                'request':'Send Code via SMS',
+                                'instruction':'Once you receive the SMS, enter the code here:'
+                            },
+                        },
+                    }
                 };
             }
         },
@@ -38,13 +77,32 @@ Vue.component('user-login', {
             class:''
         },
         rMe: this.hasRememberMe,
-        resp: ''
+        requires2FA:false,
+        loginConfirmed:false,
+        requests:{
+            mail:false,
+            sms:false
+        },
+        regex:{
+            app:/^\d{6}$/,
+            mail:/^\[a-zA-Z0-9]{6}$/,
+            sms:/^[a-zA-Z0-9]{6}$/,
+        },
+        twoFactorAuthType:'',
+        twoFactorAuthCode:'',
+        resp: '',
+        requesting:false
     }
     },
     created: function(){
 
     },
     methods:{
+        //Requests SMS/Mail
+        requestCode: function(type){
+            alertLog('Authentication method not supported!','error')
+        },
+        //Log in
         log: function(){
             let errors = 0;
 
@@ -68,6 +126,14 @@ Vue.component('user-login', {
             else
                 this.p.class = "";
 
+            //validate 2FA code
+            if( this.requires2FA ){
+                if(!this.twoFactorAuthCode.match(this.regex[this.twoFactorAuthType]))
+                    errors++;
+            }
+            else
+                this.p.class = "";
+
             //If no errors, log in
             var context = this;
             if(errors<1){
@@ -86,8 +152,13 @@ Vue.component('user-login', {
                         data.append('CSRF_token', token);
                         if(context.rMe)
                             data.append('userID', localStorage.getItem('deviceID'));
+                        if(context.requires2FA){
+                            data.append('2FAType', context.twoFactorAuthType);
+                            data.append('2FACode', context.twoFactorAuthCode);
+                        }
                         //Api url
                         let url=document.rootURI+"api\/users";
+                        context.requesting = true;
                         //Request itself
                         fetch(url, {
                             method: 'post',
@@ -98,6 +169,7 @@ Vue.component('user-login', {
                                 return json.text();
                             })
                             .then(function (data) {
+                                context.requesting = false;
                                 let respType;
                                 let response = data;
                                 // success
@@ -115,6 +187,9 @@ Vue.component('user-login', {
                                         break;
                                     case 'WRONG_CSRF_TOKEN':
                                         respType='warning';
+                                        break;
+                                    case '-1':
+                                        respType='danger';
                                         break;
                                     case '0':
                                         respType='success';
@@ -139,6 +214,22 @@ Vue.component('user-login', {
                                         break;
                                     case '3':
                                         respType='warning';
+                                        break;
+                                    case '4':
+                                        context.requires2FA = true;
+                                        context.loginConfirmed = true;
+                                        return;
+                                    case '5':
+                                        respType='danger';
+                                        break;
+                                    case '6':
+                                        respType='danger';
+                                        break;
+                                    case '7':
+                                        respType='warning';
+                                        break;
+                                    case '8':
+                                        respType='error';
                                         break;
                                     default:
                                         let loginSuccess = false;
@@ -186,6 +277,7 @@ Vue.component('user-login', {
                                 context.p.class = respType;
                             })
                             .catch(function (error) {
+                                context.requesting = false;
                                 if(context.verbose)
                                     console.log("Posted: "+data+"to user api"+" ,Failed in getting response to post.");
                                 //Can be implemented differently in different apps
@@ -202,12 +294,51 @@ Vue.component('user-login', {
         }
     },
     template:
-        `<span class="user-login">
+        `<div class="user-login" :class="{requesting:requesting}">
             <form novalidate>
-                <input :class="[m.class]" type="email" id="m_log" name="m" :placeholder="text.email" v-model="m.val" required>
-                <input :class="[p.class]" type="password" id="p_log" name="p" :placeholder="text.password" v-model="p.val" required>
-                <label v-if="hasRememberMe"> <input type="checkbox" name="rMe" v-model="rMe"> <span v-text="text.rememberMe"></span> </label>
+            
+                <input v-if="!loginConfirmed" :class="[m.class]" type="email" id="m_log" name="m" :placeholder="text.email" v-model="m.val" required>
+                <input v-if="!loginConfirmed":class="[p.class]" type="password" id="p_log" name="p" :placeholder="text.password" v-model="p.val" required>
+                <label v-if="!loginConfirmed && hasRememberMe"> <input type="checkbox" name="rMe" v-model="rMe"> <span v-text="text.rememberMe"></span> </label>
+                
+                <div class="suggest-2fa" v-if="!loginConfirmed && suggest2FA">
+                    <span v-text="text['2FA'].suggested"></span>
+                    <button @click.prevent="requires2FA = !requires2FA" v-text="requires2FA ? text['2FA'].suggestedNo2FA : text['2FA'].suggested2FA"></button>
+                </div>
+                
+                <div class="required-2fa" v-if="requires2FA">
+                
+                    <div class="required" v-if="loginConfirmed" v-text="text['2FA'].required"></div>
+                
+                    <div class="select-method" v-if="!twoFactorAuthType">
+                        <div v-text="text['2FA'].select"></div>
+                        <button v-for="item in typesOf2FA" @click.prevent="twoFactorAuthType = item">
+                            <img v-if="text['2FA'].methods[item].url" :src="text['2FA'].methods[item].url">
+                            <span v-text="text['2FA'].methods[item].text"></span>
+                        </button>
+                    </div>
+                    
+                    <div v-else="" class="2fa" :class="twoFactorAuthType" >
+                        <button @click.prevent="twoFactorAuthType = ''" v-text="text['2FA'].differentMethod"></button>
+                        
+                        <div class="request" v-if="twoFactorAuthType==='mail' && !requests.mail">
+                            <button @click.prevent="requestCode('mail')" v-text="text['2FA'].methods['mail'].request"></button>
+                        </div>
+                        
+                        <div class="request" v-else-if="twoFactorAuthType==='sms' && !requests.sms">
+                            <button @click.prevent="requestCode('sms')" v-text="text['2FA'].methods['sms'].request"></button>
+                        </div>
+                        
+                        <div class="code" v-else="">
+                            <div v-text="text['2FA'].methods[twoFactorAuthType].instruction"></div>
+                            <input type="text" :pattern="regex[twoFactorAuthType].toString().substr(1,regex[twoFactorAuthType].toString().length-2)" v-model="twoFactorAuthCode">
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                
                 <button @click.prevent="log" v-text="text.loginButton"></button>
             </form>
-        </span>`
+        </div>`
 });

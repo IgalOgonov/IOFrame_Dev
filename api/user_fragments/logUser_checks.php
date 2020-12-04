@@ -18,9 +18,9 @@ if( $inputs["userID"]!=null && $userSettings->getSetting('rememberMe') < 1){
 }
 
 //If this is a log out request no input is required
-if(!$inputs["log"]=='out'){
+if($inputs["log"]!=='out'){
     //Check for missing input first.
-    if( $inputs["m"]!=null  ||
+    if( !$inputs["m"]  ||
         ($inputs["log"]!= 'temp' && $inputs["p"] === null) ||
         ( $inputs["log"]== 'temp' && ( $inputs["sesKey"] === null || $inputs["userID"] === null ) ) ||
         ( $userSettings->getSetting('rememberMe') == 2 && $inputs["userID"] === null )
@@ -40,10 +40,35 @@ if(!$inputs["log"]=='out'){
             exit(INPUT_VALIDATION_FAILURE);
         }
         //Validate Password
-        else if( $inputs["log"]!= 'temp' && !IOFrame\Util\validator::validatePassword($p)){
-            if($test)
-                echo 'Password illegal.';
-            exit(INPUT_VALIDATION_FAILURE);
+        else if( $inputs["log"]!= 'temp'){
+            if(!IOFrame\Util\validator::validatePassword($p)){
+                if($test)
+                    echo 'Password illegal.';
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+            if( $inputs["2FAType"]){
+                switch ($inputs["2FAType"]){
+                    case 'app':
+                        $regexToCheck = TWO_FACTOR_AUTH_CODE_REGEX;
+                        break;
+                    case 'mail':
+                        $regexToCheck = TWO_FACTOR_AUTH_EMAIL_REGEX;
+                        break;
+                    case 'sms':
+                        $regexToCheck = TWO_FACTOR_AUTH_SMS_REGEX;
+                        break;
+                    default:
+                        if($test)
+                            echo 'Two Factor Auth type illegal.';
+                        exit(INPUT_VALIDATION_FAILURE);
+                }
+                if(!preg_match('/'.$regexToCheck.'/',$inputs['2FACode'])){
+                    if($test)
+                        echo 'Two Factor Auth code illegal.';
+                    exit(INPUT_VALIDATION_FAILURE);
+                }
+                unset($regexToCheck);
+            }
         }
         //If this is a temp login, check if sesKey is valid
         else if( ($inputs["log"]== 'temp')

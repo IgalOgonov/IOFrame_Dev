@@ -275,7 +275,7 @@ Vue.component('tokens-editor', {
                         }
                     }
                     let finalIdentifier = prefixes.pop();
-                    let newItem = target[finalIdentifier] !== undefined? target[finalIdentifier] : null;
+                    let newItem = (target !== null) && (target[finalIdentifier] !== undefined)? target[finalIdentifier] : null;
                     this.setSingleMainItem(i,newItem);
                 }
             }
@@ -476,6 +476,7 @@ Vue.component('tokens-editor', {
             <div class="info message-info-2" v-if="this.itemHasInfo">
                 <div
                  v-for="(item, key) in mainItem"
+                 :class="key.replace('.','-')"
                  v-if="!paramMap[key].edit && paramMap[key].display ">
 
                     <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>
@@ -490,7 +491,7 @@ Vue.component('tokens-editor', {
                 <div
                 v-for="(item, key) in mainItem"
                 v-if="paramMap[key].edit"
-                :class="{changed:(item.current !== item.original || paramMap[key].considerChanged)}"
+                :class="[{changed:(item.current !== item.original || paramMap[key].considerChanged)},key.replace('.','-')]"
                 >
 
                     <span class="title" v-text="paramMap[key].title? paramMap[key].title : key"></span>

@@ -133,14 +133,14 @@ require 'CSRF.php';
 require 'tokens_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/TokenHandler.php';
 
-if(!checkApiEnabled('tokens',$apiSettings))
-    exit(API_DISABLED);
-
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 
 if($test)
     echo 'Testing mode!'.EOL;
+
+if(!checkApiEnabled('tokens',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 $target = isset($_REQUEST["target"])? $_REQUEST["target"] : '';
 

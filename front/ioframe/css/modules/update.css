@@ -1,0 +1,19 @@
+#update .message{
+    display: flex;
+    flex-direction: column;
+}
+
+#update form{
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#update form > button{
+    margin: 5px 0px;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+@media (max-width: 1000px) {
+}

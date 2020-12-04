@@ -16,6 +16,14 @@ if($inputs['email'] !== null && !filter_var($inputs['email'], FILTER_VALIDATE_EM
     exit(INPUT_VALIDATION_FAILURE);
 }
 
+if($inputs['phone'] !== null){
+    if(!preg_match('/'.PHONE_REGEX.'/',$inputs['phone'])){
+        if($test)
+            echo 'phone must match '.PHONE_REGEX.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+}
+
 //Parse active
 if($inputs['active'] !== null)
     $inputs['active'] = $inputs['active']? 1 : 0;
@@ -34,3 +42,7 @@ foreach(['id','created','bannedDate','suspiciousDate'] as $param){
         exit(INPUT_VALIDATION_FAILURE);
     }
 }
+
+//If a user requested to reset 2FA, it doesn't matter whether he requires it or not
+if($inputs['reset2FA'])
+    $inputs['require2FA'] = null;

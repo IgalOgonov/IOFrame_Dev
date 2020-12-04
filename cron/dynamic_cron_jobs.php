@@ -55,6 +55,8 @@ if(isset($flags['h']))
     to one specific parameter (e.g. "expired/clean_expired_ip_events").'.EOL.'
     If setting a parameter, this should be the full path to set '.EOL.'
     separated by dots (e.g. "expired/clean_expired_ip_events.active")'.EOL.'
+    Alternatively, can be used to run just a single script'.EOL.'
+    ,regardless of whether it iss active.'.EOL.'
     [OPTIONAL]--set=\<value\> Used to set a parameter.'.EOL.'
     Value can be anything valid (e.g, "1" and "0"'.EOL.'
     can represent "true" and "false" for boolean settings).'.EOL.'
@@ -104,7 +106,7 @@ if($onlyParams){
             echo '----- Parameters -----'.EOL;
             echo '--'.$paramName.'--'.EOL;
             foreach ($paramArr as $subName => $subValue){
-                echo $subName.': '.$subValue.EOL;
+                echo $subName.': '.(gettype($subValue === 'string') ? $subValue : '['.explode(',',$subValue).']').EOL;
             }
             echo '----'.EOL;
         }
@@ -116,7 +118,7 @@ if($onlyParams){
             if(!empty($cronParams[$param])){
                 $paramArr = $cronParams[$param];
                 foreach ($paramArr as $subName => $subValue){
-                    echo $subName.': '.$subValue.EOL;
+                    echo $subName.': '.(gettype($subValue === 'string') ? $subValue : '['.explode(',',$subValue).']').EOL;
                 }
             }
             else
@@ -151,10 +153,10 @@ if($param){
         $parameters = $cronParams[$param];
         $parameters['test'] = $test;
         $parameters['verbose'] = !$silent;
-        if(!is_file($param.'.php'))
+        if(!is_file(__DIR__.'/'.$param.'.php'))
             echo 'File '.$param.'.php not found!'.EOL;
         else
-            require $param.'.php';
+            require __DIR__.'/'.$param.'.php';
     }
     else
         echo 'Parameters for '.$param.' not found!'.EOL;
@@ -166,9 +168,9 @@ else{
         $parameters = $paramArr;
         $parameters['test'] = $test;
         $parameters['verbose'] = !$silent;
-        if(!is_file($paramName))
-            echo 'File '.$paramName.' not found!'.EOL;
+        if(!is_file(__DIR__.'/'.$paramName.'.php'))
+            echo 'File '.$paramName.'.php not found!'.EOL;
         else
-            require $paramName;
+            require __DIR__.'/'.$paramName.'.php';
     }
 }

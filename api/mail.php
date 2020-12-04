@@ -108,9 +108,6 @@ require 'defaultInputResults.php';
 require 'CSRF.php';
 require 'mail_fragments/definitions.php';
 
-if(!checkApiEnabled('mail',$apiSettings))
-    exit(API_DISABLED);
-
 if($test){
     echo 'Testing mode!'.EOL;
     foreach($_REQUEST as $key=>$value)
@@ -122,7 +119,13 @@ $MailHandler = new IOFrame\Handlers\MailHandler(
     $defaultSettingsParams
 );
 
+if(!isset($_REQUEST["action"]))
+    exit('Action not specified!');
+
 $action = $_REQUEST['action'];
+
+if(!checkApiEnabled('mail',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 switch($action){
     case 'mailTo':

@@ -448,15 +448,15 @@ require 'CSRF.php';
 require 'articles_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ArticleHandler.php';
 
-if(!checkApiEnabled('articles',$apiSettings))
-    exit(API_DISABLED);
-
 if($test)
     echo 'Testing mode!'.EOL;
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
+
+if(!checkApiEnabled('articles',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //TODO For everything that has checks before auth, or object auth, add rate-limiting.
 

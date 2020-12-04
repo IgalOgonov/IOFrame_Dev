@@ -64,6 +64,8 @@ else
     document.rootURI = encodeURI('<?php echo $rootURI;?>');
     //Path to the current page from root
     document.loggedIn = <?php echo $auth->isLoggedIn()? "true" : "false";  ?>;
+    //Whether the user requires 2FA
+    document.loggedIn = <?php echo $auth->isLoggedIn()? "true" : "false";  ?>;
     //Difference between local time and server time - in seconds!
     document.serverTimeDelta = Math.floor( Math.floor(Date.now()/1000 - <?php echo time();?>) / 10) * 10;
     //Languages

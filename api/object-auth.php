@@ -466,15 +466,14 @@ require 'CSRF.php';
 require 'objectAuth_fragments/definitions.php';
 require __DIR__.'/../IOFrame/Handlers/ObjectAuthHandler.php';
 
-if(!checkApiEnabled('object-auth',$apiSettings))
-    exit(API_DISABLED);
-
 if($test)
     echo 'Testing mode!'.EOL;
 
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
+if(!checkApiEnabled('object-auth',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 if(!isset($_REQUEST["type"]))
     exit('Item type not specified!');

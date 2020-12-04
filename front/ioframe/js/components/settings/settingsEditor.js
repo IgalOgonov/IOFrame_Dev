@@ -42,8 +42,16 @@ Vue.component('settings-editor', {
             recompute:{
                 changed:false
             },
+            newSetting:{
+                key:'',
+                value:''
+            },
             //The setting we are currently changing
             changing: '',
+            //Whether we were deleting
+            deleted: false,
+            //Whether we are SURE we want to delete
+            deletionPrompt: false,
             //Whether the item is up to date
             upToDate: false,
             //Whether we are currently updating the item
@@ -119,35 +127,53 @@ Vue.component('settings-editor', {
                 }
             );
         },
-        //Tries to update the item
-        setItem: function(key){
+        //Tries to update the item.
+        //To delete, set inputs.delete to true. Else, to create a new setting, set createNew to be true. Else, tries to update inputs.key with the current value.
+        setItem: function(key,inputs = {}){
 
-            if(this.changing){
-                if(this.verbose)
-                    alertLog('Still updating setting '+this.changing,'error',this.$el);
+            if(this.changing !== ''){
+                alertLog('Still updating setting '+this.changing,'error',this.$el);
                 return;
+            }
+
+            let newValue = null;
+            if(inputs.createNew){
+                if((this.newSetting.value === '') || (this.newSetting.key === '') ){
+                    alertLog('Invalid setting key or value!','error',this.$el);
+                    return;
+                }
+                if(this.mainItem[this.newSetting.key]){
+                    alertLog('Key already exists!','error',this.$el);
+                    return;
+                }
+                newValue = this.newSetting.value;
+                key = this.newSetting.key;
             }
 
             //Data to be sent
             var data = new FormData();
-            data.append('action', 'setSetting');
+            data.append('action', inputs.delete? 'unsetSetting' : 'setSetting');
             data.append('target', this.item.identifier);
             if(this.test)
                 data.append('req','test');
 
             //What we're changing
             this.changing = key;
+            this.deleted = inputs.delete;
 
             //Params
             let params = {
-                settingName: key,
-                settingValue: this.mainItem[key].current
+                settingName: key
             };
+            if(!inputs.delete)
+                params.settingValue = (newValue === null) ? this.mainItem[key].current : newValue;
+            if(newValue !== null)
+                params.createNew = 1;
 
             data.append('params', JSON.stringify(params));
 
             if(this.verbose)
-                console.log('Setting '+key+'to '+this.mainItem[key].current);
+                console.log('Setting',params);
 
             this.apiRequest(
                 data,
@@ -179,8 +205,11 @@ Vue.component('settings-editor', {
 
             switch (response) {
                 case 1:
-                    alertLog('Setting '+this.changing+' updated!','success',this.$el);
-                    this.setInputsAsCurrent(this.changing);
+                    if(!this.deleted)
+                        alertLog('Setting '+this.changing+' updated!','success',this.$el);
+                    else
+                        alertLog('Setting '+this.changing+' deleted!','warning',this.$el);
+                    this.setInputsAsCurrent(this.changing, this.changing === this.newSetting.key);
                     break;
                 case 0:
                     alertLog('Could not update setting!','error',this.$el);
@@ -192,6 +221,7 @@ Vue.component('settings-editor', {
 
             //Either way we are done
             this.changing = '';
+            this.deleted = false;
 
         },
         //Handles the response to the get request
@@ -230,13 +260,22 @@ Vue.component('settings-editor', {
             this.recompute.changed = !this.recompute.changed;
         },
         //Saves inputs as the actual data (in case of a successful update or whatnot)
-        setInputsAsCurrent: function(key = ''){
-            if(key === '')
-                for(let index in this.mainItem){
-                    this.mainItem[index].original = this.mainItem[index].current;
-                }
-            else
-                this.mainItem[key].original = this.mainItem[key].current;
+        setInputsAsCurrent: function(key = '', newValue = false){
+            if(this.deleted)
+                delete this.mainItem[key];
+            else if(!newValue){
+                if(key === '')
+                    for(let index in this.mainItem){
+                        this.mainItem[index].original = this.mainItem[index].current;
+                    }
+                else
+                    this.mainItem[key].original = this.mainItem[key].current;
+            }
+            else{
+                this.mainItem[this.newSetting.key] = {};
+                this.mainItem[this.newSetting.key].current = this.newSetting.value ? this.newSetting.value : 0;
+                this.mainItem[this.newSetting.key].original = this.mainItem[this.newSetting.key].current;
+            }
 
             this.recompute.changed = !this.recompute.changed;
         }
@@ -256,13 +295,30 @@ Vue.component('settings-editor', {
 
             <h1 v-text="item.title"></h1>
 
+            <h4 v-if="deletionPrompt" class="message message-warning-1">
+                If you are SURE you want to delete the setting, press the deletion again. <br>
+                 <button v-text="'Cancel Deletion Operation'" @click.prevent="deletionPrompt = false;" class="cancel-1"></button>
+            </h4>
+
             <form>
-                <div v-for="(item, key) in mainItem" :class="{changed:item.current !== item.original}">
+                <div v-for="(item, key) in mainItem"
+                 :class="[{changed:item.current !== item.original},key.replace('.','-')]"
+                 >
                     <span class="title" v-text="key"></span>
                     <input v-if="item.type === 'string'" type="text" v-model:value="item.current" @change="recompute.changed = !recompute.changed">
                     <input v-else-if="item.type === 'number'" type="number" v-model:value="item.current" @change="recompute.changed = !recompute.changed">
                     <input v-else-if="item.type === 'boolean'" type="checkbox" v-model:value="item.current" @change="recompute.changed = !recompute.changed">
+                    
                     <button v-if="item.current !== item.original" v-text="'Update'" @click.prevent="setItem(key)" class="positive-1"></button>
+                    <button v-if="item.current !== item.original" v-text="'Reset'" @click.prevent="item.current = item.original;recompute.changed = !recompute.changed;" class="cancel-1"></button>
+                    
+                    <button v-else="" v-text="'X'" @click.prevent="if(!deletionPrompt) deletionPrompt = true; else{deletionPrompt = false;setItem(key,{delete:true})}" class="negative-2"></button>
+                </div>
+                <div :class="{changed:(newSetting.value !== '') && (newSetting.key !== '')}">
+                    <input class="title" type="text" v-model:value="newSetting.key ">
+                    <input type="text" v-model:value="newSetting.value" @change="recompute.changed = !recompute.changed">
+                    <button v-if="(newSetting.value !== '') && (newSetting.key !== '')" v-text="'Create'" @click.prevent="setItem('',{createNew:true})" class="positive-1"></button>
+                    <button v-text="'Reset'" @click.prevent="newSetting.key = '';newSetting.value = '';" class="cancel-1"></button>
                 </div>
             </form>
 

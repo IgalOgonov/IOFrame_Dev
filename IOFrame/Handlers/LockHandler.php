@@ -209,10 +209,10 @@ namespace IOFrame\Handlers{
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
             //Set defaults
-            $sec = isset($params['sec']) ? $params['sec'] : 2;
-            $maxWait = isset($params['maxWait']) ? $params['maxWait'] : 4;
-            $randomDelay = isset($params['randomDelay']) ? $params['randomDelay'] : 100000;
-            $tries = isset($params['tries']) ? $params['tries'] : 10;
+            $sec = isset($params['sec']) ? (int)$params['sec'] : 2;
+            $maxWait = isset($params['maxWait']) ? (int)$params['maxWait'] : 4;
+            $randomDelay = isset($params['randomDelay']) ? (int)$params['randomDelay'] : 100000;
+            $tries = isset($params['tries']) ? (int)$params['tries'] : 10;
             $sTime = (int)($maxWait*1000000/$tries);
             $valueWasProvided = !empty($value);
             if(!$valueWasProvided){
@@ -239,8 +239,8 @@ namespace IOFrame\Handlers{
                     break;
 
                 //Try to lock the key IF IT DOESNT EXIST
-                $result = $this->RedisHandler->call('set',[$key, $value,['nx', 'ex'=>$sec]]);
                 if(!$test){
+                    $result = $this->RedisHandler->call('set',[$key, $value,['nx', 'ex'=>$sec]]);
                     if(!$result)
                         continue;
                 }
@@ -252,7 +252,7 @@ namespace IOFrame\Handlers{
                 if($verbose && ($i==0 || $i===$tries-1))
                     echo 'Got '.$result.EOL;
 
-                if($result === false || $result !== $value){
+                if(!$test && ($result === false || $result !== $value) ){
                     if($i < $tries-1)
                         usleep($sTime);
                 }

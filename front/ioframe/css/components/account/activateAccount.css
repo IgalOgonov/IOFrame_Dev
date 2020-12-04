@@ -1,0 +1,11 @@
+.activate-account .resend input{
+    padding: 2px 5px;
+}
+.activate-account  button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: var(--main-color-4);
+}
+.activate-account  button:hover {
+    background: var(--main-color-3);
+}

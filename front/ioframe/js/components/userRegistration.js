@@ -350,7 +350,7 @@ Vue.component('user-registration', {
                     if(context.verbose)
                         console.log("Posted: ",data,"to user api"+" ,Failed in getting response to post.");
                     //Can be implemented differently in different apps
-                    eventHub.$emit('registrationResponse',{body:'Failed to reach API, cannot log in. Error text '+error});
+                    eventHub.$emit('registrationResponse',{body:'Failed to reach API, cannot log in. Error text '+error,type:'error'});
                     console.log('Error: ' + error); // An error occurred during the request.
                 });
             };

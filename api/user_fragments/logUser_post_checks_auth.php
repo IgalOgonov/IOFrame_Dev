@@ -16,11 +16,3 @@ if(!isset($UserHandler))
         $settings,
         $defaultSettingsParams
     );
-
-//Check if the user is eligible to log in
-if($inputs["log"]!='out')
-    if ($UserHandler->checkUserLogin($inputs["m"],['allowWhitelistedIP' => $IPHandler->directIP,'test'=>$test]) === 1){
-        if($test)
-            echo 'Suspicious user activity - cannot login without 2FA or whitelisting the IP!'.EOL;
-        exit(SECURITY_FAILURE);
-    }

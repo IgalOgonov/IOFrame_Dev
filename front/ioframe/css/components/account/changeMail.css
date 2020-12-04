@@ -1,0 +1,20 @@
+.change-mail h4.warning{
+    color: var(--button-dangerous-color-2);
+}
+.change-mail h4.negative{
+    color: var(--button-dangerous-2-color-2);
+}
+.change-mail h4.positive{
+    color: var(--button-positive-color-1);
+}
+.change-mail .resend input{
+    padding: 2px 5px;
+}
+.change-mail  button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: var(--main-color-4);
+}
+.change-mail  button:hover {
+    background: var(--main-color-3);
+}

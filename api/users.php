@@ -30,7 +30,10 @@
  *                      'id'=><int, identifier again>,
  *                      'username'=><string>,
  *                      'email'=><string>,
+ *                      'phone'=><string>,
  *                      'active'=><bool, whether the account is active>,
+ *                      'require2FA'=><bool, whether the account requires two factor authentication>,
+ *                      'has2FAApp'=><bool, whether the account is paired with a 2FA app>,
  *                      'rank'=><int, authentication rank>,
  *                      'created'=><int, unix timestamp of when the user was created>,
  *                      'bannedUntil'=><int, shows unix timestamp until when the user is banned>,
@@ -41,16 +44,40 @@
  *
  *       Examples: action=getUsers&idAtLeast=1&idAtMost=3&rankAtLeast=0&rankAtMost=10000&usernameLike=A&emailLike=.com&isActive=true&isBanned=false&isSuspicious=false&createdBefore=999999999999&createdAfter=0&orderBy=Email&orderType=0&limit=5&offset=0&test=true
  *_________________________________________________
- * updateUser
+ * getMyUser
+ *      Gets logged-in user.
+ *
+ *      @returns Array | Int:
+ *          -1 Server error
+ *           1 Not logged in
+ *          Otherwise, JSON of the form:
+ *          {
+ *               'id'=><int, identifier again>,
+ *               'username'=><string>,
+ *               'email'=><string>,
+ *               'phone'=><string>,
+ *               'active'=><bool, whether the account is active>,
+ *               'require2FA'=><bool, whether the account requires two factor authentication>,
+ *               'has2FAApp'=><bool, whether the account is paired with a 2FA app>,
+ *               'rank'=><int, authentication rank>,
+ *               'created'=><int, unix timestamp of when the user was created>
+ *          }
+ *
+ *       Examples: action=updateUser&id=2&username=Test&email=test@test.com&active=0&created=1586370650&bannedDate=1586370650&suspiciousDate=1586370650
+ *_________________________________________________
+ * updateUser [CSRF protected]
  *      Updates a single user
  *
  *      'id' => int, user id
  *      'username' => String, default null - new username
  *      'email' => String, default null - new Email
+ *      'phone' => String, default null - new Phone
  *      'active' => Bool, default null - whether the user is active or not
  *      'created' => Int, default null - Unix timestamp, user creation date.
  *      'bannedDate' => Int, default null - Unix timestamp until which the user is banned (0 to unban the user).
  *      'suspiciousDate' => Int, default null - Unix timestamp until which the user is suspicious (0 to make the user not suspicious).
+ *      'require2FA' => bool, default null - can manually set the "Requires 2FA" flag for a user.
+ *      'reset2FA' => bool, will set the "Requires 2FA" flag AND 2FA app secret to false for a user.
  *
  *      @returns Codes:
  *          -1 Server error
@@ -60,6 +87,77 @@
  *           3 No new assignments
  *
  *       Examples: action=updateUser&id=2&username=Test&email=test@test.com&active=0&created=1586370650&bannedDate=1586370650&suspiciousDate=1586370650
+ * _________________________________________________
+ * require2FA [CSRF protected]
+ *      Requires 2FA usage to log into account. Relevant if at least one auth is enabled for the account
+ *
+ *      'id' => int, user id. Defaults to your account ID. Only an admin can set it, otherwise.
+ *      'require2FA' => bool, default true - whether 2FA should be enabled or not.
+ *      TODO add setting that specifies what to do if app already exists - allow refresh, require any type of 2FA, require code from old app
+ *      TODO add 'code' => int, code from your current app - for testing, the secret is "JBSWY3DPEHPK3PXP" (only relevant in testing mode)
+ *
+ *      @returns Codes: Same as updateUser
+ *              as well as String: "NO_SUPPORTED_2FA" when the user tries to turn his own 2FA on while he has no supported one.
+ *
+ *       Examples: action=require2FA
+ * _________________________________________________
+ * requestApp2FA
+ *      Requests app 2FA. If allowed by the system, will return the relevant info to the user, who can then scan a QR code.
+ *      To scan a QR for testing, encode the following into QR and scan it: "otpauth://totp/LABEL:test@test.com?secret=JBSWY3DPEHPK3PXP&issuer=Test OTP"
+ *      TODO add setting that specifies what to do if app already exists - allow refresh, require any type of 2FA, require code from old app
+ *      TODO add 'code' => int, code from your current app - for testing, the secret is "JBSWY3DPEHPK3PXP" (only relevant in testing mode)
+ *
+ *      @returns: JSON encoded object of the form:
+ *          {
+ *           'secret': OTP secret
+ *           'issuer': OTP Issuer (Site Name)
+ *           'mail': User email (actually redundant, but still here)
+ *           }
+ *
+ *       Examples: action=requestApp2FA
+ * _________________________________________________
+ * confirmApp
+ *      Confirms app 2FA. The user needs to input the code on his screen (6 digits).
+ *
+ *      'code' => int, code - for testing, the secret is "JBSWY3DPEHPK3PXP" (only relevant in testing mode)
+ *      'require2FA' => bool, default true - whether 2FA should be required or not (you can set an app without enforcing it).
+ *
+ *      @returns Codes: Same as updateUser, but also -2 for invalid code
+ *
+ *       Examples: action=confirmApp&code=749226
+ * _________________________________________________
+ * requestPhone2FA TODO
+ *      Requests phone 2FA
+ *
+ *      'number' => string, valid phone number (same as in the contacts API)
+ *
+ *      @returns Codes:
+ *
+ *       Examples: action=
+ * _________________________________________________
+ * confirmPhone TODO
+ *      Confirms phone number, by inputting the code sent to the user via SMS
+ *
+ *      'code' => string, code sent via SMS
+ *      'require2FA' => bool, default true - whether 2FA should be required or not (you can set an app without enforcing it).
+ *
+ *      @returns Codes: Same as updateUser, but also -2 for invalid code
+ *
+ *       Examples: action=
+ * _________________________________________________
+ * requestSMS2FA TODO
+ *      If supported by the system, and the user has a valid phone, will send an SMS to the user
+ *
+ *      @returns Codes:
+ *
+ *       Examples: action=
+ * _________________________________________________
+ * requestMail2FA TODO
+ *      If supported by the system, will send an email to the user
+ *
+ *      @returns Codes:
+ *
+ *       Examples: action=
  *_________________________________________________
  * addUser [Rate Limited per IP]
  *      - Adds (registers) a user
@@ -80,12 +178,23 @@
  *        m: user mail  - required on any login
  *        p: user password  - required on full login
  *        userID: identifier of current device, used for temp login, or for full login using "rememberMe"
- *        sesKey: used to relog using temp login
+ *        sesKey: used to relog using temp login,
+ *        2FAType: 2FA Method, if the user chooses to log in via 2FA. Valid methods are:
+ *            'mail' - send code via email, always supported on systems with mailSettings set
+ *            'app' - works when the user has a 2FA app enabled and configured
+ *            'sms' - send code via sms, supported on systems with smsSettings set, AND the user having a valid phone
+ *        2FACode: The 2FA code provided by the user. Required when 2FAType is set.
  *        Returns integer code:
+ *              -1 Error during some stage of the login, could not complete.
  *              0 all good - without rememberMe
  *              1 username/password combination wrong
  *              2 expired auto login token
  *              3 login type not allowed
+ *              4 login would work, but 2FA is required (either user is suspicious or enabled 2FA himself)
+ *              5 login would work, but 2FA code is incorrect
+ *              6 login would work, but 2FA code expired
+ *              7 login would work, but user does not have it set up (no confirmed phone, no registered 2FA app, etc)
+ *              8 login would work, but 2FA method is not supported
  *              32-byte hex encoded session ID string - The token for your next automatic relog, if you logged automatically.
  *              JSON encoded array of the form {'iv'=><32-byte hex encoded string>,'sesID'=><32-byte hex encoded string>}
  *
@@ -118,7 +227,7 @@
  *      - Changes user password. Session needs to be authorized via pwdReset first.
  *        newPassword: new password
  *        Returns integer code:
- *                 0 - All good
+ *                  0 - All good
  *                  1 - User ID does not exist
  *                  2 - Time to change expired!
  *
@@ -198,6 +307,9 @@ $action = $_REQUEST["action"];
 if($test)
     echo 'Testing mode!'.EOL;
 
+if(!checkApiEnabled('users',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
+
 //Handle inputs
 $inputs = [];
 
@@ -218,16 +330,80 @@ switch($action){
 
         echo json_encode($result);
         break;
+
+    case 'getMyUser':
+
+        require 'user_fragments/getMyUser_auth.php';
+        require 'user_fragments/getUsers_execution.php';
+
+        echo json_encode($result);
+        break;
+
     case 'updateUser':
-        $arrExpected = ['id','username','email','active','created','bannedDate','suspiciousDate'];
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected = ['id','username','email','phone','active','created','bannedDate','suspiciousDate','require2FA','reset2FA'];
 
         require 'setExpectedInputs.php';
         require 'user_fragments/updateUser_auth.php';
         require 'user_fragments/updateUser_checks.php';
         require 'user_fragments/updateUser_execution.php';
 
+        echo ($result === 0)?
+            '0' : $result;
+        break;
+
+    case 'require2FA':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected = ['id','require2FA'];
+
+        require 'setExpectedInputs.php';
+        require 'user_fragments/require2FA_auth.php';
+        require 'user_fragments/require2FA_checks.php';
+        require 'user_fragments/updateUser_execution.php';
+
+        echo ($result === 0)?
+            '0' : $result;
+        break;
+
+    case 'requestApp2FA':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        /*$arrExpected = ['code',];
+
+        require 'setExpectedInputs.php';*/
+        require 'user_fragments/requestApp2FA_auth.php';
+        require 'user_fragments/requestApp2FA_checks.php';
+        require 'user_fragments/requestApp2FA_execution.php';
+
         echo json_encode($result);
         break;
+
+    case 'confirmApp':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected = ['code','require2FA'];
+
+        require 'setExpectedInputs.php';
+        require 'user_fragments/confirmApp_auth.php';
+        require 'user_fragments/confirmApp_checks.php';
+        require 'user_fragments/updateUser_execution.php';
+
+        if(!$test && $result === 0)
+            unset($_SESSION['TEMP_2FASecret']);
+
+        if($result === 0)
+            $UserHandler->logOut(['test'=>$test,'forgetMe'=>true]);
+
+        echo ($result === 0)?
+            '0' : $result;
+        break;
+
     case 'addUser':
 
         $arrExpected =["u","m","p"];
@@ -248,7 +424,6 @@ switch($action){
 
     case 'logUser':
 
-
         if(isset($_REQUEST["log"]))
             $inputs["log"] = $_REQUEST["log"];
         else
@@ -261,7 +436,7 @@ switch($action){
         if($test)
             echo 'Log type: '.$inputs["log"].EOL;
 
-        $arrExpected =["userID","m","p","sesKey"];
+        $arrExpected =["userID","m","p","sesKey","2FAType","2FACode"];
 
         require 'setExpectedInputs.php';
         if($inputs['log']!='out'){
@@ -269,7 +444,7 @@ switch($action){
         }
         require 'user_fragments/logUser_pre_checks_auth.php';
         require 'user_fragments/logUser_checks.php';
-        if($inputs['log']!='out'){
+        if($inputs['log']!=='out'){
             if( ($inputs['log']==='temp') && ($inputs['userID']!== null) )
                 $userId = $inputs['userID'];
             elseif($inputs['m']){
@@ -285,7 +460,7 @@ switch($action){
         require 'user_fragments/logUser_post_checks_auth.php';
         require 'user_fragments/logUser_execution.php';
 
-        if($result === 1){
+        if($result === 1 || $result === 5){
             $shouldCommitActions = true;
             require 'user_fragments/limit_success_check.php';
         }

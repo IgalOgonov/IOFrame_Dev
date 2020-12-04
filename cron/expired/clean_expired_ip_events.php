@@ -3,7 +3,7 @@
 
 //Ensure this isn't accessed from the web
 $interfaceName = php_sapi_name();
-if ( $interfaceName !== 'cli' && strpos( $interfaceName, 'cgi' === false)) {
+if ( $interfaceName !== 'cli' && (strpos( $interfaceName, 'cgi') === false) ) {
     die('This script must be accessed through the CLI (or called via the CGI by a cron job)!');
 }
 

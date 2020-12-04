@@ -7,12 +7,14 @@ require __DIR__.'/../../ioframe/templates/ioframe_core_headers.php';
 
 $details = isset($_SESSION['details']) && \IOFrame\Util\is_json($_SESSION['details'])? json_decode($_SESSION['details'],true) : [];
 
-$signedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] == '1';
-$active = isset($details['Active']) && $details['Active'] == '1';
+$signedIn = !empty($details['logged_in']);
+$active = !empty($details['Active']);
+$requires2FA = !empty($details['require2FA']);
 
 $siteConfig = [
     'signedIn'=>$signedIn,
     'active'=>$active,
+    'requires2FA'=>$requires2FA,
     'isAdmin'=>$auth->isAuthorized(0)
 ];
 

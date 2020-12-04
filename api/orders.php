@@ -228,17 +228,15 @@ require 'apiSettingsChecks.php';
 require 'CSRF.php';
 require 'orders_fragments/definitions.php';
 
-if(!checkApiEnabled('orders',$apiSettings))
-    exit(API_DISABLED);
-
-
-
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
 
 if($test)
     echo 'Testing mode!'.EOL;
+
+if(!checkApiEnabled('orders',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Handle inputs
 $inputs = [];

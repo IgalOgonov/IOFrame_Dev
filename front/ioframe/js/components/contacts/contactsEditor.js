@@ -417,7 +417,7 @@ Vue.component('contacts-editor', {
             </div>
 
             <form>
-                <div v-for="(item, key) in mainItem" :class="{changed:item.current !== item.original}"
+                <div v-for="(item, key) in mainItem" :class="[{changed:item.current !== item.original},key.replace('.','-')]"
                 v-if="['created','updated'].indexOf(key) === -1 && (mode==='create' || ['contactType','identifier'].indexOf(key) === -1)">
 
                     <span class="title" v-text="titleMap[key]"></span>

@@ -1,0 +1,104 @@
+/*Messages*/
+#account > div > div.message {
+    text-align: center;
+    font-size: 2em;
+    font-weight: 800;
+}
+/*Buttons*/
+#account button {
+    padding: 5px 10px;
+    background: var(--main-color-4);
+}
+#account button:hover {
+    background: var(--main-color-3);
+}
+
+/*Not logged in*/
+#account > div > .not-logged-in,
+#account > div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+/*Login*/
+#account > div > .not-logged-in .user-login{
+    width: 250px;
+}
+#account > div > .not-logged-in  .user-login form {
+    padding: 5px;
+    border-radius: 5px;
+}
+/*Password Reset - Logon*/
+#account > div > .not-logged-in .reset-password {
+    text-align: center;
+    max-width: 250px;
+    padding: 5px;
+    margin: 5px 0px;
+    background: var(--main-color-3);
+    border: 1px var(--main-color-9) solid;
+    border-radius: 5px;
+}
+
+/*Regular App*/
+#account > div > .account-info {
+    max-width: max-content;
+    padding: 20px;
+    border-radius: 5px;
+    background: var(--main-color-2);
+    border: var(--main-color-8) 1px solid;
+}
+#account > div > .account-info > div {
+    background: var(--main-color-3-5);
+    margin: 10px 0px;
+    padding: 5px;
+    border: var(--main-color-4) 1px solid;
+}
+#account > div > .account-info > div > .title {
+    background: var(--shadow-gray-3);
+    padding: 0px 5px;
+    border-radius: 5px 0 0 5px;
+}
+#account > div > .account-info > div > .value {
+    background: var(--shadow-gray-2);
+    padding: 0px 5px;
+    border-radius: 0 5px 5px 0;
+}
+#account > div > .account-info > div.positive > .value{
+    color: var(--soft-green-2);
+}
+#account > div > .account-info > div.negative > .value{
+    color: var(--soft-red-2);
+}
+/*Password Reset - Regular App*/
+#account > div > .account-info .activate-account .activate-account-text,
+#account > div > .account-info .reset-password .reset-password-text,
+#account > div > .account-info .reset-mail .reset-mail-text,
+#account > div > .account-info .toggle-2fa .toggle-2fa-text,
+#account > div > .account-info .add-2fa .add-2fa-text{
+    display: none;
+}
+#account > div > .account-info .activate-account button,
+#account > div > .account-info .reset-password button,
+#account > div > .account-info .reset-mail button,
+#account > div > .account-info .toggle-2fa button,
+#account > div > .account-info .add-2fa button{
+    border-radius: 5px;
+}
+#account > div > .account-info .toggle-2fa.on button{
+    background: var(--button-dangerous-color-1);
+}
+#account > div > .account-info .toggle-2fa.on button:hover{
+    background: var(--button-dangerous-color-2);
+}
+#account > div > .account-info .toggle-2fa.off button{
+    background: var(--button-positive-2-bg-1);
+}
+#account > div > .account-info .toggle-2fa.off button:hover{
+    background: var(--button-positive-2-bg-2);
+}
+#account input{
+    padding: 3px;
+}
+
+@media (max-width: 1000px) {
+}

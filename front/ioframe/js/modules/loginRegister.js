@@ -66,31 +66,41 @@ var loginRegister = new Vue({
             switch(responseBody){
                 case 'INPUT_VALIDATION_FAILURE':
                     responseBody = 'User login failed - incorrect input';
-                    responseType='warning';
                     break;
                 case 'AUTHENTICATION_FAILURE':
                     responseBody = 'User login failed - authentication failure';
-                    responseType='warning';
                     break;
                 case 'WRONG_CSRF_TOKEN':
                     responseBody = 'User login failed - CSRF token wrong';
-                    responseType='warning';
+                    break;
+                case '-1':
+                    responseBody = 'Server Error!';
                     break;
                 case '0':
                     responseBody = 'User logged in successfully!';
-                    responseType='success';
                     break;
                 case '1':
                     responseBody = 'User login failed - username and password combination is wrong!';
-                    responseType='danger';
                     break;
                 case '2':
                     responseBody = 'User login failed - expired auto-login';
-                    responseType='warning';
                     break;
                 case '3':
                     responseBody = 'User login failed - login type not allowed  (why you using this API?!)';
-                    responseType='warning';
+                    break;
+                case '4':
+                    return;
+                case '5':
+                    responseBody = '2FA code is incorrect.';
+                    break;
+                case '6':
+                    responseBody = '2FA code expired.';
+                    break;
+                case '7':
+                    responseBody = 'User does not have 2FA method set up.';
+                    break;
+                case '8':
+                    responseBody = 'System does not support chosen 2FA method!';
                     break;
                 default:
             }
@@ -128,4 +138,39 @@ var loginRegister = new Vue({
             alertLog(responseBody, responseType);
         }
     },
+    template:`
+    <div class="main-app" id="login-register" :mode="currentMode">
+        <h1 v-text="modes[currentMode].title"></h1>
+    
+        <div
+            is="user-login"
+            v-if="currentMode==='login'"
+            :has-remember-me="modes.login.hasRememberMe"
+            :test="test"
+            :verbose="verbose"
+            >
+        </div>
+        <div
+            is="user-logout"
+            v-if="currentMode==='logout'"
+            :test="test"
+            :verbose="verbose"
+            >
+        </div>
+    
+        <div
+            is="user-registration"
+            :can-have-username="modes.login.canHaveUsername"
+            :requires-username="modes.login.requiresUsername"
+             v-if="currentMode==='register'"
+             :test="test"
+             :verbose="verbose"
+            >
+        </div>
+    
+        <button v-if="modes.login.switchToRegistration && currentMode=='login' && configObject.register.canRegister" v-text="'Register Instead'" @click.prevent="currentMode='register'"></button>
+        <button v-if="modes.login.switchToRegistration && currentMode=='register'" v-text="'Login Instead'" @click.prevent="currentMode='login'"></button>
+    
+    </div>
+    `
 });

@@ -174,15 +174,15 @@ require 'apiSettingsChecks.php';
 require __DIR__.'/CSRF.php';
 require 'menu_fragments/definitions.php';
 
-if(!checkApiEnabled('menu',$apiSettings))
-    exit(API_DISABLED);
-
 if(!isset($_REQUEST["action"]))
     exit('Action not specified!');
 $action = $_REQUEST["action"];
 
 if($test)
     echo 'Testing mode!'.EOL;
+
+if(!checkApiEnabled('menu',$apiSettings,$_REQUEST['action']))
+    exit(API_DISABLED);
 
 //Handle inputs
 $inputs = [];

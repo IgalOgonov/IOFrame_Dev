@@ -773,7 +773,9 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['ARTICLES_CREATE_AUTH',\IOFrame\Util\str2SafeStr('Allows creating new trees')],
                 ['ARTICLES_UPDATE_AUTH',\IOFrame\Util\str2SafeStr('Allows updating all articles')],
                 ['ARTICLES_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allows deleting all articles')],
-                ['ARTICLES_BLOCKS_ASSUME_SAFE',\IOFrame\Util\str2SafeStr('Allow inserting potentially "unsafe" conent into articles.')]
+                ['ARTICLES_BLOCKS_ASSUME_SAFE',\IOFrame\Util\str2SafeStr('Allow inserting potentially "unsafe" content into articles.')],
+                ['CAN_ACCESS_CP',\IOFrame\Util\str2SafeStr('Allows accessing the control panel even when not an admin')],
+                ['CAN_UPDATE_SYSTEM',\IOFrame\Util\str2SafeStr('Allows updating the system even when not an admin')]
             ];
 
             foreach($assignments as $k=>$v){
@@ -1035,6 +1037,16 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 $defaultSettingsParams
             );
             $resourceSettings->initDB();
+            $apiSettings = new IOFrame\Handlers\SettingsHandler(
+                IOFrame\Util\getAbsPath().'/'.SETTINGS_DIR_FROM_ROOT.'/apiSettings/',
+                $defaultSettingsParams
+            );
+            $apiSettings->initDB();
+            $metaSettings = new IOFrame\Handlers\SettingsHandler(
+                IOFrame\Util\getAbsPath().'/'.SETTINGS_DIR_FROM_ROOT.'/metaSettings/',
+                $defaultSettingsParams
+            );
+            $metaSettings->initDB();
 
             echo 'All settings synced to database!'.EOL;
             echo '</div>';
@@ -1112,13 +1124,17 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 echo "Error: " . $e->getMessage().'<br/>';
                 Die();
             }
-            //This means installation was complete!
-            $myFile = fopen('localFiles/_installComplete', 'w');
-            fclose($myFile);
+            //Finally, copy the version this node was installed in
+            $FileHandler = new IOFrame\Handlers\FileHandler();
+            $availableVersion = $FileHandler->readFile($localSettings->getSetting('absPathToRoot').'meta/', 'ver');
+            $siteSettings->setSetting('ver',$availableVersion,['createNew'=>true]);
             //The private key should stay inside the db, not in a setting file.
             $siteSettings->setSetting('privateKey',null,['createNew'=>true]);
             echo 'Installation complete!'.EOL;
             $_SESSION['INSTALLING']=false;
+            //This means installation was complete!
+            $myFile = fopen('localFiles/_installComplete', 'w');
+            fclose($myFile);
             //Create Install Complete file
             echo '<form method="get" action="cp/login">
                          <input type="submit" value="Go to admin panel">
@@ -1197,12 +1213,17 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($userArgs,["allowRegularReg",1]);
             array_push($userArgs,["selfReg",0]);
             array_push($userArgs,["regConfirmMail",0]);
+            array_push($userArgs,["allowSMS2FA",0]);
+            array_push($userArgs,["sms2FAExpires",300]);
+            array_push($userArgs,["allowMail2FA",1]);
+            array_push($userArgs,["mail2FAExpires",1800]);
+            array_push($userArgs,["allowApp2FA",1]);
 
-            array_push($pageArgs,["loginPage",'']);
-            array_push($pageArgs,["pwdReset",'']);
-            array_push($pageArgs,["mailReset",'']);
-            array_push($pageArgs,["regConfirm",'']);
-            array_push($pageArgs,["registrationPage",'']);
+            array_push($pageArgs,["loginPage",'cp/login']);
+            array_push($pageArgs,["registrationPage",'cp/login']);
+            array_push($pageArgs,["pwdReset",'cp/account']);
+            array_push($pageArgs,["mailReset",'cp/account']);
+            array_push($pageArgs,["regConfirm",'cp/account']);
             array_push($pageArgs,["homepage",'front/ioframe/pages/welcome']);
             array_push($pageArgs,["404",'']);
 
@@ -1215,22 +1236,22 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($resourceArgs,["imageQualityPercentage",100]);
             array_push($resourceArgs,["allowDBMediaGet",1]);
 
-            array_push($apiArgs,["articles",1]);
-            array_push($apiArgs,["auth",1]);
-            array_push($apiArgs,["contacts",1]);
-            array_push($apiArgs,["mail",1]);
-            array_push($apiArgs,["media",1]);
-            array_push($apiArgs,["menu",1]);
-            array_push($apiArgs,["object-auth",1]);
-            array_push($apiArgs,["objects",1]);
-            array_push($apiArgs,["orders",0]);
-            array_push($apiArgs,["plugins",1]);
-            array_push($apiArgs,["security",1]);
-            array_push($apiArgs,["session",1]);
-            array_push($apiArgs,["settings",1]);
-            array_push($apiArgs,["tokens",1]);
-            array_push($apiArgs,["trees",0]);
-            array_push($apiArgs,["users",1]);
+            array_push($apiArgs,["articles",json_encode(['active'=>1])]);
+            array_push($apiArgs,["auth",json_encode(['active'=>1])]);
+            array_push($apiArgs,["contacts",json_encode(['active'=>1])]);
+            array_push($apiArgs,["mail",json_encode(['active'=>1])]);
+            array_push($apiArgs,["media",json_encode(['active'=>1])]);
+            array_push($apiArgs,["menu",json_encode(['active'=>1])]);
+            array_push($apiArgs,["object-auth",json_encode(['active'=>1])]);
+            array_push($apiArgs,["objects",json_encode(['active'=>1])]);
+            array_push($apiArgs,["orders",json_encode(['active'=>0])]);
+            array_push($apiArgs,["plugins",json_encode(['active'=>1])]);
+            array_push($apiArgs,["security",json_encode(['active'=>1])]);
+            array_push($apiArgs,["session",json_encode(['active'=>1])]);
+            array_push($apiArgs,["settings",json_encode(['active'=>1])]);
+            array_push($apiArgs,["tokens",json_encode(['active'=>1])]);
+            array_push($apiArgs,["trees",json_encode(['active'=>0])]);
+            array_push($apiArgs,["users",json_encode(['active'=>1])]);
             array_push($apiArgs,["allowTesting",0]);
             array_push($apiArgs,["restrictedArticleByAddress",0]);
             array_push($apiArgs,["captchaFile",'validateCaptcha.php']);

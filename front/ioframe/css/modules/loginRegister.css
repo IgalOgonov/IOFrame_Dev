@@ -24,6 +24,9 @@
     margin: 5px 0px;
     padding: 5px;
 }
+#login-register.main-app .user-login form > div {
+    margin: 5px 0px;
+}
 
 /*Buttons in general*/
 #login-register.main-app button {

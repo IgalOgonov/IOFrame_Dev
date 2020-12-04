@@ -10,7 +10,7 @@ if(!isset($UserHandler))
         $defaultSettingsParams
     );
 
-$result =  $UserHandler->changeMail($id,$inputs['newMail'],['test'=>$test]);
+$result =  $UserHandler->changeMail($id,$inputs['newMail'],['test'=>$test,'keepActive'=>true]);
 
 if($result === 0) {
     if (!$test) {

@@ -72,6 +72,16 @@
     height: 30px;
 }
 
+/*Update*/
+#menu > a.update {
+    justify-content: center;
+    background: var(--main-color-9);
+    color: var(--main-color-6) !important;
+}
+#menu > a.update:hover {
+    background: var(--main-color-8);
+}
+
 /*Toggle wrapper / button*/
 #menu > .button-wrapper{
     position: relative;
