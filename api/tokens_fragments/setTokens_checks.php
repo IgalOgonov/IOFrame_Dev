@@ -16,6 +16,22 @@ if($inputs['tokens'] !== null){
             exit(INPUT_VALIDATION_FAILURE);
         }
 
+        if($tokenArr['tags'] !== null){
+            if(!\IOFrame\Util\is_json($tokenArr['tags'])){
+                if($test)
+                    echo 'tags must be a JSON array!'.EOL;
+                exit(INPUT_VALIDATION_FAILURE);
+            }
+            $inputs['tokens'][$token]['tags'] = json_decode($tokenArr['tags'],true);
+            foreach ($inputs['tokens'][$token]['tags'] as $tag){
+                if(!preg_match('/'.TAG_REGEX.'/',$tag)){
+                    if($test)
+                        echo 'Each tag needs to match regex '.TAG_REGEX.EOL;
+                    exit(INPUT_VALIDATION_FAILURE);
+                }
+            }
+        }
+
         if(!isset($tokenArr['action']) || !isset($tokenArr['ttl'])){
             if($test)
                 echo 'Every token needs to have action and ttl set!'.EOL;

@@ -81,27 +81,40 @@ namespace IOFrame{
                                                               INDEX (Last_Updated)
                                                               ) ENGINE=InnoDB DEFAULT CHARSET = utf8;");
 
-            $updateTB1 = $conn->prepare("INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
-                                      VALUES( 'Account Activation Default Template', :Content)");
-            $content = "Hello!<br> To activate your account on ".$siteSettings->getSetting('siteName').", click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot')."api/users?action=regConfirm&id=%%uId%%&code=%%Code%%\">this link</a><br> The link will expire in ".$userSettings->getSetting('mailConfirmExpires')." hours";
-            $updateTB1->bindValue(':Content', Util\str2SafeStr($content));
-
-            $updateTB2 = $conn->prepare("INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
-                                      VALUES( 'Password Reset Default Template', :Content)");
-            $content = "Hello!<br> You have requested to reset the password associated with this account. To do so, click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot')."api/users?action=pwdReset&id=%%uId%%&code=%%Code%%\"> this link</a><br> The link will expire in ".$userSettings->getSetting('pwdResetExpires')." hours";
-            $updateTB2->bindValue(':Content', Util\str2SafeStr($content));
-
-            $updateTB3 = $conn->prepare("INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
-                                      VALUES( 'Mail Reset Default Template', :Content)");
-            $content = "Hello!<br> To change your mail on ".$siteSettings->getSetting('siteName').", click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot'). "api/users?action=mailReset&id=%%uId%%&code=%%Code%%\">this link</a><br> The link will expire in ".$userSettings->getSetting('mailConfirmExpires')." hours";
-            $updateTB3->bindValue(':Content', Util\str2SafeStr($content));
+            $mailTemplateArr = [
+                [
+                    "INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
+                                      VALUES( 'Account Activation Default Template', :Content)",
+                    "Hello!<br> To activate your account on ".$siteSettings->getSetting('siteName').", click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot')."api/users?action=regConfirm&id=%%uId%%&code=%%Code%%\">this link</a><br> The link will expire in ".$userSettings->getSetting('mailConfirmExpires')." hours"
+                ],
+                [
+                    "INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
+                                      VALUES( 'Password Reset Default Template', :Content)",
+                    "Hello!<br> You have requested to reset the password associated with this account. To do so, click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot')."api/users?action=pwdReset&id=%%uId%%&code=%%Code%%\"> this link</a><br> The link will expire in ".$userSettings->getSetting('pwdResetExpires')." hours"
+                ],
+                [
+                    "INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
+                                      VALUES( 'Mail Reset Default Template', :Content)",
+                    "Hello!<br> To change your mail on ".$siteSettings->getSetting('siteName').", click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot'). "api/users?action=mailReset&id=%%uId%%&code=%%Code%%\">this link</a><br> The link will expire in ".$userSettings->getSetting('mailConfirmExpires')." hours"
+                ],
+                [
+                    "INSERT INTO ".$prefix."MAIL_TEMPLATES (Title, Content)
+                                      VALUES( 'Invite Mail Default Template', :Content)",
+                    "Hello!<br> You've been invited to join ".$siteSettings->getSetting('siteName').". Click <a href=\"http://".$_SERVER['HTTP_HOST'].$localSettings->getSetting('pathToRoot'). "api/users?action=checkInvite&mail=%%mail%%&token=%%token%%\">this link</a> to accept the invite.<br> The invite will expire in ".(int)($userSettings->getSetting('inviteExpires')/24)." days"
+                ],
+            ];
+            $updateMailTemplates = [];
+            for($i=0; $i<count($mailTemplateArr); $i++){
+                $updateMailTemplates[$i] = $conn->prepare($mailTemplateArr[$i][0]);
+                $updateMailTemplates[$i]->bindValue(':Content', Util\str2SafeStr($mailTemplateArr[$i][1]));
+            }
 
             try{
                 $makeTB->execute();
                 echo "MAIL TEMPLATES table and indexes created.".EOL;
-                $updateTB1->execute();
-                $updateTB2->execute();
-                $updateTB3->execute();
+                for($i=0; $i<count($updateMailTemplates); $i++){
+                    $updateMailTemplates[$i]->execute();
+                }
                 echo "MAIL TEMPLATES table initialized.".EOL;
             }
             catch(\Exception $e){
@@ -847,7 +860,7 @@ namespace IOFrame{
             $query = "CREATE TABLE IF NOT EXISTS ".$prefix."IOFRAME_TOKENS (
                                                               Token varchar(256) PRIMARY KEY NOT NULL,
                                                               Token_Action varchar(1024) NOT NULL,
-                                                              Uses_Left int NOT NULL,
+                                                              Uses_Left UNSIGNED BIGINT NOT NULL,
                                                               Expires varchar(14) NOT NULL,
                                                               Session_Lock varchar(256) DEFAULT NULL,
                                                               Locked_At varchar(14) DEFAULT NULL,

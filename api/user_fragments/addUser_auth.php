@@ -19,7 +19,8 @@ if (
     $userSettings->getSetting('selfReg')!=0 ||
     $auth->isAuthorized(0) ||
     $auth->hasAction('REGISTER_USER_AUTH') ||
-    isset($_SESSION['INSTALLING'])
+    isset($_SESSION['INSTALLING']) ||
+    isset($inputs['token'])
 )
 ){
     if($test)

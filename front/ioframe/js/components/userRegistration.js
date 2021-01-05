@@ -26,6 +26,16 @@ Vue.component('user-registration', {
             type: Boolean,
             default: true
         },
+        //Whether the user has an invite token
+        inviteToken:{
+            type: String,
+            default: null
+        },
+        //Whether the invite token requires a specific mail
+        inviteMail:{
+            type: String,
+            default: null
+        },
         //Whether a captcha is required. Is irrelevant if the site does not have a captcha site key at document.captchaSiteKey.
         requireCaptcha:{
             type: Boolean,
@@ -80,6 +90,8 @@ Vue.component('user-registration', {
                     password: 'Password',
                     passwordHelp: "Must be 8-64 characters long<br> Must include latters and numbers<br>Can include special characters except '>' and '<'",
                     repeatPassword: 'Repeat password',
+                    useToken:'Use provided invite token',
+                    inviteToken:'Invite Token',
                     email: 'Email',
                     captcha:{
                         expired: 'Registration captcha expired! Please revalidate.',
@@ -139,9 +151,10 @@ Vue.component('user-registration', {
                 class:''
             },
             m:{
-                val:'',
+                val:this.inviteMail?this.inviteMail:'',
                 class:''
             },
+            useToken:!!this.inviteToken,
             agreements:[],
             captcha: '',
             captchaID: '',
@@ -150,6 +163,9 @@ Vue.component('user-registration', {
         }
     },
     computed:{
+        visibleToken:function(){
+            return this.inviteToken.length < 20 ? this.inviteToken : this.inviteToken.substr(0,8)+' ... '+this.inviteToken.substr(this.inviteToken.length-8,8)
+        }
     },
     created:function(){
         eventHub.$on('registrationSuccess',this.captchaSuccess);
@@ -237,6 +253,8 @@ Vue.component('user-registration', {
                 data.append('action', 'addUser');
                 if(this.captcha)
                     data.append('captcha', this.captcha);
+                if(this.inviteToken && this.useToken)
+                    data.append('token',this.inviteToken);
                 if(this.canHaveUsername && this.u.val.length > 0)
                     data.append('u', this.u.val);
                 data.append('m', this.m.val);
@@ -388,13 +406,19 @@ Vue.component('user-registration', {
             this.captchaID = hcaptcha.render(this.$el.querySelector('.h-captcha'),JSON.parse(JSON.stringify(this.captchaOptions)));
         }
     },
+    watch:{
+        useToken:function(newVal){
+            if(newVal && this.inviteMail)
+                this.m.val = this.inviteMail;
+        }
+    },
     template: `
     <span class="user-registration">
         <form novalidate>
     
-        <label>
-            <input v-if="canHaveUsername" :class="[u.class]" type="text" id="u_reg" name="u" :placeholder="text.username" v-model="u.val" required>
-            <a v-if="canHaveUsername" href="#"  id="u_reg-tooltip">?</a>
+        <label v-if="canHaveUsername">
+            <input :class="[u.class]" type="text" id="u_reg" name="u" :placeholder="text.username" v-model="u.val" required>
+            <a href="#"  id="u_reg-tooltip">?</a>
         </label>
     
         <label>
@@ -404,7 +428,17 @@ Vue.component('user-registration', {
     
         <input :class="[p2.class]" type="password" id="p2_reg" :placeholder="text.repeatPassword" v-model="p2.val" required>
     
-        <input :class="[m.class]" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required>
+        <input :class="[m.class]" :disabled="useToken && inviteMail" type="email" id="m_reg" name="m" :placeholder="text.email" v-model="m.val" required>
+    
+        <label v-if="inviteToken">
+            <span v-text="text.useToken"></span>
+            <input type="checkbox" id="use_token" name="use_token" v-model="useToken">
+        </label>
+        
+        <label v-if="inviteToken && useToken">
+            <span v-text="text.inviteToken"></span>
+            <input type="text" id="invite_token" :value="visibleToken" disabled>
+        </label>
         
         <div v-for="(options, index) in agreementOptions" class="agreement" :class="{required:options.required}">
                 <input v-if="options.agreeable" type="checkbox" v-model:value="agreements[index]">

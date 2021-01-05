@@ -55,8 +55,9 @@ namespace IOFrame\Handlers{
          *                  'u' - Username (required but may be empty for random username)
          *                  'm' - Mail
          *                  'p' - Password
-         * @param bool $test
-         *
+         * @param array $params
+         *              'activateToken' => string, default null - checks a token, and activates account if it allows either any activation, or activation of provided email.
+         *              'tokenConsumeUses' => int, default 1 - if activateToken is provided, indicates how many uses to consume on success
          * @returns int
          *      0 - success
          *      -2 - failed - registration not allowed!
@@ -64,10 +65,13 @@ namespace IOFrame\Handlers{
          *      1 - failed - username already in use
          *      2 - failed - email already in use
          *      3 - failed - server error
+         *      4 - registration would succeed, but token does not allow activation
          */
         function regUser(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $activateToken = isset($params['activateToken'])? $params['activateToken'] : null;
+            $tokenConsumeUses = isset($params['tokenConsumeUses'])? $params['tokenConsumeUses'] : 1;
 
             //Hash the password
             $pass = $inputs["p"];
@@ -97,8 +101,16 @@ namespace IOFrame\Handlers{
                 }
             }
 
+            //Token activation
+            if($activateToken){
+                if($this->confirmInviteToken($activateToken,array_merge($params,['consume'=>$tokenConsumeUses,'mail'=>$inputs["m"]])) !== 0)
+                    return  4;
+                /*else
+                    TODO Log in case of crash before user is created;*/
+            }
+
             //Make user if all good
-            $res = $this->reg_makeUserCore($inputs, $hash, ['test'=>$test,'verbose'=>$verbose]);
+            $res = $this->reg_makeUserCore($inputs, $hash, ['test'=>$test,'verbose'=>$verbose,'active'=>($activateToken? 1 : 0)]);
             if($res !== 0)
                 return $res;
 
@@ -111,6 +123,10 @@ namespace IOFrame\Handlers{
             $res = $this->reg_makeUserAuth($inputs,['test'=>$test,'verbose'=>$verbose]);
             if($res !== 0)
                 return $res;
+
+            if($this->userSettings->getSetting('regConfirmMail') && !$activateToken){
+                $this->accountActivation($uMail,$uId,['test'=>$test,'verbose'=>$verbose]);
+            }
 
             if($verbose)
                 echo "Test User Added!".' Values are :'.$inputs["u"].', '.$hash.', '.$inputs["m"].'.';
@@ -158,12 +174,13 @@ namespace IOFrame\Handlers{
          * @param string[] $inputs array of inputs needed to log in.
          * @param string $hash password hash
          * @param array $params
-         *
+         *              active - bool, default 0 - whether the account should be active or not on creation. Overridden by user setting regConfirmMail, or install session.
          * @returns int description in main function
          */
         private function reg_makeUserCore(array $inputs, string $hash, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $active = isset($params['active'])? $params['active'] : 0;
             $query = "INSERT INTO ".$this->SQLHandler->getSQLPrefix().
                 "USERS(Username, Password, Email, Active, Auth_Rank, SessionID)
              VALUES (:Username, :Password, :Email,:Active, :Auth_Rank,:SessionID)";
@@ -171,7 +188,7 @@ namespace IOFrame\Handlers{
             array_push($queryBind,[':Username', $inputs["u"]],[':Password', $hash],[':Email', $inputs["m"]]);
             //Decides whether to activate user on creation or not
             if($this->userSettings->getSetting('regConfirmMail') && !isset($_SESSION['INSTALLING']) ){
-                array_push($queryBind,[':Active', 0]);
+                array_push($queryBind,[':Active', $active]);
             }
             else
                 array_push($queryBind,[':Active', 1]);
@@ -203,7 +220,7 @@ namespace IOFrame\Handlers{
                     return 3;
                 }
             if($verbose)
-                echo 'Executing query '.$query.EOL;
+                echo 'Executing query '.$query.' with bindings '.json_encode($queryBind).EOL;
             return 0;
         }
 
@@ -235,27 +252,28 @@ namespace IOFrame\Handlers{
         /** Adds extra value to table - changed from app to app
          * @param string[] $inputs array of inputs needed to log in.
          * @param array $params
-         *
+         *                  active: bool, whether the account is already active (activation mail wont be sent), or not
          * @returns int description in main function
          */
         private function reg_makeUserExtra(array $inputs, array $params = []){
             $test = isset($params['test'])? $params['test'] : false;
             $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $active = isset($params['active'])? $params['active'] : 0;
             //Need to fetch the ID of the user we just created in order to add meta-data
 
             //Get the ID of the user we just created
             try{
                 $res = $this->SQLHandler->selectFromTable(
                     $this->SQLHandler->getSQLPrefix().'USERS',['Username',$inputs["u"],'='],[],['noValidate'=>true,'test'=>$test,'verbose'=>$verbose]
-                )[0];
+                );
             }
             catch(\Exception $e){
                 //TODO LOG
                 return 3;
             }
             //In case we are in test mode, mock uId and uMail
-            $uId = (!$test)? $res['ID'] : 1;
-            $uMail = (!$test)? $res['Email'] : 'test@test.com';
+            $uId = !$test? $res[0]['ID'] : 1;
+            $uMail = !$test? $res[0]['Email'] : 'test@test.com';
 
             //Add extra data
             $query = "INSERT INTO ".$this->SQLHandler->getSQLPrefix()."USERS_EXTRA(ID, Created_On)
@@ -274,10 +292,6 @@ namespace IOFrame\Handlers{
             if(isset($_SESSION['INSTALLING']))
                 if($_SESSION['INSTALLING'] = true)
                     return 0;
-
-            if($this->userSettings->getSetting('regConfirmMail')){
-                $this->accountActivation($uMail,$uId,['test'=>$test,'verbose'=>$verbose]);
-            }
 
             return 0;
         }
@@ -711,6 +725,7 @@ namespace IOFrame\Handlers{
          * @param string $confirmCode Confirmation code needed to send async mail
          * @param int $templateNum Template to use
          * @param string $title Mail title
+         * @param boolean $async Send mail asynchronously or not
          * @param array $params
          *
          * @returns int description in main function
@@ -752,6 +767,177 @@ namespace IOFrame\Handlers{
             if($verbose)
                 echo 'Sending async email about account activation to '.$uMail.EOL;
             return 0;
+        }
+
+        /** Creates an invite token
+         * @param array $inputs
+         *              'token' =>string, Default null. Specific token to use. Created automatically otherwise
+         *              'action' =>string, Specific Action, Defaults to "REGISTER_ANY" - could be "REGISTER_MAIL" (to register a specific email),
+         *                       "REGISTER_ANY" (register anyone with token), or custom.
+         *              'mail' =>string, Default null - required if registering a specific mail.
+         *              'uses' =>int, default 1 - How many uses a newly created token would have. Cannot be infinite, but can be 64 bit (so basically infinite)
+         *              'ttl' =>int, defaults to email activation setting (72 hours by install default) - Token TTL in seconds
+         * @param array $params
+         * @returns int|string Same as TokenHandler->setToken()
+         *              with possible code -3 - cannot create mail without $mail set
+         */
+        function createInviteToken(array $inputs = [],array $params = []){
+            $inputs['token'] = !empty($inputs['token'])? $inputs['token'] :  bin2hex(openssl_random_pseudo_bytes(128,$hex_secure));
+            return $this->createInviteTokens([$inputs],$params)[$inputs['token']];
+        }
+
+        /** Creates invite tokens
+         * @param array $params
+         *              'token' =>string, Default null. Specific token to use. Created automatically otherwise
+         *              'action' =>string, Specific Action, Defaults to "REGISTER_ANY" - could be "REGISTER_MAIL" (to register a specific email),
+         *                       "REGISTER_ANY" (register anyone with token), or custom.
+         *              'mail' =>string, Default null - required if registering a specific mail.
+         *              'uses' =>int, default 1 - How many uses a newly created token would have. Cannot be infinite, but can be 64 bit (so basically infinite)
+         *              'ttl' =>int, defaults to email activation setting (774 hours, or 31 days, by install default) - Token TTL in seconds
+         *              --
+         *              Params for setTokens, with overwrite defaulting to "false" instead of "true"
+         * @returns int Same as TokenHandler->setTokens()
+         *              with possible code -3 - cannot create mail without $mail set
+         */
+        function createInviteTokens(array $inputs = [],array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $overwrite = isset($params['overwrite'])? $params['overwrite'] : false;
+            $results = [];
+            $stuffToSet = [];
+            foreach ($inputs as $inputArray){
+                $token = !empty($inputArray['token'])? $inputArray['token'] : bin2hex(openssl_random_pseudo_bytes(128,$hex_secure));
+                $results[$token] = -1;
+                $inputArray['action'] = !empty($inputArray['action'])? $inputArray['action'] : "REGISTER_ANY";
+                if($inputArray['action'] === 'REGISTER_MAIL'){
+                    $results[$token] = -3;
+                    if(empty($inputArray['mail']))
+                        continue;
+                    else{
+                        $inputArray['action'] = 'REGISTER_MAIL_'.$inputArray['mail'];
+                        unset($inputArray['mail']);
+                    }
+                }
+                $inputArray['uses'] = !empty($inputArray['uses'])? $inputArray['uses'] : 1;
+                $inputArray['ttl'] = !empty($inputArray['ttl'])? $inputArray['ttl'] : (int)($this->userSettings->getSetting('inviteExpires')? $this->userSettings->getSetting('inviteExpires') : $this->userSettings->getSetting('mailConfirmExpires'))*3600;
+                $inputArray['tags'] = ['registration', ( $inputArray['action'] === 'REGISTER_ANY' ? 'any_registration' : 'mail_registration' ) ];
+                $stuffToSet[$token] = $inputArray;
+            }
+            if(!count($stuffToSet))
+                return $results;
+
+
+            if(!defined('TokenHandler'))
+                require 'TokenHandler.php';
+            $TokenHandler = new TokenHandler($this->settings,array_merge($this->defaultSettingsParams,['verbose'=>$verbose]));
+
+            $res = $TokenHandler->setTokens($stuffToSet,array_merge($params,['overwrite'=>$overwrite]));
+
+            foreach ($res as $token=>$result)
+                $results[$token] = $result;
+
+            return $results;
+        }
+
+        /** Confirms an invite token
+         * @param string $token Token to check
+         * @param array $inputs
+         *              'mail' =>string, default null. If set, will also check for a specific email; Otherwise, only accepts "REGISTER_ANY".
+         *              'consume' =>int, default 1. How many uses to consume. On 0 (or false), will only check the token rather than trying to consume it.
+         * @param array $params
+         * @returns int
+         *              Same as TokenHandler->consumeToken() if 'consume' is more than 0,
+         *              codes 0/1 that indicate token does/doesn't exist otherwise.
+         */
+        function confirmInviteToken(string $token,array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            $mail = isset($params['mail'])? $params['mail'] : null;
+            $consume = isset($params['consume'])? $params['consume'] : 1;
+            if(!defined('TokenHandler'))
+                require 'TokenHandler.php';
+            $TokenHandler = new TokenHandler($this->settings,array_merge($this->defaultSettingsParams,['verbose'=>$verbose]));
+            $actionRegex = $mail? '^REGISTER_ANY$|^REGISTER_MAIL_'.
+                str_replace('-','\\-',str_replace('.','\\.',$mail))
+                .'$' : '^REGISTER_ANY$';
+
+            if(!$consume){
+                $tokenRes = $TokenHandler->getToken($token,$params);
+                if(!empty($tokenRes['Token_Action']) && preg_match('/'.$actionRegex.'/',$tokenRes['Token_Action']) && ($tokenRes['Uses_Left'] >= $consume))
+                    return 0;
+                else
+                    return 1;
+            }
+            else
+                return $TokenHandler->consumeToken($token,(int)$consume,$actionRegex,$params);
+        }
+
+        /** Sends invite mail that allows to both register and activate the account - on restricted systems, as well (by default).
+         * @param string $uMail mail
+         * @param int $templateNum Template to use
+         * @param string $title Mail title
+         * @param boolean $async Send mail asynchronously or not
+         * @param array $params
+         *              extraTemplateArguments:<Associative Array, extra arguments for the mail function>
+         *              token:<string, Specific token to use. Created automatically otherwise>
+         *              tokenUses:<int, default 1 - How many uses a newly created token would have. Cannot be infinite, but can be 64 bit (so basically infinite)>
+         *              tokenTTL:<int, defaults to email activation setting (72 hours by install default) - Token TTL in seconds>
+         *              mailSpecificToken:<string, default $uMail - If set to fault, will mail an invite that's valid for any email>
+         * @returns int | String
+         *          -3 - Token could not be created
+         *          -2 - Mail failed to send
+         *          -1 - Server error
+         *           <string, valid invite token> - success
+         *           1 - Template does not exist
+         */
+        function sendInviteMail(string $uMail, int $templateNum, string $title, bool $async, array $params = []){
+            $test = isset($params['test'])? $params['test'] : false;
+            $verbose = isset($params['verbose'])? $params['verbose'] : ($test ? true : false);
+            if(!defined('MailHandler'))
+                require 'MailHandler.php';
+            $templateArguments = isset($params['extraTemplateArguments'])? $params['extraTemplateArguments'] : [];
+            $token = isset($params['token'])? $params['token'] : null;
+            $tokenUses = isset($params['tokenUses'])? $params['tokenUses'] : null;
+            $tokenTTL = isset($params['tokenTTL'])? $params['tokenTTL'] : null;
+            $mailSpecificToken = isset($params['mailSpecificToken'])? $params['mailSpecificToken'] : $uMail;
+            if(!$token){
+                $token = $this->createInviteToken([],array_merge($params,['uses'=>$tokenUses,'ttl'=>$tokenTTL,'mail'=>$mailSpecificToken,'action'=>($mailSpecificToken?'REGISTER_MAIL':'REGISTER_ANY')]));
+                if($token !== 0)
+                    return -3;
+            }
+            $templateArguments['token'] = $token;
+            $templateArguments['mail'] = $uMail;
+            $mail = new MailHandler($this->settings,array_merge($this->defaultSettingsParams,['verbose'=>$verbose]));
+            if($mail->setWorkingTemplate($templateNum)!==0)
+                return 1;
+            if(!$test){
+                try{
+                    if($async){
+                        $secToken = $mail->createSecToken($uMail);
+                        $mail->sendMailAsync( $uMail, $title, $secToken, ['',$this->siteSettings->getSetting('siteName')],
+                            '', '', json_encode($templateArguments),$type = 'template' );
+                    }
+                    else{
+                        if($mail->sendMailTemplate(
+                            [[$uMail]],
+                            $title,
+                            '',
+                            json_encode($templateArguments),
+                            ['',$this->siteSettings->getSetting('siteName')])
+                        )
+                            return 0;
+                        else
+                            return -2;
+                    }
+                }
+                catch(\Exception $e){
+                    //TODO LOG
+                    return -2;
+                }
+            }
+            if($verbose)
+                echo 'Sending '.($async?'async':'synced').' email about account activation to '.$uMail.EOL;
+            return $token;
         }
 
         /** Bans user for $minutes minutes.
@@ -1046,7 +1232,7 @@ namespace IOFrame\Handlers{
                                 //Check the code
                                 require_once $this->settings->getSetting('absPathToRoot').'IOFrame/Handlers/ext/TwoFactorAuth/vendor/autoload.php';
                                 $tfa = new TwoFactorAuth($this->siteSettings->getSetting('siteName'));
-                                if(!$tfa->verifyCode((string)$TwoFactorAuth['2FADetails']['secret'],(string)$inputs['2FACode']))
+                                if(!$tfa->verifyCode((string)$TwoFactorAuth['2FADetails']['secret'],(string)$inputs['2FACode'],3))
                                     return 5;
                                 break;
                             case 'sms':

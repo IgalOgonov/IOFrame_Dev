@@ -22,7 +22,9 @@ var loginRegister = new Vue({
                 register:{
                     title:'Register',
                     canHaveUsername:true,
-                    requiresUsername:true
+                    requiresUsername:true,
+                    inviteToken:null,
+                    inviteMail:null
                 }
             },
             currentMode:'login',
@@ -49,9 +51,15 @@ var loginRegister = new Vue({
             this.modes.register.canHaveUsername = this.configObject.register.canHaveUsername;
         if(this.configObject.register.requiresUsername !== undefined)
             this.modes.register.requiresUsername = this.configObject.register.requiresUsername;
+        if(this.configObject.register.inviteToken !== undefined)
+            this.modes.register.inviteToken = this.configObject.register.inviteToken;
+        if(this.configObject.register.inviteMail !== undefined)
+            this.modes.register.inviteMail = this.configObject.register.inviteMail;
 
         if(this.loggedIn)
             this.currentMode = 'logout';
+        else
+            this.currentMode = this.modes.register.inviteToken?'register':'login';
     },
     computed:{
     },
@@ -160,8 +168,10 @@ var loginRegister = new Vue({
     
         <div
             is="user-registration"
-            :can-have-username="modes.login.canHaveUsername"
-            :requires-username="modes.login.requiresUsername"
+            :can-have-username="modes.register.canHaveUsername"
+            :requires-username="modes.register.requiresUsername"
+            :invite-token="modes.register.inviteToken"
+            :invite-mail="modes.register.inviteMail"
              v-if="currentMode==='register'"
              :test="test"
              :verbose="verbose"

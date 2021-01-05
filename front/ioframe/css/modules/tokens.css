@@ -5,6 +5,20 @@
     border-radius: 2px;
 }
 
+#tokens .search-list .search-item-property.tags .tag{
+    display: inline-block;
+    margin: 2px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    background: var(--main-color-5-5);
+    font-weight: 800;
+    transition: 0.3s ease-in-out;
+}
+
+#tokens .search-list .search-item:hover .search-item-property.tags .tag {
+    background: var(--main-color-7);
+}
+
 @media (max-width: 800px) {
     
     /*All search lists*/
@@ -22,9 +36,7 @@
     }
     #tokens .search-list .search-item .search-item-property > span {
         display: flex;
-    }
-    #tokens .search-list .search-item .search-item-property > span > span {
-        width: 100%;
+        flex-wrap: wrap;
     }
     #tokens .search-list .expired{
         padding: 2px;

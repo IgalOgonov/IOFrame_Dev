@@ -63,3 +63,40 @@ echo EOL;
 
 echo EOL.'Checks whether user one can log in - checks a fake code an a fake IP:'.EOL;
 echo $UserHandler->checkUserLogin(1,['allowCode'=>'code','allowWhitelistedIP'=>'0.1.2.3','test'=>true]).EOL;
+
+echo EOL.'Creating invite token:'.EOL;
+echo $UserHandler->createInviteToken([],['test'=>true]).EOL;
+
+echo EOL.'Creating 2 invite tokens:'.EOL;
+var_dump($UserHandler->createInviteTokens([['token'=>'test_1','action'=>'REGISTER_MAIL','mail'=>'test@test.com'],['token'=>'test_2','action'=>'REGISTER_ANY']],['verbose'=>true]));
+
+echo EOL.'Sending invite mail:'.EOL;
+echo $UserHandler->sendInviteMail('igal@iosoft.io',1,'Test Invite',false,['test'=>true]).EOL;
+
+echo EOL.'Confirming invite token test_1 - without mail'.EOL;
+var_dump($UserHandler->confirmInviteToken('test_1',['test'=>true,'consume'=>false]));
+
+echo EOL.'Confirming invite token test_1 - with mail'.EOL;
+var_dump($UserHandler->confirmInviteToken('test_1',['test'=>true,'mail'=>'test@test.com','consume'=>false]));
+
+echo EOL.'Confirming invite token test_2'.EOL;
+var_dump($UserHandler->confirmInviteToken('test_2',['test'=>true,'consume'=>false]));
+
+echo EOL.'Consuming invite token test_2'.EOL;
+var_dump($UserHandler->confirmInviteToken('test_2',['test'=>true]));
+
+echo EOL.'Consuming invite token test_1'.EOL;
+var_dump($UserHandler->confirmInviteToken('test_1',['test'=>true]));
+
+echo EOL.'Create a new activated user using token test_2'.EOL;
+var_dump($UserHandler->regUser(
+    [
+        'u'=>'TestUser',
+        'm'=>'test@test.com',
+        'p'=>'TestPassword1',
+    ],
+    [
+        'test'=>true,
+        'activateToken'=>'test_1'
+    ]
+));

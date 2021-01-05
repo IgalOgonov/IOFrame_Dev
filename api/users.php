@@ -164,11 +164,13 @@
  *        m: requested mail
  *        p: requested password
  *        u: requested username (optional, depending on a setting)
+ *        token: string, default null - if set, will try to register via an invite token (activating the account without confirmation required)
  *        Returns integer code:
  *              0 - success
  *              1 - username already in use
  *              2 - email already in use
  *              3 - server error
+ *              4 - registration would succeed, but token does not allow activation
  *
  *        Examples: action=addUser&u=test1&m=test@example.com&p=A5432524gf54
  *_________________________________________________
@@ -249,9 +251,9 @@
  *        async: Used to specify you don't want to be redirected.
  *        Returns integer code:
  *                 0 - All good
-*                  1 - User ID does not exist
-*                  2 - Wrong code
-*                  3 - Code expired
+ *                 1 - User ID does not exist
+ *                 2 - Wrong code
+ *                 3 - Code expired
  *        Also, on confirmation, will actually redirect you to a specific page (set in pageSettings) unless "async" is set in the request.
  *
  *        Examples: action=regConfirm&id=4&code=GtIOsxkfbA92iGp0MsSt70GkfSDTFcUZlyd0I2MJMflz1h6kmI
@@ -270,11 +272,69 @@
  *        newMail: new password
  *        Returns integer code:
  *                 0 - All good
-*                  1 - User ID does not exist
-*                  2 - Time to change expired!
+ *                 1 - User ID does not exist
+ *                 2 - Time to change expired!
  *
  *        Examples: action=changeMail&newMail=example@example.com
+ * _________________________________________________
+ * createUserInvite
+ *    - Creates an invite token
+ *      mail: string, default null - if set, would only allow this mail to use the registration
+ *      token: string, if set, this will be the specific token - otherwise, creates a random one
+ *      tokenUses: int, default PHP_INT_MAX (9223372036854775807 on basically all systems) - how many uses the token should have
+ *      tokenTTL: int, defaults to email activation setting (72 hours by install default) - Token TTL in seconds
+ *      overwrite: bool, default true - allows overwriting existing token
+ *      update: bool, default false - only updates existing token
  *
+ *      Returns string|int -
+ *          where possible codes are:
+ *         -3 - cannot create mail without $mail set
+ *         -2 - token already exists, overwrite is true, but the token is locked
+ *         -1 - could not reach db
+ *         <string, valid invite token> - on success
+ *          1 - token already exists and overwrite is false
+ *          2 - token doesn't exist and update is true
+ *          3 - "action" was not passed, and token did not previously exist
+ *
+ *       Examples:
+ *          action=createUserInvite
+ *          action=createUserInvite&token=test_1&mail=test@test.com&tokenUses=4312&tokenTTL=3600&overwrite=false
+ *
+ *_________________________________________________
+ * sendInviteMail [CSRF protected]
+ *      - Sends an invite mail
+ *        [required] mail: string, Email to send an invite to
+ *        token: string, Specific token to use. Created automatically otherwise
+ *        tokenUses: int, default 1 - How many uses a newly created token would have. Cannot be infinite, but can be 64 bit (so basically infinite)
+ *        tokenTTL: int, defaults to email activation setting (72 hours by install default) - Token TTL in seconds
+ *        extraTemplateArguments: JSON encoded Object, extra arguments for the mail function - REQUIRES SEPARATE AUTH
+ *        override: bool, default true, whether to override existing tokens
+ *        update: bool, default false, whether to only update existing tokens
+ *
+ *        Returns integer code:
+ *          -3 - Token could not be created
+ *          -2 - Mail failed to send
+ *          -1 - Server error
+ *           <string, valid invite token> - on success
+ *           1 - Template does not exist OR setting inviteTemplate not set.
+ *
+ *        Examples:
+ *          action=sendInviteMail&mail=test@test.com
+ *          action=createUserInvite&token=test_1&mail=test@test.com&tokenUses=4312&tokenTTL=3600&overwrite=false
+ *_________________________________________________
+ * checkInvite
+ *      - Checks whether a user's invite token is valid. Potentially redirects to registration page with relevant message.
+ *        token: Invite token
+ *        mail: user mail, can be empty or 0 or "NULL", in which case a token that allows invites by any mail will also be considered valid.
+ *        async: Used to specify you don't want to be redirected.
+ *
+ *        Returns integer code:
+ *                  0 - All good
+ *                  1 - Token ID does not exist or expired
+ *                  2 - Wrong email (and action isn't REGISTER_ANY)
+ *        Also, on confirmation, will actually redirect you to a specific page (set in pageSettings) unless "async" is set in the request.
+ *
+ *        Examples: action=checkInvite&mail=test@test.com&token=test_1
  *_________________________________________________
  * banUser [CSRF protected]
  *      - Bans user for a certain number of minutes
@@ -282,7 +342,7 @@
  *        id: ID of the user to ban
  *        Returns integer code:
  *                 0 - All good
-*                  1 - User ID does not exist
+ *                 1 - User ID does not exist
  *
  *        Examples: action=banUser&id=1&minutes=60000
  *
@@ -406,7 +466,7 @@ switch($action){
 
     case 'addUser':
 
-        $arrExpected =["u","m","p"];
+        $arrExpected =["u","m","p","token"];
 
         require 'setExpectedInputs.php';
         require 'user_fragments/ip_check.php';
@@ -564,6 +624,40 @@ switch($action){
         require 'user_fragments/changeMail_auth.php';
         require 'user_fragments/changeMail_checks.php';
         require 'user_fragments/changeMail_execution.php';
+
+        echo ($result === 0)?
+            '0' : $result;
+        break;
+
+    case 'sendInviteMail':
+    case 'createUserInvite':
+        if(!validateThenRefreshCSRFToken($SessionHandler))
+            exit(WRONG_CSRF_TOKEN);
+
+        $arrExpected =["mail","extraTemplateArguments","tokenUses","token","tokenTTL","overwrite","update"];
+
+        require 'setExpectedInputs.php';
+        require 'user_fragments/invite_auth.php';
+        require 'user_fragments/invite_checks.php';
+        if($action === 'sendInviteMail')
+            require 'user_fragments/sendInviteMail_execution.php';
+        else
+            require 'user_fragments/createUserInvite_execution.php';
+
+        if(gettype($result) === 'array')
+            foreach ($result as $token => $res)
+                echo $token;
+        else
+            echo $result;
+        break;
+
+    case 'checkInvite':
+
+        $arrExpected =["mail","token","async"];
+
+        require 'setExpectedInputs.php';
+        require 'user_fragments/checkInvite_checks.php';
+        require 'user_fragments/checkInvite_execution.php';
 
         echo ($result === 0)?
             '0' : $result;

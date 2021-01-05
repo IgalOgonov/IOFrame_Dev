@@ -26,14 +26,18 @@ $siteConfig = array_merge($siteConfig,
         ]
     ]
 );
+$inviteToken = empty($_SESSION['VALID_INVITE_TOKEN'])?null:$_SESSION['VALID_INVITE_TOKEN'];
+$inviteMail = empty($_SESSION['VALID_INVITE_MAIL'])?null:$_SESSION['VALID_INVITE_MAIL'];
 $userSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.SETTINGS_DIR_FROM_ROOT.'/userSettings/');
 $siteConfig['login'] = [
     'hasRememberMe'=>$userSettings->getSetting('rememberMe')? true: false,
 ];
 $siteConfig['register'] = [
-    'canRegister'=>(bool)$userSettings->getSetting('selfReg'),
+    'canRegister'=>(bool)($userSettings->getSetting('selfReg') || $inviteToken),
     'canHaveUsername'=>$userSettings->getSetting('usernameChoice') < 2,
     'requiresUsername'=>$userSettings->getSetting('usernameChoice') == 0,
+    'inviteToken'=>$inviteToken,
+    'inviteMail'=>$inviteMail,
 ];
 ?>
 

@@ -17,6 +17,7 @@ Vue.component('tokens-editor', {
                 return {
                     identifier:'',
                     action:'',
+                    tags:'',
                     uses:1,
                     expires:Math.floor(Date.now()/1000),
                     locked:false
@@ -149,6 +150,29 @@ Vue.component('tokens-editor', {
                         setName:'type'
                     }
                 },
+                'tags':{
+                    title: 'Tags',
+                    parseOnGet: function(tags){
+                        return (tags && tags.length)? tags.join(',') : '';
+                    },
+                    edit: true,
+                    display: true,
+                    considerChanged: this.mode === 'create',
+                    onUpdate:{
+                        parse: function(value){
+                            let res = value? value.split(',') : [];
+                            return JSON.stringify(res);
+                        },
+                        validate: function(value){
+                            value = JSON.parse(value);
+                            for(let i in value)
+                                if(!value[i].match(/^[\w][\w _\-]{0,31}$/))
+                                    return false;
+                            return true;
+                        },
+                        validateFailureMessage: 'Each tag must match ^[\\w][\\w _\\-]{0,31}$, and separated by commas'
+                    }
+                },
                 'expires':{
                     title: 'Expires At',
                     edit: true,
@@ -217,8 +241,6 @@ Vue.component('tokens-editor', {
     mounted:function(){
     },
     updated: function(){
-        if(!this.upToDate && !this.initiating)
-            this.getItemInfo();
     },
     computed:{
         changed: function(){
@@ -275,7 +297,11 @@ Vue.component('tokens-editor', {
                         }
                     }
                     let finalIdentifier = prefixes.pop();
-                    let newItem = (target !== null) && (target[finalIdentifier] !== undefined)? target[finalIdentifier] : null;
+                    let newItem;
+                    if(typeof target === 'object')
+                        newItem = target;
+                    else
+                        newItem = (target !== null) && (target[finalIdentifier] !== undefined)? target[finalIdentifier] : null;
                     this.setSingleMainItem(i,newItem);
                 }
             }

@@ -52,5 +52,12 @@ else{
         }
 }
 
+//Token
+if($inputs['token']!==null && !preg_match('/'.TOKEN_REGEX.'/',$inputs['token']) ){
+    if($test)
+        echo 'Illegal token!';
+    exit(INPUT_VALIDATION_FAILURE);
+}
+
 
 ?>

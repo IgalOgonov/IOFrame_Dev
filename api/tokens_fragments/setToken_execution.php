@@ -4,8 +4,9 @@ $TokenHandler = new \IOFrame\Handlers\TokenHandler($settings,$defaultSettingsPar
 $result = $TokenHandler->setToken(
     $inputs['token'],
     $inputs['tokenAction'],
-    $inputs['uses'] === null? 1 : $inputs['uses'],
-    $inputs['ttl'] === null? -1 : $inputs['ttl'],
+    (($inputs['uses'] === null) && !$inputs['update'])? 1 : $inputs['uses'],
+    (($inputs['ttl'] === null) && !$inputs['update'])? -1 : $inputs['ttl'],
+    (($inputs['tags'] === null) && !$inputs['update'])? [] : $inputs['tags'],
     [
         'test'=>$test,
         'overwrite'=>$inputs['overwrite'],

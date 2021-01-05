@@ -12,6 +12,7 @@
  *              tokens - string, JSON array, default [] - optional array of specific tokens to get
  *              tokenLike - string, regex pattern, default null - if set, returns results where the token matches this pattern
  *              actionLike - string, regex pattern, default null - if set, returns results where the action matches this pattern
+ *              containsTags - string,JSON encoded array, default null - tags, at least one of which the token must contain
  *              usesAtLeast - int, default null - if set, returns results that have at least this many uses left
  *              usesAtMost - int, default null - if set, returns results that have at most this many uses left
  *              expiresBefore - string, unix timestamp, default null - if set, returns results that expire BEFORE specified timestamp
@@ -62,7 +63,7 @@
  *          3 - "action" was not passed, and token did not previously exist
  *
  *      Examples:
- *          action=setToken&token=test1&action=test action 1&uses=10&ttl=4000
+ *          action=setToken&token=test1&tokenAction=test action 1&uses=10&ttl=4000
  *_________________________________________________
  * setTokens
  *      Sets a number of tokens
@@ -93,7 +94,7 @@
  *      Examples:
  *          action=setTokens&tokens={"test1":{"action":"test action 1","uses":10,"ttl":4000},"test2":{"action":"test action 2","uses":1,"ttl":3600},"test3":{"action":"test action 3","ttl":4500}}
  *_________________________________________________
- * deleteTokensDeletes specific tokens
+ * deleteTokens Deletes specific tokens
  *
  *      params:
  *              tokens - string, array of token names
@@ -157,7 +158,7 @@ switch($action){
 
     case 'getTokens':
 
-        $arrExpected = ["tokens","tokenLike","actionLike","usesAtLeast","usesAtMost","expiresBefore","expiresAfter","ignoreExpired","limit","offset"];
+        $arrExpected = ["tokens","tokenLike","actionLike","containsTags","usesAtLeast","usesAtMost","expiresBefore","expiresAfter","ignoreExpired","limit","offset"];
 
         require 'setExpectedInputs.php';
         require 'tokens_fragments/getTokens_auth.php';
@@ -173,7 +174,7 @@ switch($action){
         if(!validateThenRefreshCSRFToken($SessionHandler))
             exit(WRONG_CSRF_TOKEN);
 
-        $arrExpected = ["token","tokenAction","uses","ttl","overwrite","update"];
+        $arrExpected = ["token","tags","tokenAction","uses","ttl","overwrite","update"];
 
         require 'setExpectedInputs.php';
         require 'tokens_fragments/setToken_auth.php';

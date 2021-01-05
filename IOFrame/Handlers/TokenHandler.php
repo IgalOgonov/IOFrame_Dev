@@ -224,6 +224,7 @@ namespace IOFrame\Handlers{
          * @param array $params Parameters of the form:
          *              'tokenLike' - string, regex pattern, default null - if set, returns results where the token matches this pattern
          *              'actionLike' - string, regex pattern, default null - if set, returns results where the action matches this pattern
+         *              'containsTags' - string[], default []] - if set, returns results that contain at least one of the tags
          *              'usesAtLeast' - int, default null - if set, returns results that have at least this many uses left
          *              'usesAtMost' - int, default null - if set, returns results that have at most this many uses left
          *              'expiresBefore' - string, unix timestamp, default null - if set, returns results that expire BEFORE specified timestamp
@@ -244,6 +245,7 @@ namespace IOFrame\Handlers{
 
             $tokenLike = isset($params['tokenLike'])? $params['tokenLike'] : null;
             $actionLike = isset($params['actionLike'])? $params['actionLike'] : null;
+            $containsTags = isset($params['containsTags'])? $params['containsTags'] : [];
             $usesAtLeast = isset($params['usesAtLeast'])? $params['usesAtLeast'] : null;
             $usesAtMost = isset($params['usesAtMost'])? $params['usesAtMost'] : null;
             $expiresBefore = isset($params['expiresBefore'])? $params['expiresBefore'] : null;
@@ -266,6 +268,13 @@ namespace IOFrame\Handlers{
                 array_push($extraConditions,['Expires',$expiresAfter,'>']);
             if($ignoreExpired)
                 array_push($extraConditions,['Expires',time(),'>']);
+
+            if(count($containsTags)){
+                $regexArr = [];
+                foreach ($containsTags as $tag)
+                    array_push($regexArr,'(#'.$tag.'($|#))');
+                array_push($extraConditions,['Tags',[implode('|',$regexArr),'STRING'],'RLIKE']);
+            }
 
             if(count($extraConditions) > 0)
                 array_push($extraConditions,'AND');
@@ -300,6 +309,7 @@ namespace IOFrame\Handlers{
          * @param string $action Up to 1024 characters,
          * @param int $uses defaults to 1
          * @param int $ttl TTL in seconds (from creation time)
+         * @param array $tags Tags you wish to set (overrides old ones!)
          * @param array $params Parameters of the form:
          *              'overwrite' - bool, default false - Whether to overwrite an existing token, or
          *                                    only allow creation if the same token does not exist.
@@ -310,7 +320,7 @@ namespace IOFrame\Handlers{
          *          1 - token already exists and overwrite is false
          *
         */
-        function setToken(string $name,string $action = null,int $uses=1,int $ttl=-1,array $params = []){
+        function setToken(string $name,string $action = null,int $uses=null,int $ttl=null,array $tags = null,array $params = []){
 
             if($ttl<0)
                 $ttl = $this->tokenTTL;
@@ -320,6 +330,7 @@ namespace IOFrame\Handlers{
                     $name => [
                         'action' => $action,
                         'uses' => $uses,
+                        'tags' => $tags,
                         'ttl' => $ttl
                     ]
                 ],
@@ -332,7 +343,8 @@ namespace IOFrame\Handlers{
          *          [
          *          '<token name, string, up to 256 characters>' => [
          *                            'action' => string, up to 1024 characters,
-         *                            'uses' => int, defaults to 1
+         *                            'uses' => int, defaults to 1,
+         *                            'tags' => string[], tags yu wish to set (overrides old ones!)
          *                            'ttl' => int, TTL in seconds (from creation time)
          *                            ]
          *          ...
@@ -413,9 +425,17 @@ namespace IOFrame\Handlers{
                             $res[$tokenName] = -2;
                         unset($tokens[$tokenName]);
                     }
-                    //Save tokens you locked for unlock
-                    else
+                    else{
+                        //Save tokens you locked for unlock
                         array_push($tokensToUnlock,$tokenName);
+                        //Complete missing info
+                        if(!isset($tokens[$tokenName]['uses']))
+                            $tokens[$tokenName]['uses'] = $token['Uses_Left'];
+                        if(!isset($tokens[$tokenName]['action']))
+                            $tokens[$tokenName]['action'] = $token['Token_Action'];
+                        if(!isset($tokens[$tokenName]['tags']))
+                            $tokens[$tokenName]['tags'] = !$token['Tags']? null : explode('#',substr($token['Tags'],1));
+                    }
                 }
                 else{
                     if($update){
@@ -439,11 +459,21 @@ namespace IOFrame\Handlers{
                     if(!isset($tokenArray['ttl']) || $tokenArray['ttl']<0)
                         $tokenArray['ttl'] = $this->tokenTTL;
 
+                    if(!isset($tokenArray['tags']))
+                        $tokenArray['tags'] = null;
+                    else{
+                        $newTags = '';
+                        foreach ($tokenArray['tags'] as $tag)
+                            $newTags .= '#'.$tag;
+                        $tokenArray['tags'] = $newTags;
+                    }
+
                     $creationArray = [
                         [$tokenName,'STRING'],
                         [$tokenArray['action'],'STRING'],
                         $tokenArray['uses'],
                         [(string)(time()+$tokenArray['ttl']),'STRING'],
+                        [$tokenArray['tags'],'STRING']
                     ];
 
                     foreach($extraInputs as $extraInputArr){
@@ -455,7 +485,7 @@ namespace IOFrame\Handlers{
                     array_push($updateParams,$creationArray);
                 }
                 //Update relevant objects
-                $columns = array_merge(['Token','Token_Action','Uses_Left','Expires'],$extraColumns);
+                $columns = array_merge(['Token','Token_Action','Uses_Left','Expires','Tags'],$extraColumns);
 
                 $request = $this->SQLHandler->insertIntoTable(
                     $this->SQLHandler->getSQLPrefix().$this->tableName,

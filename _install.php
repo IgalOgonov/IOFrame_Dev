@@ -775,7 +775,9 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
                 ['ARTICLES_DELETE_AUTH',\IOFrame\Util\str2SafeStr('Allows deleting all articles')],
                 ['ARTICLES_BLOCKS_ASSUME_SAFE',\IOFrame\Util\str2SafeStr('Allow inserting potentially "unsafe" content into articles.')],
                 ['CAN_ACCESS_CP',\IOFrame\Util\str2SafeStr('Allows accessing the control panel even when not an admin')],
-                ['CAN_UPDATE_SYSTEM',\IOFrame\Util\str2SafeStr('Allows updating the system even when not an admin')]
+                ['CAN_UPDATE_SYSTEM',\IOFrame\Util\str2SafeStr('Allows updating the system even when not an admin')],
+                ['INVITE_USERS_AUTH',\IOFrame\Util\str2SafeStr('Allows inviting users - either via mail, or by just creating invites')],
+                ['SET_INVITE_MAIL_ARGS',\IOFrame\Util\str2SafeStr('Allows passing invite mail arguments')],
             ];
 
             foreach($assignments as $k=>$v){
@@ -1206,6 +1208,9 @@ function install(IOFrame\Handlers\SettingsHandler $userSettings,
             array_push($userArgs,["emailChangeTemplate",3]);
             array_push($userArgs,["emailChangeTitle",'Email Change Confirmation Mail']);
             array_push($userArgs,["passwordResetTime",5]);
+            array_push($userArgs,["inviteMailTemplate",4]);
+            array_push($userArgs,["inviteMailTitle",'You\'ve been invited to IOFrame Test']);
+            array_push($userArgs,["inviteExpires",774]);
             array_push($userArgs,["rememberMe",1]);
             array_push($userArgs,["relogWithCookies",1]);
             array_push($userArgs,["userTokenExpiresIn",0]);

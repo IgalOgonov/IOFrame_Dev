@@ -6,6 +6,7 @@ $result = $TokenHandler->getTokens(
     [
         'tokenLike'=>$inputs['tokenLike'],
         'actionLike'=>$inputs['actionLike'],
+        'containsTags'=>$inputs['containsTags'],
         'usesAtLeast'=>$inputs['usesAtLeast'],
         'usesAtMost'=>$inputs['usesAtMost'],
         'expiresBefore'=>$inputs['expiresBefore'],
@@ -24,9 +25,16 @@ foreach($result as $key => $res){
         $tempRes[$key] = $res;
         continue;
     }
+    if(!$res['Tags'])
+        $res['Tags'] = [];
+    else{
+        $res['Tags'] = substr($res['Tags'],1);
+        $res['Tags'] = explode('#',$res['Tags']);
+    }
     $tempRes[$key] = [
         'action' => $res['Token_Action'],
         'uses' => $res['Uses_Left'],
+        'tags' => $res['Tags'],
         'expires' => $res['Expires'],
         'locked' => ($res['Session_Lock'] !== null)
     ];

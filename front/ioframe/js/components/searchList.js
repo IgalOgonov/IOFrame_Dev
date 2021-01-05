@@ -384,7 +384,7 @@ Vue.component('search-list', {
 
                     const localFilter = this.$el.querySelector('.filters *[name="'+filter.name+'"]');
 
-                    let value = localFilter.value;
+                    let value = localFilter? localFilter.value : null;
                     //Basic check
                     if(value === ''){
                         if(filter.required){

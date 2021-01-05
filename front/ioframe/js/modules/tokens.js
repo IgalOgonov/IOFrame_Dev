@@ -38,6 +38,30 @@ var tokens = new Vue({
                     type:'Group',
                     group: [
                         {
+                            name:'containsTags',
+                            title:'Contains Tags',
+                            type:'String',
+                            placeholder:'tag1,tag2,...',
+                            min:0,
+                            max: 240,
+                            validator: function(value){
+                                value = value.split(',');
+                                for(let i in value){
+                                    if(!value[i].match(/^[\w][\w _\-]{0,31}$/))
+                                        return false;
+                                }
+                                return true;
+                            },
+                            parser: function(value){
+                                return JSON.stringify(value.split(','));
+                            }
+                        },
+                    ]
+                },
+                {
+                    type:'Group',
+                    group: [
+                        {
                             name:'tokenLike',
                             title:'Token Includes',
                             type:'String',
@@ -113,6 +137,17 @@ var tokens = new Vue({
                 {
                     id:'uses',
                     title:'Uses Left'
+                },
+                {
+                    id:'tags',
+                    title:'Tags',
+                    parser:function(tags){
+                        let res = '';
+                        for(let i in tags){
+                            res += '<span class="tag '+tags[i]+'">'+tags[i]+'</span>';
+                        }
+                        return res;
+                    }
                 },
                 {
                     id:'expires',
@@ -405,7 +440,6 @@ var tokens = new Vue({
                          parseJSON: true
                       }
                  );
-
             }
         },
         //Initiates an operation

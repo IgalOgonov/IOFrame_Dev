@@ -18,7 +18,6 @@ Vue.component('toggle-2fa', {
                     alreadyChanging: 'Already toggling 2FA!',
                     messageFailed:'Failed to toggle 2FA!',
                     messageSucceeded:'Toggled 2FA!',
-                    send:'Toggle 2FA '+(this.initialState?'off':'on'),
                     responses: {
                         'WRONG_CSRF_TOKEN':'Problem sending form - try again, or refresh the page.',
                         'NO_SUPPORTED_2FA':'User has no 2FA methods available, cannot turn on!',
@@ -77,6 +76,9 @@ Vue.component('toggle-2fa', {
     updated: function(){
     },
     computed:{
+        send:function (){
+            return 'Toggle 2FA '+(this.initialState?'off':'on');
+        }
     },
     methods:{
         //Countdown function for expiry
@@ -167,7 +169,7 @@ Vue.component('toggle-2fa', {
     template: `
         <div class="toggle-2fa" :class="initialState?'on':'off'">
             <h4 class="toggle-2fa-text" v-text="text.title" ></h4>
-            <button @click.prevent="toggle2FA()" v-text="text.send"></button>
+            <button @click.prevent="toggle2FA()" v-text="send"></button>
         </div>
     `
 });

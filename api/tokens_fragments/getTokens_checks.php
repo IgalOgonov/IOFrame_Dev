@@ -45,3 +45,19 @@ if($inputs['limit'] === null)
     $inputs['limit'] = 50;
 else
     $inputs['limit'] = max(min($inputs['limit'],500),1);
+
+if($inputs['containsTags'] !== null){
+    if(!\IOFrame\Util\is_json($inputs['containsTags'])){
+        if($test)
+            echo 'containsTags must be a JSON array!'.EOL;
+        exit(INPUT_VALIDATION_FAILURE);
+    }
+    $inputs['containsTags'] = json_decode($inputs['containsTags'],true);
+    foreach ($inputs['containsTags'] as $tag){
+        if(!preg_match('/'.TAG_REGEX.'/',$tag)){
+            if($test)
+                echo 'Each tag needs to match regex '.TAG_REGEX.EOL;
+            exit(INPUT_VALIDATION_FAILURE);
+        }
+    }
+}

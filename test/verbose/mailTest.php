@@ -34,7 +34,7 @@ echo EOL;
 
 /*
 $mail->SMTPDebug = 3;                               // Enable verbose debug output
-if ($mail->sendMailTemplate([['aacount001@gmail.com','Joe User'],['igal1333@hotmail.com']], 'Here is the subject',
+if ($mail->sendMailTemplate([['test@ioframe.io','Joe User'],['igal1333@hotmail.com']], 'Here is the subject',
     'Test template! oh look a %%var%%','{"var":"variable"}', ['from@example.com','Test'],'',
     [[]], [['igal1333@hotmail.com']])
 )

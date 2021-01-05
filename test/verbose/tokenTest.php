@@ -5,9 +5,9 @@ $TokenHandler = new IOFrame\Handlers\TokenHandler($settings,$defaultSettingsPara
 echo 'Setting tokens test1, test2 and test3:'.EOL;
 var_dump($TokenHandler->setTokens(
     [
-        'test1' => ['action'=>'test action 1','uses'=>10,'ttl'=>4000],
+        'test1' => ['action'=>'test action 1','uses'=>10,'ttl'=>4000,'tags'=>['test_tag_1','test_tag_2']],
         'test2' => ['action'=>'test action 2','uses'=>1],
-        'test3' => ['action'=>'test action 3','ttl'=>4500]
+        'test3' => ['action'=>'test action 3','ttl'=>4500,'tags'=>['test_tag_3','test_tag_2']]
     ],
     ['test'=>true,'verbose'=>true,'overwrite'=>true]
 ));
@@ -30,6 +30,28 @@ var_dump($TokenHandler->getTokens(
         'expiresBefore'=>1600000000,
         'expiresAfter'=>1400000000,
         'ignoreExpired'=>false,
+        'test'=>true,
+        'verbose'=>true
+    ]
+));
+echo EOL;
+
+echo 'getting all tokens with correct tags test_tag_1'.EOL;
+var_dump($TokenHandler->getTokens(
+    [],
+    [
+        'containsTags'=>['test_tag_1'],
+        'test'=>true,
+        'verbose'=>true
+    ]
+));
+echo EOL;
+
+echo 'getting all tokens with correct tags test_tag_1,test_tag_2'.EOL;
+var_dump($TokenHandler->getTokens(
+    [],
+    [
+        'containsTags'=>['test_tag_1','test_tag_2'],
         'test'=>true,
         'verbose'=>true
     ]

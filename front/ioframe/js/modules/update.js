@@ -31,8 +31,8 @@ var users = new Vue({
             initiated: false,
             //Whether we have sent an update request and haven't received it back yet
             request: false,
-            verbose:true,
-            test:true
+            verbose:false,
+            test:false
         }
     },
     created:function(){

@@ -47,6 +47,8 @@ if(!$cli){
     $action = $_REQUEST["action"];
 }
 else{
+    if(!defined('EOL'))
+        define('EOL',PHP_EOL);
     $flags = getopt('htv:');
     if(isset($flags['h']))
         die('Available flags are:'.EOL.'
@@ -63,6 +65,8 @@ require 'update_fragments/definitions.php';
 
 if($test)
     echo 'Testing mode!'.EOL;
+
+$populateTest = $test && !empty($_REQUEST['populateTest']);
 
 //Authorize use
 if(!$cli && !($auth->isAuthorized(0) || $auth->hasAction(CAN_UPDATE_SYSTEM)) ){
@@ -102,6 +106,8 @@ switch($action){
                 die('Current required for update!');
             else
                 $currentVersion =$flags['v'];
+            if(!defined('helperFunctions'))
+                require __DIR__.'/../IOFrame/Util/helperFunctions.php';
             $rootFolder = IOFrame\Util\replaceInString('\\','/',str_replace('\\api','',__DIR__)).'/';;
             $defaultSettingsParams = [];
             if(!defined("EOL"))
@@ -297,12 +303,33 @@ switch($action){
                     ['name'=>'trees','value'=>json_encode(['active'=>0]),'override'=>true],
                     ['name'=>'users','value'=>json_encode(['active'=>1]),'override'=>true]
                 ];
+                $newActions['CAN_ACCESS_CP'] = 'Allows accessing the control panel even when not an admin';
+                $newActions['CAN_UPDATE_SYSTEM'] = 'Allows updating the system even when not an admin';
+                break;
+            case '1.1.1.0':
+                array_push(
+                    $newQueries,
+                    [
+                        'ALTER TABLE '.$prefix.'IOFRAME_TOKENS CHANGE Uses_Left Uses_Left BIGINT(20) UNSIGNED NOT NULL DEFAULT 1',
+                        'ALTER TABLE '.$prefix.'IOFRAME_TOKENS CHANGE Uses_Left Uses_Left INT NOT NULL'
+                    ],
+                    [
+                        'ALTER TABLE '.$prefix.'IOFRAME_TOKENS ADD Tags VARCHAR(256) NULL DEFAULT NULL AFTER Locked_At, ADD INDEX Tags (Tags);',
+                        'ALTER TABLE '.$prefix.'IOFRAME_TOKENS DROP Tags;'
+                    ]
+                );
+                $newSettings['userSettings'] = [
+                    ['name'=>'inviteExpires','value'=>774],
+                    ['name'=>'inviteMailTitle','value'=>'You\'ve been invited to '.$siteSettings->getSetting('siteName')],
+                ];
+                $newActions['INVITE_USERS_AUTH'] = 'Allows inviting users - either via mail, or by just creating invites';
+                $newActions['SET_INVITE_MAIL_ARGS'] = 'Allows passing invite mail arguments';
                 break;
             default:
         }
 
         //Add stuff to test to empty arrays
-        if($test){
+        if($populateTest){
 
             if(count($newSettingFiles)===0){
                 $newSettingFiles['updateLocalTestSettings'] = ['type'=>'local','title'=>'Local Test Settings'];
@@ -368,6 +395,33 @@ switch($action){
                     switch ($next){
                         case '1.1.0.0':
                             $stageSuccess = true;
+                            break;
+                        case '1.1.1.0':
+                            if($cli){
+                                $stageSuccess = true;
+                                break;
+                            }
+                            $userSettings = new IOFrame\Handlers\SettingsHandler($rootFolder.SETTINGS_DIR_FROM_ROOT.'/userSettings/',$defaultSettingsParams);
+                            $insertedMailTemplateID = $SQLHandler->insertIntoTable(
+                                $prefix.'MAIL_TEMPLATES',
+                                ['Title', 'Content'],
+                                [
+                                    [
+                                        ['Invite Mail Default Template','STRING'],
+                                        [
+                                            \IOFrame\Util\str2SafeStr('Hello!<br> You\'ve been invited to join '.
+                                            $siteSettings->getSetting('siteName').
+                                            '. Click <a href="http://'.$_SERVER['HTTP_HOST'].$settings->getSetting('pathToRoot').
+                                            'api/users?action=checkInvite&mail=%%mail%%&token=%%token%%">this link</a> to accept the invite.<br> The invite will expire in '.
+                                            (($userSettings->getSetting('inviteExpires')?$userSettings->getSetting('inviteExpires'):774)/24).' days'),
+                                            'STRING'
+                                        ]
+                                    ]
+                                ],
+                                ['test'=>$test,'returnRows'=>true]
+                            );
+                            $stageSuccess = $insertedMailTemplateID > 0;
+                            array_push($newSettings['userSettings'],['name'=>'inviteMailTemplate','value'=>$insertedMailTemplateID]);
                             break;
                         default:
                             $stageSuccess = true;
@@ -587,7 +641,7 @@ switch($action){
                     $stageSuccess = true;
                     break;
                 case 'increaseVersion':
-                    $stageSuccess = $cli? true : $siteSettings->setSetting('ver',$next);
+                    $stageSuccess = $cli? true : $siteSettings->setSetting('ver',$next,['test'=>$test]);
                     break;
             }
 
@@ -606,6 +660,19 @@ switch($action){
                         switch ($next){
                             case '1.1.0.0':
                                 break;
+                            case '1.1.1.0':
+                                if($insertedMailTemplateID > 0)
+                                    $earlyFailure = !$SQLHandler->deleteFromTable(
+                                        $prefix.'MAIL_TEMPLATES',
+                                        [
+                                            [
+                                                'ID',
+                                                $insertedMailTemplateID,
+                                                '='
+                                            ]
+                                        ],
+                                        ['test'=>$test]
+                                    );
                             default:
                         }
                         break;
